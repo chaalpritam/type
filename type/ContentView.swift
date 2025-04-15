@@ -49,7 +49,7 @@ struct ContentView: View {
                                 .focused($isTextFieldFocused)
                                 .scrollContentBackground(.hidden)
                                 .padding(EdgeInsets(top: showPlaceholder ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
-                                .onChange(of: text) { newValue in
+                                .onChange(of: text) { oldValue, newValue in
                                     showPlaceholder = newValue.isEmpty
                                 }
                         }
