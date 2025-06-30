@@ -28,132 +28,142 @@ struct ContentView: View {
     @State private var canUndo: Bool = false
     @State private var canRedo: Bool = false
     
-    // Toolbar states
-    @State private var selectedFont: String = "Courier"
-    @State private var fontSize: CGFloat = 12
+    // Apple-style interface states
+    @State private var selectedFont: String = "SF Mono"
+    @State private var fontSize: CGFloat = 13
     @State private var showStatistics: Bool = true
+    @State private var isFullScreen: Bool = false
     
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Top Toolbar
-                TopToolbar(
-                    showPreview: $showPreview,
-                    showLineNumbers: $showLineNumbers,
-                    showFindReplace: $showFindReplace,
-                    showHelp: $showHelp,
-                    canUndo: canUndo,
-                    canRedo: canRedo,
-                    onUndo: performUndo,
-                    onRedo: performRedo,
-                    selectedFont: $selectedFont,
-                    fontSize: $fontSize
-                )
+            ZStack {
+                // Apple-style background
+                Color(.windowBackgroundColor)
+                    .ignoresSafeArea()
                 
-                // Find/Replace Bar
-                if showFindReplace {
-                    FindReplaceView(isVisible: $showFindReplace, text: $text)
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                }
-                
-                // Main Content Area
-                HStack(spacing: 0) {
-                    // Editor Panel
-                    VStack(spacing: 0) {
-                        // Editor Header
-                        EditorHeader(
-                            wordCount: wordCount,
-                            pageCount: pageCount,
-                            characterCount: characterCount,
-                            showStatistics: showStatistics,
-                            showAutoCompletion: $showAutoCompletion
-                        )
-                        
-                        // Editor Content
-                        ZStack(alignment: .topLeading) {
-                            // Paper background
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.white)
-                                .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            
-                            // Enhanced Fountain Text Editor
-                            EnhancedFountainTextEditor(
-                                text: $text,
-                                placeholder: "Just write...",
-                                showLineNumbers: showLineNumbers,
-                                onTextChange: { newText in
-                                    updateStatistics(text: newText)
-                                    historyManager.addToHistory(newText)
-                                    canUndo = historyManager.canUndo
-                                    canRedo = historyManager.canRedo
-                                    
-                                    // Update auto-completion
-                                    autoCompletionManager.updateSuggestions(for: newText, at: 0)
-                                    
-                                    // Apply smart formatting
-                                    let formattedText = smartFormattingManager.formatText(newText)
-                                    if formattedText != newText {
-                                        text = formattedText
-                                    }
-                                }
+                VStack(spacing: 0) {
+                    // Apple-style toolbar
+                    AppleToolbar(
+                        showPreview: $showPreview,
+                        showLineNumbers: $showLineNumbers,
+                        showFindReplace: $showFindReplace,
+                        showHelp: $showHelp,
+                        canUndo: canUndo,
+                        canRedo: canRedo,
+                        onUndo: performUndo,
+                        onRedo: performRedo,
+                        selectedFont: $selectedFont,
+                        fontSize: $fontSize,
+                        isFullScreen: $isFullScreen
+                    )
+                    
+                    // Find/Replace Bar with Apple styling
+                    if showFindReplace {
+                        AppleFindReplaceView(isVisible: $showFindReplace, text: $text)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .top).combined(with: .opacity),
+                                removal: .move(edge: .top).combined(with: .opacity)
+                            ))
+                    }
+                    
+                    // Main Content Area
+                    HStack(spacing: 0) {
+                        // Editor Panel
+                        VStack(spacing: 0) {
+                            // Apple-style editor header
+                            AppleEditorHeader(
+                                wordCount: wordCount,
+                                pageCount: pageCount,
+                                characterCount: characterCount,
+                                showStatistics: showStatistics,
+                                showAutoCompletion: $showAutoCompletion
                             )
-                            .onChange(of: text) { oldValue, newValue in
-                                showPlaceholder = newValue.isEmpty
-                                // Parse Fountain syntax in real-time
-                                fountainParser.parse(newValue)
-                                updateStatistics(text: newValue)
-                            }
                             
-                            // Auto-completion suggestions overlay
-                            if showAutoCompletion && autoCompletionManager.showSuggestions {
-                                AutoCompletionOverlay(
-                                    suggestions: autoCompletionManager.suggestions,
-                                    selectedIndex: autoCompletionManager.selectedIndex,
-                                    onSelect: { suggestion in
-                                        // TODO: Insert suggestion at cursor position
-                                        autoCompletionManager.hideSuggestions()
+                            // Apple-style editor content
+                            ZStack(alignment: .topLeading) {
+                                // Apple-style paper background
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(.textBackgroundColor))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                
+                                // Enhanced Fountain Text Editor
+                                EnhancedFountainTextEditor(
+                                    text: $text,
+                                    placeholder: "Start writing your screenplay...",
+                                    showLineNumbers: showLineNumbers,
+                                    onTextChange: { newText in
+                                        updateStatistics(text: newText)
+                                        historyManager.addToHistory(newText)
+                                        canUndo = historyManager.canUndo
+                                        canRedo = historyManager.canRedo
+                                        
+                                        // Update auto-completion
+                                        autoCompletionManager.updateSuggestions(for: newText, at: 0)
+                                        
+                                        // Apply smart formatting
+                                        let formattedText = smartFormattingManager.formatText(newText)
+                                        if formattedText != newText {
+                                            text = formattedText
+                                        }
                                     }
                                 )
+                                .onChange(of: text) { oldValue, newValue in
+                                    showPlaceholder = newValue.isEmpty
+                                    // Parse Fountain syntax in real-time
+                                    fountainParser.parse(newValue)
+                                    updateStatistics(text: newValue)
+                                }
+                                
+                                // Apple-style auto-completion overlay
+                                if showAutoCompletion && autoCompletionManager.showSuggestions {
+                                    AppleAutoCompletionOverlay(
+                                        suggestions: autoCompletionManager.suggestions,
+                                        selectedIndex: autoCompletionManager.selectedIndex,
+                                        onSelect: { suggestion in
+                                            // TODO: Insert suggestion at cursor position
+                                            autoCompletionManager.hideSuggestions()
+                                        }
+                                    )
+                                }
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 16)
+                        .frame(width: showPreview ? geometry.size.width * 0.5 : geometry.size.width)
+                        
+                        // Preview Panel
+                        if showPreview {
+                            VStack(spacing: 0) {
+                                // Apple-style preview header
+                                ApplePreviewHeader(elementCount: fountainParser.elements.count)
+                                
+                                // Apple-style preview content
+                                ScreenplayPreview(
+                                    elements: fountainParser.elements,
+                                    titlePage: fountainParser.titlePage
+                                )
+                                .background(Color(.textBackgroundColor))
+                                .cornerRadius(8)
+                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 20)
+                            }
+                            .frame(width: geometry.size.width * 0.5)
+                            .background(Color(.windowBackgroundColor))
+                        }
                     }
-                    .frame(width: showPreview ? geometry.size.width * 0.5 : geometry.size.width)
                     
-                    // Preview Panel
-                    if showPreview {
-                        VStack(spacing: 0) {
-                            // Preview Header
-                            PreviewHeader(elementCount: fountainParser.elements.count)
-                            
-                            // Preview content
-                            ScreenplayPreview(
-                                elements: fountainParser.elements,
-                                titlePage: fountainParser.titlePage
-                            )
-                            .background(Color.white)
-                            .cornerRadius(4)
-                            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 16)
-                        }
-                        .frame(width: geometry.size.width * 0.5)
-                        .background(Color(red: 0.96, green: 0.96, blue: 0.98))
-                    }
+                    // Apple-style status bar
+                    AppleStatusBar(
+                        wordCount: wordCount,
+                        pageCount: pageCount,
+                        characterCount: characterCount,
+                        showStatistics: $showStatistics,
+                        smartFormattingManager: smartFormattingManager
+                    )
                 }
-                
-                // Bottom Status Bar
-                BottomStatusBar(
-                    wordCount: wordCount,
-                    pageCount: pageCount,
-                    characterCount: characterCount,
-                    showStatistics: $showStatistics,
-                    smartFormattingManager: smartFormattingManager
-                )
             }
-            .background(Color(red: 0.94, green: 0.94, blue: 0.96))
             .onAppear {
                 isTextFieldFocused = true
                 
@@ -233,8 +243,8 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Top Toolbar
-struct TopToolbar: View {
+// MARK: - Apple-style Toolbar
+struct AppleToolbar: View {
     @Binding var showPreview: Bool
     @Binding var showLineNumbers: Bool
     @Binding var showFindReplace: Bool
@@ -245,106 +255,111 @@ struct TopToolbar: View {
     let onRedo: () -> Void
     @Binding var selectedFont: String
     @Binding var fontSize: CGFloat
+    @Binding var isFullScreen: Bool
     
     var body: some View {
-        HStack(spacing: 16) {
-            // File Operations
-            HStack(spacing: 8) {
-                Button(action: {}) {
-                    Image(systemName: "doc.badge.plus")
-                    Text("New")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+        HStack(spacing: 12) {
+            // File operations with Apple styling
+            HStack(spacing: 6) {
+                AppleToolbarButton(
+                    icon: "doc.badge.plus",
+                    label: "New",
+                    action: {}
+                )
                 
-                Button(action: {}) {
-                    Image(systemName: "folder")
-                    Text("Open")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: "folder",
+                    label: "Open",
+                    action: {}
+                )
                 
-                Button(action: {}) {
-                    Image(systemName: "square.and.arrow.down")
-                    Text("Save")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: "square.and.arrow.down",
+                    label: "Save",
+                    action: {}
+                )
             }
             
-            Divider()
-                .frame(height: 20)
+            AppleDivider()
             
-            // Edit Operations
-            HStack(spacing: 8) {
-                Button(action: onUndo) {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+            // Edit operations
+            HStack(spacing: 6) {
+                AppleToolbarButton(
+                    icon: "arrow.uturn.backward",
+                    action: onUndo
+                )
                 .disabled(!canUndo)
                 
-                Button(action: onRedo) {
-                    Image(systemName: "arrow.uturn.forward")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: "arrow.uturn.forward",
+                    action: onRedo
+                )
                 .disabled(!canRedo)
                 
-                Button(action: { showFindReplace.toggle() }) {
-                    Image(systemName: "magnifyingglass")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: "magnifyingglass",
+                    action: { showFindReplace.toggle() }
+                )
             }
             
-            Divider()
-                .frame(height: 20)
+            AppleDivider()
             
-            // Formatting Options
+            // Formatting options with Apple styling
             HStack(spacing: 8) {
                 Picker("Font", selection: $selectedFont) {
-                    Text("Courier").tag("Courier")
-                    Text("Courier New").tag("Courier New")
+                    Text("SF Mono").tag("SF Mono")
+                    Text("Menlo").tag("Menlo")
                     Text("Monaco").tag("Monaco")
                 }
                 .pickerStyle(MenuPickerStyle())
-                .frame(width: 120)
+                .frame(width: 100)
                 
                 HStack(spacing: 4) {
-                    Button(action: { fontSize = max(8, fontSize - 1) }) {
-                        Image(systemName: "textformat.size.smaller")
-                    }
-                    .buttonStyle(ToolbarButtonStyle())
+                    AppleToolbarButton(
+                        icon: "textformat.size.smaller",
+                        action: { fontSize = max(10, fontSize - 1) }
+                    )
                     
                     Text("\(Int(fontSize))")
-                        .font(.caption)
-                        .frame(width: 30)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .frame(width: 25)
                     
-                    Button(action: { fontSize = min(24, fontSize + 1) }) {
-                        Image(systemName: "textformat.size.larger")
-                    }
-                    .buttonStyle(ToolbarButtonStyle())
+                    AppleToolbarButton(
+                        icon: "textformat.size.larger",
+                        action: { fontSize = min(20, fontSize + 1) }
+                    )
                 }
             }
             
             Spacer()
             
-            // View Controls
-            HStack(spacing: 8) {
-                Button(action: { showLineNumbers.toggle() }) {
-                    Image(systemName: showLineNumbers ? "list.number" : "list.number.fill")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+            // View controls
+            HStack(spacing: 6) {
+                AppleToolbarButton(
+                    icon: showLineNumbers ? "list.number" : "list.number.fill",
+                    action: { showLineNumbers.toggle() }
+                )
                 
-                Button(action: { showHelp = true }) {
-                    Image(systemName: "questionmark.circle")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: "questionmark.circle",
+                    action: { showHelp = true }
+                )
                 
-                Button(action: { showPreview.toggle() }) {
-                    Image(systemName: showPreview ? "eye.slash" : "eye")
-                }
-                .buttonStyle(ToolbarButtonStyle())
+                AppleToolbarButton(
+                    icon: showPreview ? "eye.slash" : "eye",
+                    action: { showPreview.toggle() }
+                )
+                
+                AppleToolbarButton(
+                    icon: isFullScreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right",
+                    action: { isFullScreen.toggle() }
+                )
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.windowBackgroundColor))
+        .background(.ultraThinMaterial)
         .overlay(
             Rectangle()
                 .frame(height: 0.5)
@@ -354,8 +369,57 @@ struct TopToolbar: View {
     }
 }
 
-// MARK: - Editor Header
-struct EditorHeader: View {
+// MARK: - Apple-style Components
+struct AppleToolbarButton: View {
+    let icon: String
+    var label: String?
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 13))
+                if let label = label {
+                    Text(label)
+                        .font(.system(size: 12, weight: .medium))
+                }
+            }
+            .foregroundColor(.primary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(AppleButtonStyle())
+    }
+}
+
+struct AppleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(configuration.isPressed ? Color(.controlColor) : Color.clear)
+            )
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+struct AppleDivider: View {
+    var body: some View {
+        Rectangle()
+            .frame(width: 1, height: 16)
+            .foregroundColor(Color(.separatorColor))
+    }
+}
+
+// MARK: - Apple-style Editor Header
+struct AppleEditorHeader: View {
     let wordCount: Int
     let pageCount: Int
     let characterCount: Int
@@ -365,55 +429,56 @@ struct EditorHeader: View {
     var body: some View {
         HStack {
             Text("Editor")
-                .font(.headline)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.primary)
             
             Spacer()
             
             if showStatistics {
                 HStack(spacing: 16) {
-                    StatisticView(label: "Words", value: "\(wordCount)")
-                    StatisticView(label: "Pages", value: "\(pageCount)")
-                    StatisticView(label: "Chars", value: "\(characterCount)")
+                    AppleStatisticView(label: "Words", value: "\(wordCount)")
+                    AppleStatisticView(label: "Pages", value: "\(pageCount)")
+                    AppleStatisticView(label: "Chars", value: "\(characterCount)")
                 }
             }
             
             Button(action: { showAutoCompletion.toggle() }) {
                 Image(systemName: showAutoCompletion ? "textformat.abc" : "textformat.abc.dottedunderline")
+                    .font(.system(size: 14))
                     .foregroundColor(.primary)
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(AppleButtonStyle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.controlBackgroundColor))
+        .background(.ultraThinMaterial)
     }
 }
 
-// MARK: - Preview Header
-struct PreviewHeader: View {
+// MARK: - Apple-style Preview Header
+struct ApplePreviewHeader: View {
     let elementCount: Int
     
     var body: some View {
         HStack {
             Text("Preview")
-                .font(.headline)
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.primary)
             
             Spacer()
             
             Text("\(elementCount) elements")
-                .font(.caption)
+                .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.controlBackgroundColor))
+        .background(.ultraThinMaterial)
     }
 }
 
-// MARK: - Bottom Status Bar
-struct BottomStatusBar: View {
+// MARK: - Apple-style Status Bar
+struct AppleStatusBar: View {
     let wordCount: Int
     let pageCount: Int
     let characterCount: Int
@@ -423,11 +488,12 @@ struct BottomStatusBar: View {
     var body: some View {
         HStack(spacing: 16) {
             // Left side - Smart formatting status
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "wand.and.stars")
+                    .font(.system(size: 11))
                     .foregroundColor(.blue)
                 Text("Smart formatting enabled")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundColor(.secondary)
             }
             
@@ -437,27 +503,33 @@ struct BottomStatusBar: View {
             Button(action: { showStatistics.toggle() }) {
                 HStack(spacing: 4) {
                     Image(systemName: showStatistics ? "chart.bar" : "chart.bar.fill")
+                        .font(.system(size: 11))
                     Text("Stats")
+                        .font(.system(size: 11))
                 }
-                .font(.caption)
                 .foregroundColor(.secondary)
             }
-            .buttonStyle(PlainButtonStyle())
+            .buttonStyle(AppleButtonStyle())
             
             // Right side - Additional info
             HStack(spacing: 16) {
                 Text("Fountain Format")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundColor(.secondary)
                 
-                Text("Ready")
-                    .font(.caption)
-                    .foregroundColor(.green)
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 6, height: 6)
+                    Text("Ready")
+                        .font(.system(size: 11))
+                        .foregroundColor(.green)
+                }
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .background(Color(.windowBackgroundColor))
+        .background(.ultraThinMaterial)
         .overlay(
             Rectangle()
                 .frame(height: 0.5)
@@ -467,25 +539,8 @@ struct BottomStatusBar: View {
     }
 }
 
-// MARK: - Toolbar Button Style
-struct ToolbarButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.caption)
-            .foregroundColor(configuration.isPressed ? .secondary : .primary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(configuration.isPressed ? Color(.controlColor) : Color.clear)
-            )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-    }
-}
-
-// MARK: - Supporting Views
-struct AutoCompletionOverlay: View {
+// MARK: - Apple-style Supporting Views
+struct AppleAutoCompletionOverlay: View {
     let suggestions: [String]
     let selectedIndex: Int
     let onSelect: (String) -> Void
@@ -497,40 +552,190 @@ struct AutoCompletionOverlay: View {
                     onSelect(suggestion)
                 }) {
                     Text(suggestion)
-                        .font(.system(size: 14))
+                        .font(.system(size: 13))
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(index == selectedIndex ? Color.blue.opacity(0.2) : Color.clear)
+                        .background(index == selectedIndex ? Color(.controlColor) : Color.clear)
                 }
                 .buttonStyle(PlainButtonStyle())
                 
                 if index < suggestions.count - 1 {
                     Divider()
+                        .padding(.horizontal, 12)
                 }
             }
         }
-        .background(Color(.windowBackgroundColor))
-        .cornerRadius(6)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .background(.ultraThinMaterial)
+        .cornerRadius(8)
+        .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
         .frame(maxWidth: 300)
         .offset(y: 30)
     }
 }
 
-struct StatisticView: View {
+struct AppleStatisticView: View {
     let label: String
     let value: String
     
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(.system(size: 12, weight: .semibold))
             Text(label)
-                .font(.caption2)
+                .font(.system(size: 10))
                 .foregroundColor(.secondary)
         }
+    }
+}
+
+// MARK: - Apple-style Find/Replace View
+struct AppleFindReplaceView: View {
+    @Binding var isVisible: Bool
+    @Binding var text: String
+    @State private var searchText: String = ""
+    @State private var replaceText: String = ""
+    @State private var caseSensitive: Bool = false
+    @State private var useRegex: Bool = false
+    @State private var searchResults: [Range<String.Index>] = []
+    @State private var currentResultIndex: Int = 0
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Find field
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                
+                TextField("Find", text: $searchText)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .font(.system(size: 13))
+                    .onChange(of: searchText) { _, _ in
+                        performSearch()
+                    }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(Color(.controlBackgroundColor))
+            .cornerRadius(6)
+            
+            // Replace field
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                
+                TextField("Replace", text: $replaceText)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .font(.system(size: 13))
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(Color(.controlBackgroundColor))
+            .cornerRadius(6)
+            
+            // Options
+            HStack(spacing: 8) {
+                Toggle("Aa", isOn: $caseSensitive)
+                    .toggleStyle(AppleToggleStyle())
+                    .font(.system(size: 11))
+                
+                Toggle(".*", isOn: $useRegex)
+                    .toggleStyle(AppleToggleStyle())
+                    .font(.system(size: 11))
+            }
+            
+            // Results count
+            if !searchResults.isEmpty {
+                Text("\(currentResultIndex + 1) of \(searchResults.count)")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // Action buttons
+            HStack(spacing: 6) {
+                AppleToolbarButton(
+                    icon: "arrow.up",
+                    action: previousResult
+                )
+                .disabled(searchResults.isEmpty)
+                
+                AppleToolbarButton(
+                    icon: "arrow.down",
+                    action: nextResult
+                )
+                .disabled(searchResults.isEmpty)
+                
+                AppleToolbarButton(
+                    icon: "arrow.triangle.2.circlepath",
+                    action: replaceCurrent
+                )
+                .disabled(searchResults.isEmpty)
+                
+                AppleToolbarButton(
+                    icon: "arrow.triangle.2.circlepath.circle",
+                    action: replaceAll
+                )
+                .disabled(searchResults.isEmpty)
+            }
+            
+            // Close button
+            AppleToolbarButton(
+                icon: "xmark",
+                action: { isVisible = false }
+            )
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial)
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(Color(.separatorColor)),
+            alignment: .bottom
+        )
+    }
+    
+    private func performSearch() {
+        // Implementation would go here
+    }
+    
+    private func nextResult() {
+        // Implementation would go here
+    }
+    
+    private func previousResult() {
+        // Implementation would go here
+    }
+    
+    private func replaceCurrent() {
+        // Implementation would go here
+    }
+    
+    private func replaceAll() {
+        // Implementation would go here
+    }
+}
+
+struct AppleToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button(action: { configuration.isOn.toggle() }) {
+            HStack {
+                configuration.label
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(configuration.isOn ? .primary : .secondary)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(configuration.isOn ? Color(.controlColor) : Color.clear)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
