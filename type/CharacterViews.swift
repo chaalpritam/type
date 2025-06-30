@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Character Database Main View
 struct CharacterDatabaseView: View {
     @ObservedObject var characterDatabase: CharacterDatabase
+    @Binding var isVisible: Bool
     @State private var showAddCharacter = false
     @State private var showSearchFilters = false
     @State private var showStatistics = false
@@ -35,8 +36,8 @@ struct CharacterDatabaseView: View {
             
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Statistics") {
-                        showStatistics.toggle()
+                    Button(action: { isVisible = false }) {
+                        Image(systemName: "xmark.circle.fill")
                     }
                 }
                 

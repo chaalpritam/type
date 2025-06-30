@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Outline Main View
 struct OutlineView: View {
     @ObservedObject var outlineDatabase: OutlineDatabase
+    @Binding var isVisible: Bool
     @State private var showAddNode = false
     @State private var showTemplates = false
     @State private var showStatistics = false
@@ -47,8 +48,8 @@ struct OutlineView: View {
             
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Templates") {
-                        showTemplates.toggle()
+                    Button(action: { isVisible = false }) {
+                        Image(systemName: "xmark.circle.fill")
                     }
                 }
                 

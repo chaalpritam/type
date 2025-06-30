@@ -6,6 +6,7 @@ struct CommentsPanel: View {
     @State private var newCommentText = ""
     @State private var selectedLine: Int?
     @State private var showResolvedComments = false
+    @Binding var isVisible: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -20,6 +21,13 @@ struct CommentsPanel: View {
                 Toggle("Show Resolved", isOn: $showResolvedComments)
                     .toggleStyle(SwitchToggleStyle())
                     .scaleEffect(0.8)
+                
+                Button(action: { isVisible = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -42,32 +50,23 @@ struct CommentsPanel: View {
             Divider()
             
             // Add Comment
-            VStack(spacing: 8) {
-                HStack {
-                    Text("Add Comment")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                    
-                    if let line = selectedLine {
-                        Text("Line \(line)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
+            HStack {
+                TextField("Add a comment...", text: $newCommentText, axis: .vertical)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .lineLimit(1...3)
                 
-                HStack {
-                    TextField("Write a comment...", text: $newCommentText, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(3...6)
-                    
-                    Button("Add") {
-                        addComment()
+                Button("Add") {
+                    if !newCommentText.isEmpty {
+                        collaborationManager.addComment(
+                            text: newCommentText,
+                            lineNumber: selectedLine ?? 0,
+                            selection: nil
+                        )
+                        newCommentText = ""
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(newCommentText.isEmpty)
                 }
+                .buttonStyle(.borderedProminent)
+                .disabled(newCommentText.isEmpty)
             }
             .padding()
         }
@@ -81,19 +80,6 @@ struct CommentsPanel: View {
         } else {
             return collaborationManager.comments.filter { !$0.isResolved }
         }
-    }
-    
-    private func addComment() {
-        guard !newCommentText.isEmpty else { return }
-        
-        collaborationManager.addComment(
-            text: newCommentText,
-            lineNumber: selectedLine ?? 1,
-            selection: nil
-        )
-        
-        newCommentText = ""
-        selectedLine = nil
     }
 }
 
@@ -277,6 +263,7 @@ struct VersionHistory: View {
     @State private var selectedVersion: DocumentVersion?
     @State private var showCreateVersion = false
     @State private var versionDescription = ""
+    @Binding var isVisible: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -292,6 +279,13 @@ struct VersionHistory: View {
                     showCreateVersion = true
                 }
                 .buttonStyle(.borderedProminent)
+                
+                Button(action: { isVisible = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -428,9 +422,21 @@ struct SharingDialog: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Share Document")
-                .font(.title2)
-                .fontWeight(.semibold)
+            // Header with close button
+            HStack {
+                Text("Share Document")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
             
             VStack(alignment: .leading, spacing: 8) {
                 Text("Email Addresses")
@@ -491,10 +497,95 @@ struct SharingDialog: View {
     }
 }
 
+// MARK: - Invite Collaborator Sheet
+struct InviteCollaboratorSheet: View {
+    @ObservedObject var collaborationManager: CollaborationManager
+    @State private var emailAddresses = ""
+    @State private var selectedRole: CollaboratorRole = .commenter
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Header with close button
+            HStack {
+                Text("Invite Collaborators")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Spacer()
+                
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Email Addresses")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                TextField("Enter email addresses separated by commas", text: $emailAddresses, axis: .vertical)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .lineLimit(2...4)
+                
+                Text("Separate multiple email addresses with commas")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Permission Level")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Picker("Role", selection: $selectedRole) {
+                    ForEach(CollaboratorRole.allCases, id: \.self) { role in
+                        VStack(alignment: .leading) {
+                            Text(role.rawValue)
+                            Text(role.permissions.map { $0.rawValue }.joined(separator: ", "))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .tag(role)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            HStack {
+                Button("Cancel") {
+                    dismiss()
+                }
+                .buttonStyle(.bordered)
+                
+                Spacer()
+                
+                Button("Invite") {
+                    let emails = emailAddresses
+                        .components(separatedBy: ",")
+                        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                        .filter { !$0.isEmpty }
+                    
+                    collaborationManager.shareDocument(emails: emails, role: selectedRole)
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(emailAddresses.isEmpty)
+            }
+        }
+        .padding()
+        .frame(width: 400)
+    }
+}
+
 // MARK: - Collaborators Panel
 struct CollaboratorsPanel: View {
     @ObservedObject var collaborationManager: CollaborationManager
     @State private var showInviteDialog = false
+    @Binding var isVisible: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -510,6 +601,13 @@ struct CollaboratorsPanel: View {
                     showInviteDialog = true
                 }
                 .buttonStyle(.borderedProminent)
+                
+                Button(action: { isVisible = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
@@ -549,7 +647,7 @@ struct CollaboratorsPanel: View {
         .frame(minWidth: 250, maxWidth: 300)
         .background(Color(NSColor.windowBackgroundColor))
         .sheet(isPresented: $showInviteDialog) {
-            SharingDialog(collaborationManager: collaborationManager)
+            InviteCollaboratorSheet(collaborationManager: collaborationManager)
         }
     }
 }

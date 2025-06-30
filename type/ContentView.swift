@@ -305,24 +305,33 @@ struct ContentView: View {
                 
                 // Collaboration panels
                 if showCommentsPanel {
-                    CommentsPanel(collaborationManager: collaborationManager)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCommentsPanel)
-                        .zIndex(1000)
+                    CommentsPanel(
+                        collaborationManager: collaborationManager,
+                        isVisible: $showCommentsPanel
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCommentsPanel)
+                    .zIndex(1000)
                 }
                 
                 if showVersionHistory {
-                    VersionHistory(collaborationManager: collaborationManager)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showVersionHistory)
-                        .zIndex(1000)
+                    VersionHistory(
+                        collaborationManager: collaborationManager,
+                        isVisible: $showVersionHistory
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showVersionHistory)
+                    .zIndex(1000)
                 }
                 
                 if showCollaboratorsPanel {
-                    CollaboratorsPanel(collaborationManager: collaborationManager)
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCollaboratorsPanel)
-                        .zIndex(1000)
+                    CollaboratorsPanel(
+                        collaborationManager: collaborationManager,
+                        isVisible: $showCollaboratorsPanel
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCollaboratorsPanel)
+                    .zIndex(1000)
                 }
                 
                 // Sharing dialog
@@ -349,11 +358,31 @@ struct ContentView: View {
         }
         // Character database sheet
         .sheet(isPresented: $showCharacterDatabase) {
-            CharacterDatabaseView(characterDatabase: characterDatabase)
+            ZStack(alignment: .topTrailing) {
+                CharacterDatabaseView(characterDatabase: characterDatabase, isVisible: $showCharacterDatabase)
+                Button(action: { showCharacterDatabase = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding()
+            }
         }
         // Outline mode sheet
         .sheet(isPresented: $showOutlineMode) {
-            OutlineView(outlineDatabase: outlineDatabase)
+            ZStack(alignment: .topTrailing) {
+                OutlineView(outlineDatabase: outlineDatabase, isVisible: $showOutlineMode)
+                Button(action: { showOutlineMode = false }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding()
+            }
         }
         // File management alerts
         .alert("Save Changes?", isPresented: $showUnsavedChangesAlert) {
@@ -539,9 +568,21 @@ struct TemplateSelectorView: View {
             
             // Template selector card
             VStack(spacing: 20) {
-                Text("Choose Template")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                // Header with close button
+                HStack {
+                    Text("Choose Template")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    
+                    Spacer()
+                    
+                    Button(action: { isVisible = false }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
                 
                 // Category selector
                 Picker("Category", selection: $selectedCategory) {
@@ -572,10 +613,21 @@ struct TemplateSelectorView: View {
                 }
                 .frame(maxHeight: 400)
                 
-                Button("Cancel") {
-                    isVisible = false
+                // Bottom action buttons
+                HStack {
+                    Button("Cancel") {
+                        isVisible = false
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Spacer()
+                    
+                    Button("Use Template") {
+                        onTemplateSelected(selectedTemplate)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(selectedTemplate == .default)
                 }
-                .buttonStyle(.bordered)
             }
             .padding(24)
             .background(Color(nsColor: NSColor.windowBackgroundColor))
@@ -1323,7 +1375,7 @@ struct CustomizationPanel: View {
                                 .fill(selectedTheme == theme ? Color(.controlColor) : Color.clear)
                         )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
                 }
             }
             
@@ -1354,7 +1406,7 @@ struct CustomizationPanel: View {
                                 .fill(animationSpeed == speed ? Color(.controlColor) : Color.clear)
                         )
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
                 }
             }
             
@@ -1388,7 +1440,7 @@ struct EnhancedAppleAutoCompletionOverlay: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(index == selectedIndex ? Color(.controlColor) : Color.clear)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
                 
                 if index < suggestions.count - 1 {
                     Divider()
@@ -1550,7 +1602,7 @@ struct AppleToggleStyle: ToggleStyle {
                     .fill(configuration.isOn ? Color(.controlColor) : Color.clear)
             )
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
