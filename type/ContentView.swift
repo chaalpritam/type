@@ -38,6 +38,10 @@ struct ContentView: View {
     @StateObject private var characterDatabase = CharacterDatabase()
     @State private var showCharacterDatabase: Bool = false
     
+    // Outline Database
+    @StateObject private var outlineDatabase = OutlineDatabase()
+    @State private var showOutlineMode: Bool = false
+    
     // Enhanced editor state
     @State private var wordCount: Int = 0
     @State private var pageCount: Int = 0
@@ -343,6 +347,10 @@ struct ContentView: View {
         // Character database sheet
         .sheet(isPresented: $showCharacterDatabase) {
             CharacterDatabaseView(characterDatabase: characterDatabase)
+        }
+        // Outline mode sheet
+        .sheet(isPresented: $showOutlineMode) {
+            OutlineView(outlineDatabase: outlineDatabase)
         }
         // File management alerts
         .alert("Save Changes?", isPresented: $showUnsavedChangesAlert) {
@@ -928,6 +936,30 @@ struct EnhancedAppleToolbar: View {
                             .background(
                                 Capsule()
                                     .fill(Color.blue)
+                            )
+                            .offset(x: 8, y: -8)
+                    }
+                }
+            )
+            
+            // Outline mode
+            EnhancedAppleToolbarButton(
+                icon: "list.bullet",
+                label: "Outline",
+                action: { showOutlineMode = true }
+            )
+            .overlay(
+                Group {
+                    if outlineDatabase.statistics.totalNodes > 0 {
+                        Text("\(outlineDatabase.statistics.totalNodes)")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.green)
                             )
                             .offset(x: 8, y: -8)
                     }
