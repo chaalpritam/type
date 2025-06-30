@@ -82,6 +82,18 @@ Mike! I didn't expect to see you here.
 
 ## TODO: Building Better
 
+### ✅ **Completed Features**
+
+#### Core Editor & Parsing
+- [x] **Simple editor features** - Basic text editing with Fountain syntax
+- [x] **Real-time Fountain parsing** - Instant parsing as you type
+- [x] **Live preview** - Real-time formatted screenplay preview
+- [x] **Syntax highlighting** - Color-coded Fountain elements
+- [x] **Split view** - Editor and preview side by side
+- [x] **Toggle preview** - Show/hide formatted preview
+- [x] **Help system** - Built-in Fountain syntax guide
+- [x] **Professional formatting** - Proper screenplay layout and typography
+
 ### 🚀 **High Priority - Core Features**
 
 #### File Management & Persistence
