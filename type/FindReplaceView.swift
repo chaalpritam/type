@@ -142,16 +142,16 @@ struct FindReplaceView: View {
         let searchString = caseSensitive ? searchText : searchText.lowercased()
         let textString = caseSensitive ? text : text.lowercased()
         
-        var searchRange = textString.startIndex
-        while let range = textString.range(of: searchString, range: searchRange) {
-            searchResults.append(range)
-            searchRange = range.upperBound
+        var searchRange: Range<String.Index>? = textString.startIndex..<textString.endIndex
+        while let foundRange = textString.range(of: searchString, options: [], range: searchRange) {
+            searchResults.append(foundRange)
+            searchRange = foundRange.upperBound..<textString.endIndex
         }
     }
     
     private func performRegexSearch() {
         do {
-            let options: String.CompareOptions = caseSensitive ? [] : .caseInsensitive
+            let _: String.CompareOptions = caseSensitive ? [] : .caseInsensitive
             let regex = try NSRegularExpression(pattern: searchText)
             let range = NSRange(text.startIndex..., in: text)
             

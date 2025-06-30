@@ -94,24 +94,12 @@ Mike! I didn't expect to see you here.
 - [x] **Help system** - Built-in Fountain syntax guide
 - [x] **Professional formatting** - Proper screenplay layout and typography
 
-### 🚀 **High Priority - Core Features**
-
-#### File Management & Persistence
-- [ ] **Save/Load functionality** with native macOS file dialogs
-- [ ] **Auto-save** with configurable intervals (every 30 seconds)
-- [ ] **Recent files** menu in app menu
-- [ ] **Export to PDF** with proper screenplay formatting
-- [ ] **Export to Final Draft** (.fdx) format
-- [ ] **Export to plain text** (.fountain) format
-- [ ] **iCloud sync** for seamless cross-device access
-
 #### Enhanced Editor Features
 - [x] **Spell check and grammar** with screenplay-specific dictionaries
 - [x] **Auto-completion** for character names, scene headings, transitions
 - [x] **Smart formatting** (auto-capitalize character names, proper spacing)
 - [x] **Undo/redo** with better state management
 - [x] **Find and replace** functionality with regex support
-- [ ] **Multiple cursors** for batch editing
 - [x] **Line numbers** in editor
 - [x] **Word count** and **page count** display
 
@@ -123,6 +111,20 @@ Mike! I didn't expect to see you here.
 - [x] **Dual dialogue** support
 - [x] **More transition types** (SMASH CUT, JUMP CUT, etc.)
 - [x] **Better syntax highlighting** with more accurate parsing
+
+### 🚀 **High Priority - Core Features**
+
+#### File Management & Persistence
+- [ ] **Save/Load functionality** with native macOS file dialogs
+- [ ] **Auto-save** with configurable intervals (every 30 seconds)
+- [ ] **Recent files** menu in app menu
+- [ ] **Export to PDF** with proper screenplay formatting
+- [ ] **Export to Final Draft** (.fdx) format
+- [ ] **Export to plain text** (.fountain) format
+- [ ] **iCloud sync** for seamless cross-device access
+
+#### Remaining Editor Features
+- [ ] **Multiple cursors** for batch editing
 
 ### 🎨 **Medium Priority - UI/UX Enhancements**
 
@@ -186,12 +188,12 @@ Mike! I didn't expect to see you here.
 - [ ] **Watch companion** for quick notes and ideas
 
 ### 🎯 **Quick Wins (1-2 days each)**
-- [ ] Add word count display in toolbar
+- [x] Add word count display in toolbar
 - [ ] Implement basic save/load with file picker
 - [ ] Add keyboard shortcuts (Cmd+S, Cmd+O, Cmd+N)
-- [ ] Improve syntax highlighting accuracy
+- [x] Improve syntax highlighting accuracy
 - [ ] Add "New Document" functionality
-- [ ] Implement basic undo/redo
+- [x] Implement basic undo/redo
 - [ ] Add export to plain text (.fountain)
 
 ### 📋 **Future Roadmap**

@@ -8,18 +8,18 @@ class SmartFormattingManager: ObservableObject {
     private var characterNames: Set<String> = []
     
     func formatText(_ text: String) -> String {
-        var formattedText = text
+        let formattedText = text
         
         if autoCapitalizeCharacters {
-            formattedText = capitalizeCharacterNames(formattedText)
+            return capitalizeCharacterNames(formattedText)
         }
         
         if autoFormatSpacing {
-            formattedText = formatSpacing(formattedText)
+            return formatSpacing(formattedText)
         }
         
         if autoFormatTransitions {
-            formattedText = formatTransitions(formattedText)
+            return formatTransitions(formattedText)
         }
         
         return formattedText
@@ -40,7 +40,7 @@ class SmartFormattingManager: ObservableObject {
     }
     
     private func capitalizeCharacterNames(_ text: String) -> String {
-        var formattedText = text
+        let formattedText = text
         let lines = formattedText.components(separatedBy: .newlines)
         var updatedLines: [String] = []
         
@@ -65,7 +65,7 @@ class SmartFormattingManager: ObservableObject {
     }
     
     private func formatSpacing(_ text: String) -> String {
-        var formattedText = text
+        let formattedText = text
         let lines = formattedText.components(separatedBy: .newlines)
         var updatedLines: [String] = []
         
@@ -105,7 +105,7 @@ class SmartFormattingManager: ObservableObject {
     }
     
     private func formatTransitions(_ text: String) -> String {
-        var formattedText = text
+        let formattedText = text
         let lines = formattedText.components(separatedBy: .newlines)
         var updatedLines: [String] = []
         
@@ -137,7 +137,7 @@ class SmartFormattingManager: ObservableObject {
         return updatedLines.joined(separator: "\n")
     }
     
-    func applySmartFormatting(to text: String, onLineChange: Int) -> String {
+    func applySmartFormatting(to text: String, onLineChange lineChange: Int) -> String {
         // Only apply formatting to the current line or nearby context
         let lines = text.components(separatedBy: .newlines)
         guard lineChange < lines.count else { return text }

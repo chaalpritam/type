@@ -20,7 +20,7 @@ struct FountainSyntaxHighlighter: View {
         // Highlight force scene headings
         highlightPattern(
             in: &attributed,
-            pattern: #"^!(?:INT|EXT|INT\/EXT|I\/E)\.?\s+.*$"#,
+            pattern: #"^!(?:INT|EXT|INT/EXT|I/E)\.?\s+.*$"#,
             color: .blue,
             weight: .bold
         )
@@ -36,7 +36,7 @@ struct FountainSyntaxHighlighter: View {
         // Highlight scene headings
         highlightPattern(
             in: &attributed,
-            pattern: #"^(?:INT|EXT|INT\/EXT|I\/E)\.?\s+.*$"#,
+            pattern: #"^(?:INT|EXT|INT/EXT|I/E)\.?\s+.*$"#,
             color: .blue
         )
         
@@ -87,14 +87,14 @@ struct FountainSyntaxHighlighter: View {
         highlightPattern(
             in: &attributed,
             pattern: #"^\[\[.*\]\]$"#,
-            color: .secondary
+            color: .gray
         )
         
         // Highlight centered text
         highlightPattern(
             in: &attributed,
             pattern: #"^>\s+.*\s+<$"#,
-            color: .indigo
+            color: .blue
         )
         
         // Highlight lyrics
@@ -102,7 +102,7 @@ struct FountainSyntaxHighlighter: View {
             in: &attributed,
             pattern: #"^~.*~$"#,
             color: .pink,
-            style: .italic
+            italic: true
         )
         
         // Highlight title page elements
@@ -123,7 +123,7 @@ struct FountainSyntaxHighlighter: View {
         pattern: String,
         color: Color,
         weight: Font.Weight = .regular,
-        style: Font.Style = .normal
+        italic: Bool = false
     ) {
         let lines = text.components(separatedBy: .newlines)
         var currentPosition = attributed.startIndex
@@ -138,13 +138,18 @@ struct FountainSyntaxHighlighter: View {
                 
                 if startIndex < endIndex && endIndex <= attributed.endIndex {
                     attributed[startIndex..<endIndex].foregroundColor = color
-                    attributed[startIndex..<endIndex].font = font.weight(weight)
-                    if style == .italic {
-                        attributed[startIndex..<endIndex].font = font.italic()
+                    var fontToApply = font
+                    switch weight {
+                    case .bold: fontToApply = fontToApply.bold()
+                    case .semibold: fontToApply = fontToApply.weight(.semibold)
+                    default: break
                     }
+                    if italic {
+                        fontToApply = fontToApply.italic()
+                    }
+                    attributed[startIndex..<endIndex].font = fontToApply
                 }
             }
-            
             // Move to next line
             if let newlineRange = attributed[currentPosition...].range(of: "\n") {
                 currentPosition = newlineRange.upperBound
@@ -155,26 +160,24 @@ struct FountainSyntaxHighlighter: View {
     }
     
     private func highlightEmphasis(in attributed: inout AttributedString) {
-        // Highlight bold italic (**text** or __text__)
+        // Bold italic (**text** or __text__)
         highlightEmphasisPattern(
             in: &attributed,
             pattern: #"\*\*([^*]+)\*\*|__([^_]+)__"#,
             weight: .bold,
-            style: .italic
+            italic: true
         )
-        
-        // Highlight bold (*text*)
+        // Bold (*text*)
         highlightEmphasisPattern(
             in: &attributed,
             pattern: #"\*([^*]+)\*"#,
             weight: .bold
         )
-        
-        // Highlight italic (_text_)
+        // Italic (_text_)
         highlightEmphasisPattern(
             in: &attributed,
             pattern: #"_([^_]+)_"#,
-            style: .italic
+            italic: true
         )
     }
     
@@ -182,24 +185,31 @@ struct FountainSyntaxHighlighter: View {
         in attributed: inout AttributedString,
         pattern: String,
         weight: Font.Weight = .regular,
-        style: Font.Style = .normal
+        italic: Bool = false
     ) {
-        let regex = try? NSRegularExpression(pattern: pattern)
-        let range = NSRange(attributed.startIndex..., in: attributed)
-        
-        regex?.enumerateMatches(in: attributed.description, range: range) { match, _, _ in
-            guard let match = match,
-                  let range = Range(match.range, in: attributed.description) else { return }
-            
-            let attributedRange = AttributedString(attributed.description[range]).startIndex..<AttributedString(attributed.description[range]).endIndex
-            
-            if let startIndex = attributed.index(attributed.startIndex, offsetByCharacters: range.lowerBound.utf16Offset(in: attributed.description)),
-               let endIndex = attributed.index(attributed.startIndex, offsetByCharacters: range.upperBound.utf16Offset(in: attributed.description)) {
-                
-                attributed[startIndex..<endIndex].font = font.weight(weight)
-                if style == .italic {
-                    attributed[startIndex..<endIndex].font = font.italic()
+        let string = String(attributed.characters)
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
+        let nsString = string as NSString
+        let matches = regex.matches(in: string, options: [], range: NSRange(location: 0, length: nsString.length))
+        let baseFont = font
+        for match in matches {
+            guard match.numberOfRanges > 1 else { continue }
+            let matchRange = match.range(at: 1)
+            if let swiftRange = Range(matchRange, in: string) {
+                let startOffset = string.distance(from: string.startIndex, to: swiftRange.lowerBound)
+                let length = string.distance(from: swiftRange.lowerBound, to: swiftRange.upperBound)
+                let start = attributed.index(attributed.startIndex, offsetByCharacters: startOffset)
+                let end = attributed.index(start, offsetByCharacters: length)
+                var fontToApply = baseFont
+                switch weight {
+                case .bold: fontToApply = fontToApply.bold()
+                case .semibold: fontToApply = fontToApply.weight(.semibold)
+                default: break
                 }
+                if italic {
+                    fontToApply = fontToApply.italic()
+                }
+                attributed[start..<end].font = fontToApply
             }
         }
     }
