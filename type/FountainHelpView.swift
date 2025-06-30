@@ -36,6 +36,17 @@ struct FountainHelpView: View {
                         ]
                     )
                     
+                    // Force Elements
+                    SyntaxSection(
+                        title: "Force Elements",
+                        description: "Override automatic formatting",
+                        examples: [
+                            "!INT. COFFEE SHOP - DAY (force scene heading)",
+                            "@This is forced action text",
+                            "!This forces a scene heading even if it doesn't match the pattern"
+                        ]
+                    )
+                    
                     // Action
                     SyntaxSection(
                         title: "Action",
@@ -57,6 +68,18 @@ struct FountainHelpView: View {
                         ]
                     )
                     
+                    // Dual Dialogue
+                    SyntaxSection(
+                        title: "Dual Dialogue",
+                        description: "Two characters speaking simultaneously",
+                        examples: [
+                            "SARAH",
+                            "I can't believe this!",
+                            "MIKE^",
+                            "Me neither!"
+                        ]
+                    )
+                    
                     // Dialogue
                     SyntaxSection(
                         title: "Dialogue",
@@ -64,6 +87,18 @@ struct FountainHelpView: View {
                         examples: [
                             "SARAH",
                             "I can't believe I'm finally writing this screenplay."
+                        ]
+                    )
+                    
+                    // Emphasis
+                    SyntaxSection(
+                        title: "Emphasis",
+                        description: "Add emphasis to dialogue",
+                        examples: [
+                            "*This is bold text*",
+                            "_This is italic text_",
+                            "**This is bold italic text**",
+                            "__This is also bold italic__"
                         ]
                     )
                     
@@ -78,6 +113,16 @@ struct FountainHelpView: View {
                         ]
                     )
                     
+                    // Lyrics
+                    SyntaxSection(
+                        title: "Lyrics",
+                        description: "Add song lyrics to your screenplay",
+                        examples: [
+                            "~La la la, singing a song~",
+                            "~Happy birthday to you~"
+                        ]
+                    )
+                    
                     // Transitions
                     SyntaxSection(
                         title: "Transitions",
@@ -86,6 +131,10 @@ struct FountainHelpView: View {
                             "FADE OUT",
                             "CUT TO:",
                             "DISSOLVE TO:",
+                            "SMASH CUT TO:",
+                            "JUMP CUT TO:",
+                            "IRIS IN",
+                            "WIPE TO:",
                             "THE END"
                         ]
                     )

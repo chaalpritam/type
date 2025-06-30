@@ -77,12 +77,16 @@ struct ScreenplayElementView: View {
         switch element.type {
         case .sceneHeading:
             SceneHeadingView(text: element.text)
+        case .forceSceneHeading:
+            ForceSceneHeadingView(text: element.text)
         case .action:
             ActionView(text: element.text)
+        case .forceAction:
+            ForceActionView(text: element.text)
         case .character:
-            CharacterView(text: element.text)
+            CharacterView(text: element.text, isDualDialogue: element.isDualDialogue)
         case .dialogue:
-            DialogueView(text: element.text)
+            DialogueView(text: element.text, emphasis: element.emphasis)
         case .parenthetical:
             ParentheticalView(text: element.text)
         case .transition:
@@ -97,9 +101,37 @@ struct ScreenplayElementView: View {
             CenteredView(text: element.text)
         case .pageBreak:
             PageBreakView()
+        case .lyrics:
+            LyricsView(text: element.text)
         case .titlePage:
             EmptyView()
+        case .forceSceneHeading, .forceAction, .emphasis, .dualDialogue:
+            EmptyView() // These are handled by other cases
         }
+    }
+}
+
+struct ForceSceneHeadingView: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 16, weight: .bold, design: .serif))
+            .foregroundColor(.blue)
+            .padding(.top, 20)
+            .padding(.bottom, 10)
+    }
+}
+
+struct ForceActionView: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 14, weight: .semibold, design: .serif))
+            .foregroundColor(.purple)
+            .lineLimit(nil)
+            .padding(.vertical, 4)
     }
 }
 
@@ -129,26 +161,56 @@ struct ActionView: View {
 
 struct CharacterView: View {
     let text: String
+    let isDualDialogue: Bool
     
     var body: some View {
-        Text(text)
-            .font(.system(size: 14, weight: .bold, design: .serif))
-            .foregroundColor(.black)
-            .padding(.top, 12)
-            .padding(.leading, 40)
+        HStack {
+            Text(text)
+                .font(.system(size: 14, weight: .bold, design: .serif))
+                .foregroundColor(.black)
+                .padding(.top, 12)
+                .padding(.leading, 40)
+            
+            if isDualDialogue {
+                Spacer()
+                Text("(CONT'D)")
+                    .font(.system(size: 12, weight: .regular, design: .serif))
+                    .foregroundColor(.secondary)
+                    .padding(.trailing, 40)
+            }
+        }
     }
 }
 
 struct DialogueView: View {
     let text: String
+    let emphasis: EmphasisType?
     
     var body: some View {
-        Text(text)
+        Text(attributedText)
             .font(.system(size: 14, weight: .regular, design: .serif))
             .foregroundColor(.black)
             .padding(.leading, 40)
             .padding(.trailing, 40)
             .padding(.bottom, 8)
+    }
+    
+    private var attributedText: AttributedString {
+        var attributed = AttributedString(text)
+        
+        // Apply emphasis styling
+        if let emphasis = emphasis {
+            switch emphasis {
+            case .bold:
+                attributed.font = .system(size: 14, weight: .bold, design: .serif)
+            case .italic:
+                attributed.font = .system(size: 14, weight: .regular, design: .serif).italic()
+            case .boldItalic:
+                attributed.font = .system(size: 14, weight: .bold, design: .serif).italic()
+            }
+        }
+        
+        return attributed
     }
 }
 
@@ -224,6 +286,18 @@ struct CenteredView: View {
     }
 }
 
+struct LyricsView: View {
+    let text: String
+    
+    var body: some View {
+        Text(text)
+            .font(.system(size: 14, weight: .regular, design: .serif).italic())
+            .foregroundColor(.pink)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 8)
+    }
+}
+
 struct PageBreakView: View {
     var body: some View {
         Rectangle()
@@ -235,11 +309,12 @@ struct PageBreakView: View {
 
 #Preview {
     let sampleElements = [
-        FountainElement(type: .sceneHeading, text: "INT. COFFEE SHOP - DAY", originalText: "INT. COFFEE SHOP - DAY", lineNumber: 1),
-        FountainElement(type: .action, text: "Sarah sits at a corner table, typing furiously on her laptop. The coffee shop is bustling with activity.", originalText: "Sarah sits at a corner table, typing furiously on her laptop. The coffee shop is bustling with activity.", lineNumber: 2),
-        FountainElement(type: .character, text: "SARAH", originalText: "SARAH", lineNumber: 3),
-        FountainElement(type: .parenthetical, text: "without looking up", originalText: "(without looking up)", lineNumber: 4),
-        FountainElement(type: .dialogue, text: "I can't believe I'm finally writing this screenplay.", originalText: "I can't believe I'm finally writing this screenplay.", lineNumber: 5)
+        FountainElement(type: .forceSceneHeading, text: "INT. COFFEE SHOP - DAY", originalText: "!INT. COFFEE SHOP - DAY", lineNumber: 1, emphasis: nil, isDualDialogue: false),
+        FountainElement(type: .forceAction, text: "Sarah sits at a corner table, typing furiously on her laptop.", originalText: "@Sarah sits at a corner table, typing furiously on her laptop.", lineNumber: 2, emphasis: nil, isDualDialogue: false),
+        FountainElement(type: .character, text: "SARAH", originalText: "SARAH", lineNumber: 3, emphasis: nil, isDualDialogue: false),
+        FountainElement(type: .parenthetical, text: "without looking up", originalText: "(without looking up)", lineNumber: 4, emphasis: nil, isDualDialogue: false),
+        FountainElement(type: .dialogue, text: "I can't believe I'm *finally* writing this screenplay.", originalText: "I can't believe I'm *finally* writing this screenplay.", lineNumber: 5, emphasis: .bold, isDualDialogue: false),
+        FountainElement(type: .lyrics, text: "La la la, singing a song", originalText: "~La la la, singing a song~", lineNumber: 6, emphasis: nil, isDualDialogue: false)
     ]
     
     let sampleTitlePage = [

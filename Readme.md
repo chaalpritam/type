@@ -116,13 +116,13 @@ Mike! I didn't expect to see you here.
 - [x] **Word count** and **page count** display
 
 #### Advanced Fountain Support
-- [ ] **Force elements** (use `!` for forced scene headings, `@` for forced action)
-- [ ] **Lyrics** support (`~lyrics~`)
-- [ ] **Emphasis** (`*bold*`, `_italic_`)
-- [ ] **Line breaks** within dialogue (`\`)
-- [ ] **Dual dialogue** support
-- [ ] **More transition types** (SMASH CUT, JUMP CUT, etc.)
-- [ ] **Better syntax highlighting** with more accurate parsing
+- [x] **Force elements** (use `!` for forced scene headings, `@` for forced action)
+- [x] **Lyrics** support (`~lyrics~`)
+- [x] **Emphasis** (`*bold*`, `_italic_`)
+- [x] **Line breaks** within dialogue (`\`)
+- [x] **Dual dialogue** support
+- [x] **More transition types** (SMASH CUT, JUMP CUT, etc.)
+- [x] **Better syntax highlighting** with more accurate parsing
 
 ### 🎨 **Medium Priority - UI/UX Enhancements**
 
