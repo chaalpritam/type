@@ -501,6 +501,8 @@ struct TemplateSelectorView: View {
     @Binding var isVisible: Bool
     let onTemplateSelected: (TemplateType) -> Void
     
+    @State private var selectedCategory: TemplateCategory = .basic
+    
     var body: some View {
         ZStack {
             // Background overlay
@@ -516,20 +518,34 @@ struct TemplateSelectorView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 16) {
-                    ForEach(TemplateType.allCases, id: \.self) { template in
-                        TemplateCard(
-                            template: template,
-                            isSelected: selectedTemplate == template,
-                            onTap: {
-                                onTemplateSelected(template)
-                            }
-                        )
+                // Category selector
+                Picker("Category", selection: $selectedCategory) {
+                    ForEach(TemplateCategory.allCases, id: \.self) { category in
+                        Text(category.rawValue).tag(category)
                     }
                 }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                
+                // Templates grid
+                ScrollView {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 16) {
+                        ForEach(selectedCategory.templates, id: \.self) { template in
+                            TemplateCard(
+                                template: template,
+                                isSelected: selectedTemplate == template,
+                                onTap: {
+                                    onTemplateSelected(template)
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .frame(maxHeight: 400)
                 
                 Button("Cancel") {
                     isVisible = false
@@ -540,7 +556,7 @@ struct TemplateSelectorView: View {
             .background(Color(nsColor: NSColor.windowBackgroundColor))
             .cornerRadius(16)
             .shadow(radius: 20)
-            .frame(maxWidth: 500)
+            .frame(maxWidth: 600, maxHeight: 600)
         }
     }
 }
@@ -553,14 +569,38 @@ struct TemplateCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(template.rawValue)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                HStack {
+                    Text(template.rawValue)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .lineLimit(2)
+                    
+                    Spacer()
+                    
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.accentColor)
+                            .font(.title3)
+                    }
+                }
                 
                 Text(template.description)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
+                    .lineLimit(3)
+                
+                // Template category badge
+                Text(template.category.rawValue)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(Color.accentColor.opacity(0.1))
+                    )
+                    .foregroundColor(.accentColor)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
