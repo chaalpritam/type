@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var showLineNumbers: Bool = true
     @State private var showFindReplace: Bool = false
     @State private var showAutoCompletion: Bool = true
+    @State private var showTemplateSelector: Bool = false
+    @State private var selectedTemplate: TemplateType = .default
     @FocusState private var isTextFieldFocused: Bool
     @StateObject private var fountainParser = FountainParser()
     @StateObject private var historyManager = TextHistoryManager()
@@ -106,7 +108,9 @@ struct ContentView: View {
                         showCollaboratorsPanel: $showCollaboratorsPanel,
                         showSharingDialog: $showSharingDialog,
                         collaboratorCount: collaborationManager.collaborators.count,
-                        commentCount: collaborationManager.comments.count
+                        commentCount: collaborationManager.comments.count,
+                        // Template selector
+                        showTemplateSelector: $showTemplateSelector
                     )
                     
                     // Find/Replace Bar with enhanced animations
@@ -146,7 +150,7 @@ struct ContentView: View {
                                 // Enhanced Fountain Text Editor
                                 EnhancedFountainTextEditor(
                                 text: $text,
-                                    placeholder: "Start writing your screenplay...",
+                                    placeholder: FountainTemplate.getTemplate(for: selectedTemplate),
                                     showLineNumbers: showLineNumbers,
                                     onTextChange: { newText in
                                         updateStatistics(text: newText)
@@ -246,6 +250,24 @@ struct ContentView: View {
                     )
                 }
                 
+                // Template selector overlay
+                if showTemplateSelector {
+                    TemplateSelectorView(
+                        selectedTemplate: $selectedTemplate,
+                        isVisible: $showTemplateSelector,
+                        onTemplateSelected: { template in
+                            selectedTemplate = template
+                            if text.isEmpty {
+                                text = FountainTemplate.getTemplate(for: template)
+                            }
+                            showTemplateSelector = false
+                        }
+                    )
+                    .transition(.scale.combined(with: .opacity))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showTemplateSelector)
+                    .zIndex(1000)
+                }
+                
                 // Customization panel overlay
                 if showCustomizationPanel {
                     CustomizationPanel(
@@ -302,9 +324,10 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Initialize with a new document
+            // Initialize with a new document and default template
             if fileManager.currentDocument == nil {
                 fileManager.newDocument()
+                text = FountainTemplate.getTemplate(for: selectedTemplate)
             }
         }
         // File management alerts
@@ -330,7 +353,7 @@ struct ContentView: View {
             showUnsavedChangesAlert = true
         } else {
             fileManager.newDocument()
-            text = ""
+            text = FountainTemplate.getTemplate(for: selectedTemplate)
         }
     }
     
@@ -471,6 +494,89 @@ struct ContentView: View {
     private func exportDocumentSync() { exportDocument() }
 }
 
+// MARK: - Template Selector View
+
+struct TemplateSelectorView: View {
+    @Binding var selectedTemplate: TemplateType
+    @Binding var isVisible: Bool
+    let onTemplateSelected: (TemplateType) -> Void
+    
+    var body: some View {
+        ZStack {
+            // Background overlay
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    isVisible = false
+                }
+            
+            // Template selector card
+            VStack(spacing: 20) {
+                Text("Choose Template")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 16) {
+                    ForEach(TemplateType.allCases, id: \.self) { template in
+                        TemplateCard(
+                            template: template,
+                            isSelected: selectedTemplate == template,
+                            onTap: {
+                                onTemplateSelected(template)
+                            }
+                        )
+                    }
+                }
+                
+                Button("Cancel") {
+                    isVisible = false
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(24)
+            .background(Color(nsColor: NSColor.windowBackgroundColor))
+            .cornerRadius(16)
+            .shadow(radius: 20)
+            .frame(maxWidth: 500)
+        }
+    }
+}
+
+struct TemplateCard: View {
+    let template: TemplateType
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(template.rawValue)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Text(template.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color(nsColor: NSColor.controlBackgroundColor))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Theme and Animation Enums
 enum AppTheme: String, CaseIterable {
     case light = "Light"
@@ -549,6 +655,9 @@ struct EnhancedAppleToolbar: View {
     let collaboratorCount: Int
     let commentCount: Int
     
+    // Template selector
+    @Binding var showTemplateSelector: Bool
+    
     var body: some View {
         HStack(spacing: 12) {
             // File operations with enhanced styling
@@ -590,6 +699,15 @@ struct EnhancedAppleToolbar: View {
                 }
                 .disabled(!canSave)
             }
+            
+            AppleDivider()
+            
+            // Template selector
+            EnhancedAppleToolbarButton(
+                icon: "doc.text",
+                label: "Template",
+                action: { showTemplateSelector = true }
+            )
             
             AppleDivider()
             
