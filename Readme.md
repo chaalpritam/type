@@ -105,102 +105,77 @@ Mike! I didn't expect to see you here.
 
 #### Advanced Fountain Support
 - [x] **Force elements** (use `!` for forced scene headings, `@` for forced action)
-- [x] **Lyrics** support (`~lyrics~`)
-- [x] **Emphasis** (`*bold*`, `_italic_`)
-- [x] **Line breaks** within dialogue (`\`)
-- [x] **Dual dialogue** support
-- [x] **More transition types** (SMASH CUT, JUMP CUT, etc.)
-- [x] **Better syntax highlighting** with more accurate parsing
+- [x] **Lyrics** (`~lyrics~` for song lyrics)
+- [x] **Emphasis** (`*bold*`, `_italic_`, `**bold**`, `__italic__`)
+- [x] **Dual dialogue** (character names with `^`)
+- [x] **Enhanced transitions** (more transition types)
+- [x] **Advanced syntax highlighting** for all new elements
+
+#### Professional Interface
+- [x] **Top toolbar** with file operations, formatting options, and view controls
+- [x] **Bottom status bar** with statistics and smart formatting status
+- [x] **Professional button styles** with hover effects and animations
+- [x] **Better organization** with separate header components
+- [x] **Font selection** and size controls
+- [x] **Statistics toggle** in status bar
+- [x] **Polished UI** with proper spacing, shadows, and visual hierarchy
 
 ### 🚀 **High Priority - Core Features**
 
-#### File Management & Persistence
-- [ ] **Save/Load functionality** with native macOS file dialogs
-- [ ] **Auto-save** with configurable intervals (every 30 seconds)
-- [ ] **Recent files** menu in app menu
-- [ ] **Export to PDF** with proper screenplay formatting
-- [ ] **Export to Final Draft** (.fdx) format
-- [ ] **Export to plain text** (.fountain) format
-- [ ] **iCloud sync** for seamless cross-device access
-
-#### Remaining Editor Features
-- [ ] **Multiple cursors** for batch editing
-
-### 🎨 **Medium Priority - UI/UX Enhancements**
-
-#### Professional Screenplay Features
-- [ ] **Page numbering** with proper screenplay margins
-- [ ] **Scene numbering** (automatic or manual toggle)
-- [ ] **Character tracking** (who appears in which scenes)
-- [ ] **Revision tracking** (highlight changes between drafts)
-- [ ] **Production notes** (budget, scheduling info)
-- [ ] **Script statistics** (page count, word count, scene count, character count)
-
-#### Better Interface
-- [ ] **Customizable themes** (dark mode, different paper styles)
-- [ ] **Font options** (Courier Prime, Courier New, etc.)
-- [ ] **Zoom controls** for both editor and preview
-- [ ] **Full-screen writing mode** (distraction-free)
-- [ ] **Split-screen** with multiple documents
-- [ ] **Tabbed interface** for multiple scripts
-- [ ] **Customizable toolbar** with frequently used actions
-
-#### Writing Tools
-- [ ] **Outline view** (collapsible sections and scenes)
-- [ ] **Character bible** (character descriptions, arcs, relationships)
-- [ ] **Story structure templates** (3-act, 5-act, hero's journey)
-- [ ] **Writing prompts** and exercises
-- [ ] **Timer/pomodoro** for focused writing sessions
-- [ ] **Writing goals** (daily word/page targets)
-
-### 🔧 **Lower Priority - Advanced Features**
-
-#### Performance & Architecture
-- [ ] **Lazy loading** for large documents
-- [ ] **Background parsing** to prevent UI blocking
-- [ ] **Memory management** for long writing sessions
-- [ ] **Modular architecture** with better separation of concerns
-- [ ] **Unit tests** for the parser and core functionality
-- [ ] **Performance profiling** and optimization
+#### File Management
+- [ ] **Save/Load files** - Native file operations
+- [ ] **Auto-save** - Automatic backup and recovery
+- [ ] **Recent files** - Quick access to recent documents
+- [ ] **Export options** - PDF, Final Draft, plain text
+- [ ] **Import support** - Import from other screenplay formats
 
 #### Collaboration Features
-- [ ] **Comments and annotations** system
-- [ ] **Track changes** mode with diff view
-- [ ] **Version control** (Git integration)
-- [ ] **Sharing** via email, AirDrop, or cloud services
-- [ ] **Real-time collaboration** (like Google Docs)
-- [ ] **Review mode** for feedback
+- [ ] **Comments and notes** - Inline commenting system
+- [ ] **Track changes** - Version control and change tracking
+- [ ] **Collaborative editing** - Real-time multi-user editing
+- [ ] **Review mode** - Read-only mode for reviewing
 
-#### Accessibility & Platform Support
-- [ ] **VoiceOver** support for screen readers
-- [ ] **Keyboard shortcuts** for all actions
-- [ ] **High contrast mode** for accessibility
-- [ ] **Font scaling** for vision accessibility
-- [ ] **iOS version** for iPad writing
-- [ ] **Web version** for cross-platform access
+### 📱 **Medium Priority - Enhanced Features**
 
-#### Advanced Analysis & Integration
-- [ ] **Script analysis** (readability scores, pacing analysis)
-- [ ] **Industry standards** compliance checking
-- [ ] **Template library** (TV pilots, feature films, shorts)
-- [ ] **Script comparison** tools
-- [ ] **Production scheduling** integration
-- [ ] **Watch companion** for quick notes and ideas
+#### Advanced Editor Features
+- [ ] **Multiple cursors** - Batch editing capabilities
+- [ ] **Code folding** - Collapse/expand sections
+- [ ] **Bookmarks** - Quick navigation to important sections
+- [ ] **Split editor** - Multiple editor panes
+- [ ] **Minimap** - Overview of document structure
 
-### 🎯 **Quick Wins (1-2 days each)**
-- [x] Add word count display in toolbar
-- [ ] Implement basic save/load with file picker
-- [ ] Add keyboard shortcuts (Cmd+S, Cmd+O, Cmd+N)
-- [x] Improve syntax highlighting accuracy
-- [ ] Add "New Document" functionality
-- [x] Implement basic undo/redo
-- [ ] Add export to plain text (.fountain)
+#### Productivity Features
+- [ ] **Templates** - Pre-built screenplay templates
+- [ ] **Character database** - Track character information
+- [ ] **Scene management** - Organize and navigate scenes
+- [ ] **Timeline view** - Visual story timeline
+- [ ] **Outline mode** - Hierarchical document view
 
-### 📋 **Future Roadmap**
-- [ ] **Version 2.0**: Full file management and export
-- [ ] **Version 2.1**: Collaboration features
-- [ ] **Version 2.2**: Advanced analysis tools
-- [ ] **Version 3.0**: Multi-platform support (iOS, web)
+#### Advanced Fountain Features
+- [ ] **Custom elements** - User-defined Fountain elements
+- [ ] **Macros** - Custom formatting shortcuts
+- [ ] **Plugins** - Extensible functionality
+- [ ] **Advanced metadata** - Extended title page support
+
+### 🎨 **Low Priority - Polish & Enhancement**
+
+#### UI/UX Improvements
+- [ ] **Dark mode** - Complete dark theme support
+- [ ] **Custom themes** - User-defined color schemes
+- [ ] **Keyboard shortcuts** - Comprehensive shortcut system
+- [ ] **Touch bar support** - macOS Touch Bar integration
+- [ ] **Accessibility** - VoiceOver and accessibility features
+
+#### Platform Expansion
+- [ ] **iOS version** - iPad and iPhone support
+- [ ] **Web version** - Browser-based editor
+- [ ] **Windows/Linux** - Cross-platform support
+
+#### Advanced Features
+- [ ] **AI assistance** - Smart writing suggestions
+- [ ] **Voice dictation** - Speech-to-text support
+- [ ] **Screenplay analysis** - Readability and structure analysis
+- [ ] **Industry integration** - Connect with production software
 
 ## Built With
 
