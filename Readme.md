@@ -2,6 +2,8 @@
 
 A modern screenplay writing app for macOS with real-time Fountain format parsing and preview.
 
+![type app image](./cover.png)
+
 ## Features
 
 ### ✨ Real-time Fountain Parsing
