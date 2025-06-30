@@ -256,13 +256,6 @@ struct ContentView: View {
                 fileManager.newDocument()
             }
         }
-        // Update text when document changes (manual binding)
-        let doc = fileManager.currentDocument
-        if let document = doc {
-            if text != document.content {
-                text = document.content
-            }
-        }
         // File management alerts
         .alert("Save Changes?", isPresented: $showUnsavedChangesAlert) {
             Button("Save") {

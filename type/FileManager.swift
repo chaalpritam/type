@@ -19,9 +19,7 @@ class FileManager: ObservableObject {
     }
     
     deinit {
-        Task {
-            await stopAutoSaveTimer()
-        }
+        // Removed stopAutoSaveTimer() to avoid main actor isolation violation
     }
     
     // MARK: - Document Management
