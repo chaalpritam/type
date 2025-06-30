@@ -128,60 +128,104 @@ Mike! I didn't expect to see you here.
 
 ### 🚀 **High Priority - Core Features**
 
-#### File Management
-- [ ] **Save/Load files** - Native file operations
-- [ ] **Auto-save** - Automatic backup and recovery
-- [ ] **Recent files** - Quick access to recent documents
-- [ ] **Export options** - PDF, Final Draft, plain text
-- [ ] **Import support** - Import from other screenplay formats
+#### File Management & Persistence
+- [ ] **Save/Load files** - Native macOS file dialogs with proper permissions
+- [ ] **Auto-save** - Automatic backup every 30 seconds with recovery
+- [ ] **Recent files** - Quick access to recently opened documents
+- [ ] **Export options** - PDF with proper screenplay formatting
+- [ ] **Export to Final Draft** (.fdx) format compatibility
+- [ ] **Export to plain text** (.fountain) format
+- [ ] **iCloud sync** - Seamless cross-device document access
+
+#### Advanced Editor Features
+- [ ] **Multiple cursors** - Batch editing capabilities for efficiency
+- [ ] **Code folding** - Collapse/expand sections and scenes
+- [ ] **Bookmarks** - Quick navigation to important sections
+- [ ] **Split editor** - Multiple editor panes for comparison
+- [ ] **Minimap** - Overview of document structure
 
 #### Collaboration Features
 - [ ] **Comments and notes** - Inline commenting system
 - [ ] **Track changes** - Version control and change tracking
 - [ ] **Collaborative editing** - Real-time multi-user editing
-- [ ] **Review mode** - Read-only mode for reviewing
+- [ ] **Review mode** - Read-only mode for feedback
 
 ### 📱 **Medium Priority - Enhanced Features**
 
-#### Advanced Editor Features
-- [ ] **Multiple cursors** - Batch editing capabilities
-- [ ] **Code folding** - Collapse/expand sections
-- [ ] **Bookmarks** - Quick navigation to important sections
-- [ ] **Split editor** - Multiple editor panes
-- [ ] **Minimap** - Overview of document structure
-
 #### Productivity Features
-- [ ] **Templates** - Pre-built screenplay templates
-- [ ] **Character database** - Track character information
-- [ ] **Scene management** - Organize and navigate scenes
-- [ ] **Timeline view** - Visual story timeline
+- [ ] **Templates** - Pre-built screenplay templates (TV pilots, features, shorts)
+- [ ] **Character database** - Track character information and arcs
+- [ ] **Scene management** - Organize and navigate scenes efficiently
+- [ ] **Timeline view** - Visual story timeline and structure
 - [ ] **Outline mode** - Hierarchical document view
 
 #### Advanced Fountain Features
 - [ ] **Custom elements** - User-defined Fountain elements
-- [ ] **Macros** - Custom formatting shortcuts
-- [ ] **Plugins** - Extensible functionality
-- [ ] **Advanced metadata** - Extended title page support
+- [ ] **Macros** - Custom formatting shortcuts and automation
+- [ ] **Plugins** - Extensible functionality system
+- [ ] **Advanced metadata** - Extended title page and production info
+
+#### Apple-Style Enhancements
+- [ ] **Dark mode support** - Complete dark theme with proper contrast
+- [ ] **Touch Bar integration** - macOS Touch Bar shortcuts and controls
+- [ ] **Keyboard shortcuts** - Comprehensive shortcut system (Cmd+S, Cmd+O, etc.)
+- [ ] **Accessibility features** - VoiceOver support and high contrast mode
+- [ ] **Window management** - Multiple window support and tabbed interface
 
 ### 🎨 **Low Priority - Polish & Enhancement**
 
 #### UI/UX Improvements
-- [ ] **Dark mode** - Complete dark theme support
-- [ ] **Custom themes** - User-defined color schemes
-- [ ] **Keyboard shortcuts** - Comprehensive shortcut system
-- [ ] **Touch bar support** - macOS Touch Bar integration
-- [ ] **Accessibility** - VoiceOver and accessibility features
+- [ ] **Custom themes** - User-defined color schemes and styling
+- [ ] **Advanced animations** - More sophisticated transitions and effects
+- [ ] **Customizable toolbars** - User-configurable button layouts
+- [ ] **Advanced statistics** - Detailed writing analytics and insights
+- [ ] **Writing goals** - Daily word/page targets with progress tracking
 
 #### Platform Expansion
-- [ ] **iOS version** - iPad and iPhone support
-- [ ] **Web version** - Browser-based editor
-- [ ] **Windows/Linux** - Cross-platform support
+- [ ] **iOS version** - iPad and iPhone support with iCloud sync
+- [ ] **Web version** - Browser-based editor for cross-platform access
+- [ ] **Windows/Linux** - Cross-platform support (future consideration)
 
 #### Advanced Features
-- [ ] **AI assistance** - Smart writing suggestions
-- [ ] **Voice dictation** - Speech-to-text support
-- [ ] **Screenplay analysis** - Readability and structure analysis
-- [ ] **Industry integration** - Connect with production software
+- [ ] **AI assistance** - Smart writing suggestions and analysis
+- [ ] **Voice dictation** - Speech-to-text support for hands-free writing
+- [ ] **Screenplay analysis** - Readability scores and structure analysis
+- [ ] **Industry integration** - Connect with production software and services
+- [ ] **Version control** - Git integration for script versioning
+
+### 🔧 **Technical Improvements**
+
+#### Performance & Architecture
+- [ ] **Lazy loading** - Optimize large document performance
+- [ ] **Background parsing** - Prevent UI blocking during syntax analysis
+- [ ] **Memory management** - Optimize for long writing sessions
+- [ ] **Unit tests** - Comprehensive testing for parser and core functionality
+- [ ] **Performance profiling** - Identify and fix bottlenecks
+
+#### Code Quality
+- [ ] **Modular architecture** - Better separation of concerns
+- [ ] **Documentation** - Comprehensive code documentation
+- [ ] **Error handling** - Robust error handling and user feedback
+- [ ] **Localization** - Multi-language support
+- [ ] **Security** - Enhanced file handling and data protection
+
+### 📋 **Quick Wins (1-2 days each)**
+- [x] ✅ Apple-style interface redesign
+- [x] ✅ Professional toolbar and status bar
+- [x] ✅ Advanced Fountain syntax support
+- [x] ✅ Enhanced editor features
+- [ ] **Basic save/load** with file picker
+- [ ] **Keyboard shortcuts** (Cmd+S, Cmd+O, Cmd+N)
+- [ ] **Export to PDF** functionality
+- [ ] **Auto-save** implementation
+- [ ] **Recent files** menu
+
+### 🎯 **Future Roadmap**
+- **Version 2.0**: Complete file management and export capabilities
+- **Version 2.1**: Collaboration features and real-time editing
+- [ ] **Version 2.2**: Advanced analysis tools and AI assistance
+- [ ] **Version 3.0**: Multi-platform support (iOS, web)
+- [ ] **Version 3.1**: Industry integration and professional features
 
 ## Built With
 
