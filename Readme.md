@@ -163,10 +163,12 @@ Mike! I didn't expect to see you here.
 - [ ] **Minimap** - Overview of document structure
 
 #### Collaboration Features
-- [ ] **Comments and notes** - Inline commenting system
-- [ ] **Track changes** - Version control and change tracking
-- [ ] **Collaborative editing** - Real-time multi-user editing
-- [ ] **Review mode** - Read-only mode for feedback
+- [x] **Real-time collaboration manager** (user management, online users)
+- [x] **Comments & replies** (add, resolve, delete, reply)
+- [x] **Version control** (create, restore, compare versions)
+- [x] **Sharing & invites** (invite by email, roles, permissions)
+- [x] **Apple-style UI panels** for comments, version history, collaborators, sharing
+- [x] **Toolbar integration** for collaboration controls
 
 ### 📱 **Medium Priority - Enhanced Features**
 

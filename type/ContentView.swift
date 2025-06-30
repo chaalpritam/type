@@ -25,6 +25,13 @@ struct ContentView: View {
     @StateObject private var fileManager = FileManager()
     @StateObject private var keyboardShortcutsManager: KeyboardShortcutsManager
     
+    // Collaboration
+    @StateObject private var collaborationManager: CollaborationManager
+    @State private var showCommentsPanel: Bool = false
+    @State private var showVersionHistory: Bool = false
+    @State private var showCollaboratorsPanel: Bool = false
+    @State private var showSharingDialog: Bool = false
+    
     // Enhanced editor state
     @State private var wordCount: Int = 0
     @State private var pageCount: Int = 0
@@ -57,6 +64,7 @@ struct ContentView: View {
         let fileManager = FileManager()
         self._fileManager = StateObject(wrappedValue: fileManager)
         self._keyboardShortcutsManager = StateObject(wrappedValue: KeyboardShortcutsManager(fileManager: fileManager))
+        self._collaborationManager = StateObject(wrappedValue: CollaborationManager(documentId: UUID().uuidString))
     }
     
     var body: some View {
@@ -91,7 +99,14 @@ struct ContentView: View {
                         onExportDocument: exportDocumentSync,
                         canSave: fileManager.canSave(),
                         isDocumentModified: fileManager.isDocumentModified,
-                        currentDocumentName: fileManager.currentDocument?.url?.lastPathComponent ?? "Untitled"
+                        currentDocumentName: fileManager.currentDocument?.url?.lastPathComponent ?? "Untitled",
+                        // Collaboration parameters
+                        showCommentsPanel: $showCommentsPanel,
+                        showVersionHistory: $showVersionHistory,
+                        showCollaboratorsPanel: $showCollaboratorsPanel,
+                        showSharingDialog: $showSharingDialog,
+                        collaboratorCount: collaborationManager.collaborators.count,
+                        commentCount: collaborationManager.comments.count
                     )
                     
                     // Find/Replace Bar with enhanced animations
@@ -105,8 +120,8 @@ struct ContentView: View {
                     }
                     
                     // Main Content Area with enhanced animations
-                    HStack(spacing: 0) {
-                        // Editor Panel
+                HStack(spacing: 0) {
+                    // Editor Panel
                         VStack(spacing: 0) {
                             // Enhanced editor header
                             EnhancedAppleEditorHeader(
@@ -121,16 +136,16 @@ struct ContentView: View {
                             )
                             
                             // Enhanced editor content
-                            ZStack(alignment: .topLeading) {
+                        ZStack(alignment: .topLeading) {
                                 // Enhanced paper background
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(themePaperBackground)
                                     .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            
                                 // Enhanced Fountain Text Editor
                                 EnhancedFountainTextEditor(
-                                    text: $text,
+                                text: $text,
                                     placeholder: "Start writing your screenplay...",
                                     showLineNumbers: showLineNumbers,
                                     onTextChange: { newText in
@@ -151,11 +166,11 @@ struct ContentView: View {
                                         // Mark document as modified
                                         fileManager.markDocumentAsModified()
                                     }
-                                )
-                                .onChange(of: text) { oldValue, newValue in
-                                    showPlaceholder = newValue.isEmpty
-                                    // Parse Fountain syntax in real-time
-                                    fountainParser.parse(newValue)
+                            )
+                            .onChange(of: text) { oldValue, newValue in
+                                showPlaceholder = newValue.isEmpty
+                                // Parse Fountain syntax in real-time
+                                fountainParser.parse(newValue)
                                     updateStatistics(text: newValue)
                                     
                                     // Update document content
@@ -177,35 +192,35 @@ struct ContentView: View {
                                     .transition(.scale.combined(with: .opacity))
                                     .animation(.spring(response: 0.4, dampingFraction: 0.8), value: autoCompletionManager.showSuggestions)
                                 }
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
                         }
-                        .frame(width: showPreview ? geometry.size.width * 0.5 : geometry.size.width)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
+                    }
+                    .frame(width: showPreview ? geometry.size.width * 0.5 : geometry.size.width)
                         .transition(.asymmetric(
                             insertion: .move(edge: .leading),
                             removal: .move(edge: .leading)
                         ))
                         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showPreview)
-                        
+                    
                         // Preview Panel with enhanced styling
-                        if showPreview {
+                    if showPreview {
                             VStack(spacing: 0) {
                                 // Enhanced preview header
                                 EnhancedApplePreviewHeader(elementCount: fountainParser.elements.count)
                                 
                                 // Enhanced preview content
-                                ScreenplayPreview(
-                                    elements: fountainParser.elements,
-                                    titlePage: fountainParser.titlePage
-                                )
+                            ScreenplayPreview(
+                                elements: fountainParser.elements,
+                                titlePage: fountainParser.titlePage
+                            )
                                 .background(themePaperBackground)
                                 .cornerRadius(12)
                                 .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 20)
-                            }
-                            .frame(width: geometry.size.width * 0.5)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
+                        }
+                        .frame(width: geometry.size.width * 0.5)
                             .background(themeBackground)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .trailing),
@@ -247,6 +262,42 @@ struct ContentView: View {
                     FountainHelpView(isPresented: $showHelp)
                         .transition(.opacity.combined(with: .scale))
                         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showHelp)
+                }
+                
+                // Collaboration panels
+                if showCommentsPanel {
+                    CommentsPanel(collaborationManager: collaborationManager)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCommentsPanel)
+                        .zIndex(1000)
+                }
+                
+                if showVersionHistory {
+                    VersionHistory(collaborationManager: collaborationManager)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showVersionHistory)
+                        .zIndex(1000)
+                }
+                
+                if showCollaboratorsPanel {
+                    CollaboratorsPanel(collaborationManager: collaborationManager)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCollaboratorsPanel)
+                        .zIndex(1000)
+                }
+                
+                // Sharing dialog
+                if showSharingDialog {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            showSharingDialog = false
+                        }
+                    
+                    SharingDialog(collaborationManager: collaborationManager)
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showSharingDialog)
+                        .zIndex(1001)
                 }
             }
         }
@@ -490,6 +541,14 @@ struct EnhancedAppleToolbar: View {
     let isDocumentModified: Bool
     let currentDocumentName: String
     
+    // Collaboration parameters
+    @Binding var showCommentsPanel: Bool
+    @Binding var showVersionHistory: Bool
+    @Binding var showCollaboratorsPanel: Bool
+    @Binding var showSharingDialog: Bool
+    let collaboratorCount: Int
+    let commentCount: Int
+    
     var body: some View {
         HStack(spacing: 12) {
             // File operations with enhanced styling
@@ -611,6 +670,65 @@ struct EnhancedAppleToolbar: View {
                 EnhancedAppleToolbarButton(
                     icon: isFullScreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right",
                     action: { isFullScreen.toggle() }
+                )
+            }
+            
+            AppleDivider()
+            
+            // Collaboration controls
+            HStack(spacing: 6) {
+                EnhancedAppleToolbarButton(
+                    icon: "bubble.left.and.bubble.right",
+                    action: { showCommentsPanel.toggle() }
+                )
+                .overlay(
+                    Group {
+                        if commentCount > 0 {
+                            Text("\(commentCount)")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.red)
+                                )
+                                .offset(x: 8, y: -8)
+                        }
+                    }
+                )
+                
+                EnhancedAppleToolbarButton(
+                    icon: "clock.arrow.circlepath",
+                    action: { showVersionHistory.toggle() }
+                )
+                
+                EnhancedAppleToolbarButton(
+                    icon: "person.2",
+                    action: { showCollaboratorsPanel.toggle() }
+                )
+                .overlay(
+                    Group {
+                        if collaboratorCount > 0 {
+                            Text("\(collaboratorCount)")
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.green)
+                                )
+                                .offset(x: 8, y: -8)
+                        }
+                    }
+                )
+                
+                EnhancedAppleToolbarButton(
+                    icon: "square.and.arrow.up",
+                    action: { showSharingDialog = true }
                 )
             }
         }
