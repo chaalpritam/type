@@ -195,7 +195,7 @@ struct SynopsisView: View {
     
     var body: some View {
         Text(text)
-            .font(.system(size: 12, weight: .italic, design: .serif))
+            .font(.system(size: 12, weight: .regular, design: .serif).italic())
             .foregroundColor(.secondary)
             .padding(.vertical, 4)
     }

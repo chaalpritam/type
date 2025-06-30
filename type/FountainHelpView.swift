@@ -140,9 +140,8 @@ struct FountainHelpView: View {
                 .padding()
             }
             .navigationTitle("Fountain Help")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Button("Done") {
                         isPresented = false
                     }
