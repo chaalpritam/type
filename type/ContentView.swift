@@ -34,6 +34,10 @@ struct ContentView: View {
     @State private var showCollaboratorsPanel: Bool = false
     @State private var showSharingDialog: Bool = false
     
+    // Character Database
+    @StateObject private var characterDatabase = CharacterDatabase()
+    @State private var showCharacterDatabase: Bool = false
+    
     // Enhanced editor state
     @State private var wordCount: Int = 0
     @State private var pageCount: Int = 0
@@ -110,7 +114,10 @@ struct ContentView: View {
                         collaboratorCount: collaborationManager.collaborators.count,
                         commentCount: collaborationManager.comments.count,
                         // Template selector
-                        showTemplateSelector: $showTemplateSelector
+                        showTemplateSelector: $showTemplateSelector,
+                        // Character database
+                        showCharacterDatabase: $showCharacterDatabase,
+                        characterCount: characterDatabase.statistics.totalCharacters
                     )
                     
                     // Find/Replace Bar with enhanced animations
@@ -176,6 +183,9 @@ struct ContentView: View {
                                 // Parse Fountain syntax in real-time
                                 fountainParser.parse(newValue)
                                     updateStatistics(text: newValue)
+                                    
+                                    // Update character database from parsed elements
+                                    characterDatabase.parseCharactersFromFountain(fountainParser.elements)
                                     
                                     // Update document content
                                     if fileManager.currentDocument != nil {
@@ -329,6 +339,10 @@ struct ContentView: View {
                 fileManager.newDocument()
                 text = FountainTemplate.getTemplate(for: selectedTemplate)
             }
+        }
+        // Character database sheet
+        .sheet(isPresented: $showCharacterDatabase) {
+            CharacterDatabaseView(characterDatabase: characterDatabase)
         }
         // File management alerts
         .alert("Save Changes?", isPresented: $showUnsavedChangesAlert) {
@@ -698,6 +712,10 @@ struct EnhancedAppleToolbar: View {
     // Template selector
     @Binding var showTemplateSelector: Bool
     
+    // Character database
+    @Binding var showCharacterDatabase: Bool
+    let characterCount: Int
+    
     var body: some View {
         HStack(spacing: 12) {
             // File operations with enhanced styling
@@ -889,6 +907,32 @@ struct EnhancedAppleToolbar: View {
                     action: { showSharingDialog = true }
                 )
             }
+            
+            AppleDivider()
+            
+            // Character database
+            EnhancedAppleToolbarButton(
+                icon: "person.3",
+                label: "Characters",
+                action: { showCharacterDatabase = true }
+            )
+            .overlay(
+                Group {
+                    if characterCount > 0 {
+                        Text("\(characterCount)")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.blue)
+                            )
+                            .offset(x: 8, y: -8)
+                    }
+                }
+            )
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
