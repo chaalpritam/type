@@ -32,15 +32,15 @@ struct CharacterDatabaseView: View {
                 )
             }
             .navigationTitle("Characters")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Statistics") {
                         showStatistics.toggle()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: { showAddCharacter.toggle() }) {
                         Image(systemName: "plus")
                     }
@@ -94,25 +94,25 @@ struct CharacterDatabaseHeader: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                StatCard(
+                CharacterStatCard(
                     title: "Total",
                     value: "\(statistics.totalCharacters)",
                     icon: "person.3"
                 )
                 
-                StatCard(
+                CharacterStatCard(
                     title: "With Dialogue",
                     value: "\(statistics.charactersWithDialogue)",
                     icon: "message"
                 )
                 
-                StatCard(
+                CharacterStatCard(
                     title: "With Arcs",
                     value: "\(statistics.charactersWithArcs)",
                     icon: "chart.line.uptrend.xyaxis"
                 )
                 
-                StatCard(
+                CharacterStatCard(
                     title: "Avg Dialogue",
                     value: String(format: "%.1f", statistics.averageDialogueCount),
                     icon: "text.bubble"
@@ -120,34 +120,28 @@ struct CharacterDatabaseHeader: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
 
-// MARK: - Stat Card
-struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
+// MARK: - Character Stat Card
+struct CharacterStatCard: View {
+    var title: String
+    var value: String
+    var icon: String
     
     var body: some View {
-        VStack(spacing: 4) {
+        VStack {
             Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.accentColor)
-            
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-            
+                .font(.title)
             Text(title)
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(.caption)
+            Text(value)
+                .font(.headline)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .padding(8)
+        .background(Color.green.opacity(0.1))
         .cornerRadius(8)
     }
 }
@@ -180,7 +174,7 @@ struct CharacterSearchBar: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color(.systemGray6))
+            .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             
             if showFilters {
@@ -285,14 +279,14 @@ struct CharacterFilterView: View {
                 Spacer()
                 
                 Button(action: {
-                    searchFilters.sortOrder = searchFilters.sortOrder == .ascending ? .descending : .ascending
+                    searchFilters.sortOrder = searchFilters.sortOrder == .forward ? .reverse : .forward
                 }) {
-                    Image(systemName: searchFilters.sortOrder == .ascending ? "arrow.up" : "arrow.down")
+                    Image(systemName: searchFilters.sortOrder == .forward ? "arrow.up" : "arrow.down")
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }

@@ -45,15 +45,15 @@ struct SceneManagementView: View {
                 )
             }
             .navigationTitle("Scene Management")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Bookmarks") {
                         showBookmarks.toggle()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: { showAddScene.toggle() }) {
                         Image(systemName: "plus")
                     }
@@ -110,25 +110,25 @@ struct SceneManagementHeader: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                StatCard(
+                SceneStatCard(
                     title: "Total",
                     value: "\(statistics.totalScenes)",
                     icon: "film"
                 )
                 
-                StatCard(
+                SceneStatCard(
                     title: "Completed",
                     value: "\(statistics.completedScenes)",
                     icon: "checkmark.circle"
                 )
                 
-                StatCard(
+                SceneStatCard(
                     title: "Avg Length",
                     value: String(format: "%.0f", statistics.averageSceneLength),
                     icon: "text.alignleft"
                 )
                 
-                StatCard(
+                SceneStatCard(
                     title: "Total Words",
                     value: "\(statistics.totalWordCount)",
                     icon: "text.word.spacing"
@@ -136,7 +136,7 @@ struct SceneManagementHeader: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
@@ -174,7 +174,7 @@ struct SceneSearchBar: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color(.systemGray6))
+            .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             
             if showFilters {
@@ -292,14 +292,14 @@ struct SceneFilterView: View {
                 .pickerStyle(MenuPickerStyle())
                 
                 Button(action: {
-                    searchFilters.sortOrder = searchFilters.sortOrder == .ascending ? .descending : .ascending
+                    searchFilters.sortOrder = searchFilters.sortOrder == .forward ? .reverse : .forward
                 }) {
-                    Image(systemName: searchFilters.sortOrder == .ascending ? "arrow.up" : "arrow.down")
+                    Image(systemName: searchFilters.sortOrder == .forward ? "arrow.up" : "arrow.down")
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -370,7 +370,7 @@ struct SceneNavigationControls: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
     }
 }
 
@@ -544,7 +544,7 @@ struct SceneCardView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color(NSColor.windowBackgroundColor))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
         .overlay(
@@ -749,7 +749,7 @@ struct SceneTimelineItemView: View {
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)

@@ -207,7 +207,7 @@ struct CharacterSearchFilters {
     var hasArcs: Bool?
     var tags: [String] = []
     var sortBy: CharacterSortOption = .name
-    var sortOrder: SortOrder = .ascending
+    var sortOrder: SortOrder = .forward
 }
 
 enum CharacterSortOption: String, CaseIterable {

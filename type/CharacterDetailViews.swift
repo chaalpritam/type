@@ -47,15 +47,15 @@ struct CharacterDetailView: View {
                 .padding()
             }
             .navigationTitle(character.name)
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") {
                         showEditView.toggle()
                     }
@@ -162,7 +162,7 @@ struct CharacterHeaderView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(12)
     }
 }
@@ -293,7 +293,7 @@ struct CharacterArcRowView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -381,7 +381,7 @@ struct CharacterRelationshipRowView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -469,7 +469,7 @@ struct CharacterNoteRowView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -483,10 +483,10 @@ struct CharacterStatsSection: View {
             SectionHeader(title: "Statistics", icon: "chart.bar.fill")
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                StatCard(title: "First Appearance", value: character.firstAppearance?.description ?? "N/A", icon: "play.fill")
-                StatCard(title: "Last Appearance", value: character.lastAppearance?.description ?? "N/A", icon: "stop.fill")
-                StatCard(title: "Total Dialogue", value: "\(character.dialogueCount)", icon: "message.fill")
-                StatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
+                CharacterStatCard(title: "First Appearance", value: character.firstAppearance?.description ?? "N/A", icon: "play.fill")
+                CharacterStatCard(title: "Last Appearance", value: character.lastAppearance?.description ?? "N/A", icon: "stop.fill")
+                CharacterStatCard(title: "Total Dialogue", value: "\(character.dialogueCount)", icon: "message.fill")
+                CharacterStatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
             }
         }
     }

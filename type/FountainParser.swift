@@ -156,7 +156,7 @@ class FountainParser: ObservableObject {
         
         // Check for sections
         if line.range(of: sectionPattern, options: .regularExpression) != nil {
-            let level = line.prefix(while: { $0 == "#" }).count
+            _ = line.prefix(while: { $0 == "#" }).count
             let text = line.replacingOccurrences(of: "^#+\\s+", with: "", options: .regularExpression)
             return FountainElement(type: .section, text: text, originalText: line, lineNumber: lineNumber, emphasis: nil, isDualDialogue: false)
         }

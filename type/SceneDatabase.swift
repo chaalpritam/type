@@ -73,7 +73,7 @@ class SceneDatabase: ObservableObject {
         return scenes[index]
     }
     
-    func getScene(by lineNumber: Int) -> Scene? {
+    func getSceneByLineNumber(_ lineNumber: Int) -> Scene? {
         return scenes.first { $0.lineNumber == lineNumber }
     }
     
@@ -195,12 +195,13 @@ class SceneDatabase: ObservableObject {
             case .sceneHeading:
                 // Save previous scene if exists
                 if let scene = currentScene {
-                    scene.content = currentSceneContent.joined(separator: "\n")
-                    newScenes.append(scene)
+                    var updatedScene = scene
+                    updatedScene.content = currentSceneContent.joined(separator: "\n")
+                    newScenes.append(updatedScene)
                 }
                 
                 // Create new scene
-                let scene = Scene(
+                var scene = Scene(
                     heading: element.text,
                     content: "",
                     lineNumber: element.lineNumber
@@ -209,7 +210,8 @@ class SceneDatabase: ObservableObject {
                 currentSceneContent = []
                 
                 // Parse scene heading for location and time
-                parseSceneHeading(scene: &currentScene!, heading: element.text)
+                parseSceneHeading(scene: &scene, heading: element.text)
+                currentScene = scene
                 
             case .action, .dialogue, .character, .parenthetical, .transition, .note:
                 if currentScene != nil {
@@ -223,8 +225,9 @@ class SceneDatabase: ObservableObject {
         
         // Add the last scene
         if let scene = currentScene {
-            scene.content = currentSceneContent.joined(separator: "\n")
-            newScenes.append(scene)
+            var updatedScene = scene
+            updatedScene.content = currentSceneContent.joined(separator: "\n")
+            newScenes.append(updatedScene)
         }
         
         // Update scenes with additional information
@@ -433,7 +436,7 @@ class SceneDatabase: ObservableObject {
             case .updatedAt:
                 comparison = first.updatedAt < second.updatedAt
             }
-            return searchFilters.sortOrder == .ascending ? comparison : !comparison
+            return searchFilters.sortOrder == .forward ? comparison : !comparison
         }
         
         return filtered

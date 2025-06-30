@@ -259,10 +259,10 @@ struct SceneStatistics {
     let longestScene: Scene?
     let shortestScene: Scene?
     let scenesByStatus: [SceneStatus: Int]
-    scenesByType: [SceneType: Int]
-    scenesByTimeOfDay: [TimeOfDay: Int]
-    scenesByLocation: [String: Int]
-    scenesByColor: [SceneColor: Int]
+    var scenesByType: [SceneType: Int]
+    var scenesByTimeOfDay: [TimeOfDay: Int]
+    var scenesByLocation: [String: Int]
+    var scenesByColor: [SceneColor: Int]
 }
 
 // MARK: - Scene Search Filters
@@ -280,7 +280,7 @@ struct SceneSearchFilters {
     var isCompleted: Bool?
     var isImportant: Bool?
     var sortBy: SceneSortOption = .order
-    var sortOrder: SortOrder = .ascending
+    var sortOrder: SortOrder = .forward
     var viewMode: SceneViewMode = .cards
 }
 

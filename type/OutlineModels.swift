@@ -142,15 +142,15 @@ struct OutlineSection: Identifiable, Codable, Hashable {
 
 // MARK: - Outline Template
 struct OutlineTemplate: Identifiable, Codable, Hashable {
-    let id = UUID()
+    var id = UUID()
     var name: String
     var description: String
-    var templateType: TemplateType
+    var templateType: OutlineTemplateType
     var structure: [OutlineNode]
     var isDefault: Bool
     var createdAt: Date
     
-    init(name: String, templateType: TemplateType) {
+    init(name: String, templateType: OutlineTemplateType) {
         self.name = name
         self.description = ""
         self.templateType = templateType
@@ -235,16 +235,14 @@ enum SectionType: String, CaseIterable, Codable {
     case ideas = "Ideas"
 }
 
-enum TemplateType: String, CaseIterable, Codable {
+enum OutlineTemplateType: String, CaseIterable, Codable {
     case threeAct = "Three Act"
     case fiveAct = "Five Act"
     case heroJourney = "Hero's Journey"
     case saveTheCat = "Save the Cat"
-    case characterArc = "Character Arc"
-    case themeDevelopment = "Theme Development"
-    case locationBased = "Location Based"
     case timeBased = "Time Based"
     case custom = "Custom"
+    case `import` = "Import"
 }
 
 // MARK: - Outline Statistics
@@ -289,7 +287,7 @@ struct OutlineSearchFilters {
     var isCompleted: Bool?
     var isImportant: Bool?
     var sortBy: OutlineSortOrder = .order
-    var sortOrder: SortOrder = .ascending
+    var sortOrder: SortOrder = .forward
     var showCompleted: Bool = true
     var showDrafts: Bool = true
     var showArchived: Bool = false
@@ -344,23 +342,7 @@ struct OutlineBookmark: Identifiable, Codable, Hashable {
 }
 
 // MARK: - Outline Configuration
-struct OutlineConfiguration {
-    var showIndentLines: Bool = true
-    var showExpandButtons: Bool = true
-    var showNodeIcons: Bool = true
-    var showNodeNumbers: Bool = true
-    var showWordCounts: Bool = true
-    var showStatusIndicators: Bool = true
-    var showPriorityIndicators: Bool = true
-    var autoExpandOnSelect: Bool = true
-    var rememberExpandedState: Bool = true
-    var enableDragAndDrop: Bool = true
-    var enableMultiSelect: Bool = true
-    var enableContextMenus: Bool = true
-    var defaultIndentSize: CGFloat = 20.0
-    var nodeSpacing: CGFloat = 4.0
-    var maxPreviewLength: Int = 100
-}
+// OutlineConfiguration is defined in OutlineDatabase.swift
 
 // MARK: - Outline Context Menu Actions
 enum OutlineContextAction: String, CaseIterable {
@@ -383,7 +365,7 @@ enum OutlineContextAction: String, CaseIterable {
     case expandAll = "Expand All"
     case collapseAll = "Collapse All"
     case export = "Export"
-    case import = "Import"
+    case `import` = "Import"
 }
 
 // MARK: - Outline Drag and Drop

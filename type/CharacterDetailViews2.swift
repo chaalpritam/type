@@ -43,7 +43,7 @@ struct CharacterArcDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(NSColor.controlBackgroundColor))
                     .cornerRadius(12)
                     
                     VStack(alignment: .leading, spacing: 16) {
@@ -80,15 +80,15 @@ struct CharacterArcDetailView: View {
                 .padding()
             }
             .navigationTitle(arc.name)
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") {
                         showEditView.toggle()
                     }
@@ -151,7 +151,7 @@ struct ArcHeaderView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(12)
     }
 }
@@ -276,7 +276,7 @@ struct ArcMilestoneRowView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -328,7 +328,7 @@ struct CharacterRelationshipDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(NSColor.controlBackgroundColor))
                     .cornerRadius(12)
                     
                     VStack(alignment: .leading, spacing: 16) {
@@ -355,15 +355,15 @@ struct CharacterRelationshipDetailView: View {
                 .padding()
             }
             .navigationTitle("Relationship")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") {
                         showEditView.toggle()
                     }
@@ -414,7 +414,7 @@ struct CharacterNoteDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(NSColor.controlBackgroundColor))
                     .cornerRadius(12)
                     
                     VStack(alignment: .leading, spacing: 16) {
@@ -440,15 +440,15 @@ struct CharacterNoteDetailView: View {
                 .padding()
             }
             .navigationTitle("Note")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") {
                         showEditView.toggle()
                     }
@@ -479,10 +479,10 @@ struct CharacterStatisticsView: View {
                         SectionHeader(title: "Overview", icon: "chart.bar.fill")
                         
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                            StatCard(title: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3.fill")
-                            StatCard(title: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "message.fill")
-                            StatCard(title: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis")
-                            StatCard(title: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "text.bubble.fill")
+                            CharacterStatCard(title: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3.fill")
+                            CharacterStatCard(title: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "message.fill")
+                            CharacterStatCard(title: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis")
+                            CharacterStatCard(title: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "text.bubble.fill")
                         }
                     }
                     
@@ -567,7 +567,7 @@ struct CharacterStatisticsView: View {
                                 }
                             }
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(NSColor.controlBackgroundColor))
                             .cornerRadius(12)
                         }
                     }
@@ -575,9 +575,9 @@ struct CharacterStatisticsView: View {
                 .padding()
             }
             .navigationTitle("Character Statistics")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Done") {
                         dismiss()
                     }
@@ -670,15 +670,15 @@ struct ArcMilestoneEditView: View {
                 }
             }
             .navigationTitle(isNewMilestone ? "New Milestone" : "Edit Milestone")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveMilestone()
                     }
@@ -752,7 +752,7 @@ struct ArcMilestoneDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(NSColor.controlBackgroundColor))
                     .cornerRadius(12)
                     
                     // Milestone information
@@ -786,15 +786,15 @@ struct ArcMilestoneDetailView: View {
                 .padding()
             }
             .navigationTitle("Milestone")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") {
                         showEditView.toggle()
                     }

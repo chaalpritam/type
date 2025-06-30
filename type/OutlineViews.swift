@@ -44,15 +44,15 @@ struct OutlineView: View {
                 )
             }
             .navigationTitle("Document Outline")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Templates") {
                         showTemplates.toggle()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button(action: { showAddNode.toggle() }) {
                         Image(systemName: "plus")
                     }
@@ -109,33 +109,37 @@ struct OutlineHeaderView: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                StatCard(
+                OutlineStatCard(
                     title: "Nodes",
                     value: "\(statistics.totalNodes)",
-                    icon: "list.bullet"
+                    systemImage: "list.bullet",
+                    color: .accentColor
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Completed",
                     value: "\(statistics.completedNodes)",
-                    icon: "checkmark.circle"
+                    systemImage: "checkmark.circle",
+                    color: .accentColor
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Total Words",
                     value: "\(statistics.totalWords)",
-                    icon: "text.word.spacing"
+                    systemImage: "text.word.spacing",
+                    color: .accentColor
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Health",
                     value: String(format: "%.0f%%", statistics.outlineHealth.overallHealth * 100),
-                    icon: "heart"
+                    systemImage: "heart",
+                    color: .accentColor
                 )
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
@@ -173,7 +177,7 @@ struct OutlineSearchBar: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color(.systemGray6))
+            .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             
             if showFilters {
@@ -285,14 +289,14 @@ struct OutlineFilterView: View {
                 .pickerStyle(MenuPickerStyle())
                 
                 Button(action: {
-                    searchFilters.sortOrder = searchFilters.sortOrder == .ascending ? .descending : .ascending
+                    searchFilters.sortOrder = searchFilters.sortOrder == .forward ? .reverse : .forward
                 }) {
-                    Image(systemName: searchFilters.sortOrder == .ascending ? "arrow.up" : "arrow.down")
+                    Image(systemName: searchFilters.sortOrder == .forward ? "arrow.up" : "arrow.down")
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
     }
 }
@@ -330,7 +334,7 @@ struct OutlineBreadcrumbView: View {
             .padding(.horizontal)
         }
         .padding(.vertical, 4)
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
     }
     
     private func findNode(_ nodeId: UUID, in nodes: [OutlineNode]) -> OutlineNode? {
@@ -583,9 +587,9 @@ struct OutlineTemplatesView: View {
                 }
             }
             .navigationTitle("Templates")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
@@ -668,9 +672,9 @@ struct OutlineStatisticsView: View {
                 }
             }
             .navigationTitle("Outline Statistics")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { }
                 }
             }
@@ -678,29 +682,24 @@ struct OutlineStatisticsView: View {
     }
 }
 
-// MARK: - Stat Card
-struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    
+// MARK: - Outline Stat Card
+struct OutlineStatCard: View {
+    var title: String
+    var value: String
+    var systemImage: String
+    var color: Color
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.accentColor)
-            
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-            
-            Text(title)
+        VStack {
+            Label(title, systemImage: systemImage)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(color)
+            Text(value)
+                .font(.title2)
+                .bold()
+                .foregroundColor(color)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(8)
+        .background(color.opacity(0.1))
         .cornerRadius(8)
     }
 } 

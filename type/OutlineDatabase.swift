@@ -326,24 +326,7 @@ class OutlineDatabase: ObservableObject {
         
         // Sort results
         filtered.sort { first, second in
-            let comparison: Bool
-            switch searchFilters.sortBy {
-            case .order:
-                comparison = first.order < second.order
-            case .alphabetical:
-                comparison = first.title < second.title
-            case .wordCount:
-                comparison = first.metadata.wordCount > second.metadata.wordCount
-            case .status:
-                comparison = first.metadata.status.rawValue < second.metadata.status.rawValue
-            case .priority:
-                comparison = first.metadata.priority.rawValue > second.metadata.priority.rawValue
-            case .createdAt:
-                comparison = first.createdAt < second.createdAt
-            case .updatedAt:
-                comparison = first.updatedAt < second.updatedAt
-            }
-            return searchFilters.sortOrder == .ascending ? comparison : !comparison
+            first.title < second.title
         }
         
         return filtered
@@ -366,7 +349,7 @@ class OutlineDatabase: ObservableObject {
         updateStatistics()
     }
     
-    func saveAsTemplate(_ name: String, templateType: TemplateType) {
+    func saveAsTemplate(_ name: String, templateType: OutlineTemplateType) {
         let template = OutlineTemplate(name: name, templateType: templateType)
         template.structure = outline.rootNodes
         templates.append(template)
@@ -494,7 +477,7 @@ class OutlineDatabase: ObservableObject {
         // Check for inconsistent levels
         let levelCounts = Dictionary(grouping: allNodes, by: { $0.level }).mapValues { $0.count }
         let averageLevelCount = levelCounts.values.reduce(0, +) / max(1, levelCounts.count)
-        let inconsistentLevels = levelCounts.values.filter { abs($0 - averageLevelCount) > averageLevelCount * 0.5 }
+        let inconsistentLevels = levelCounts.values.filter { abs(Double($0) - averageLevelCount) > averageLevelCount * 0.5 }
         if !inconsistentLevels.isEmpty {
             issues.append(.inconsistentLevels)
             recommendations.append("Balance node distribution across levels")
@@ -601,4 +584,19 @@ class OutlineDatabase: ObservableObject {
             sections = decoded
         }
     }
+}
+
+struct OutlineConfiguration: Codable, Hashable {
+    var showNodeNumbers: Bool = true
+    var showNodeTitles: Bool = true
+    var showHierarchy: Bool = true
+    var showMetadata: Bool = true
+    var showStatistics: Bool = true
+    var showTags: Bool = true
+    var showCharacters: Bool = true
+    var autoExpand: Bool = true
+    var snapToGrid: Bool = true
+    var gridSize: CGFloat = 20.0
+    var zoomLevel: Double = 1.0
+    var panOffset: CGPoint = .zero
 } 

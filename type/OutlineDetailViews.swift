@@ -55,7 +55,7 @@ struct OutlineNodeDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color(.systemGray6))
+                    .background(Color(NSColor.controlBackgroundColor))
                     .cornerRadius(12)
                     
                     // Content
@@ -67,11 +67,11 @@ struct OutlineNodeDetailView: View {
                             Text(node.content)
                                 .font(.body)
                                 .padding()
-                                .background(Color(.systemBackground))
+                                .background(Color(NSColor.windowBackgroundColor))
                                 .cornerRadius(8)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color(.systemGray4), lineWidth: 1)
+                                        .stroke(Color(NSColor.controlBackgroundColor), lineWidth: 1)
                                 )
                         }
                     }
@@ -100,9 +100,9 @@ struct OutlineNodeDetailView: View {
                 .padding()
             }
             .navigationTitle("Node Details")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
                         dismiss()
                     }
@@ -286,15 +286,15 @@ struct OutlineNodeEditView: View {
                 }
             }
             .navigationTitle(isNewNode ? "New Node" : "Edit Node")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveNode()
                         dismiss()
@@ -412,7 +412,7 @@ struct OutlineMetadataView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(12)
     }
     
@@ -505,25 +505,25 @@ struct OutlineNodeStatisticsView: View {
                 .font(.headline)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                StatCard(
+                OutlineStatCard(
                     title: "Children",
                     value: "\(node.children.count)",
                     icon: "list.bullet"
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Level",
                     value: "\(node.level)",
                     icon: "arrow.down.right"
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Order",
                     value: "\(node.order)",
                     icon: "number"
                 )
                 
-                StatCard(
+                OutlineStatCard(
                     title: "Created",
                     value: formatDate(node.createdAt),
                     icon: "calendar"
@@ -531,7 +531,7 @@ struct OutlineNodeStatisticsView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(12)
     }
     

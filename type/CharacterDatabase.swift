@@ -217,12 +217,12 @@ class CharacterDatabase: ObservableObject {
         
         // Has dialogue filter
         if let hasDialogue = searchFilters.hasDialogue {
-            filtered = filtered.filter { $0.dialogueCount > 0 == hasDialogue }
+            filtered = filtered.filter { ($0.dialogueCount > 0) == hasDialogue }
         }
         
         // Has arcs filter
         if let hasArcs = searchFilters.hasArcs {
-            filtered = filtered.filter { !$0.arcs.isEmpty == hasArcs }
+            filtered = filtered.filter { (!$0.arcs.isEmpty) == hasArcs }
         }
         
         // Tags filter
@@ -251,7 +251,7 @@ class CharacterDatabase: ObservableObject {
             case .updatedAt:
                 comparison = first.updatedAt < second.updatedAt
             }
-            return searchFilters.sortOrder == .ascending ? comparison : !comparison
+            return searchFilters.sortOrder == .forward ? comparison : !comparison
         }
         
         return filtered

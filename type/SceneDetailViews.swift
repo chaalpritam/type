@@ -65,7 +65,7 @@ struct SceneDetailView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 .padding(6)
-                                .background(Color(.systemGray6))
+                                .background(Color(NSColor.controlBackgroundColor))
                                 .cornerRadius(6)
                             }
                         }
@@ -89,12 +89,11 @@ struct SceneDetailView: View {
                 .padding()
             }
             .navigationTitle("Scene Detail")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Edit") { showEditView.toggle() }
                 }
             }
@@ -177,12 +176,11 @@ struct SceneEditView: View {
                 }
             }
             .navigationTitle(isNewScene ? "New Scene" : "Edit Scene")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") { saveScene() }
                         .disabled(heading.isEmpty)
                 }
@@ -279,9 +277,8 @@ struct SceneStatisticsView: View {
                 }
             }
             .navigationTitle("Scene Statistics")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { }
                 }
             }
@@ -325,9 +322,9 @@ struct SceneBookmarksView: View {
                 }
             }
             .navigationTitle("Bookmarks")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }
                 }
             }
@@ -335,24 +332,22 @@ struct SceneBookmarksView: View {
     }
 }
 
-// MARK: - Stat Card Helper
-struct StatCard: View {
-    let title: String
-    let value: String
-    let icon: String
+// MARK: - Scene Stat Card
+struct SceneStatCard: View {
+    var title: String
+    var value: String
+    var icon: String
     var body: some View {
-        VStack(spacing: 4) {
+        VStack {
             Image(systemName: icon)
-                .font(.title2)
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(.title)
             Text(title)
                 .font(.caption)
-                .foregroundColor(.secondary)
+            Text(value)
+                .font(.headline)
         }
-        .frame(width: 70, height: 70)
-        .background(Color(.systemGray6))
-        .cornerRadius(10)
+        .padding(8)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(8)
     }
 } 

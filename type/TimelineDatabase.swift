@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import AppKit
 
 class TimelineDatabase: ObservableObject {
     @Published var timeline: StoryTimeline
@@ -33,7 +34,7 @@ class TimelineDatabase: ObservableObject {
             strengths: []
         )
     )
-    @Published var selectedElement: TimelineElement?
+    @Published var selectedElement: (any TimelineElement)?
     @Published var showConnections = true
     @Published var showNotes = true
     @Published var zoomLevel: Double = 1.0
@@ -464,7 +465,7 @@ class TimelineDatabase: ObservableObject {
             timeline.acts = [act1, act2, act3]
             
             // Assign scenes to acts
-            for (index, timelineScene) in timeline.scenes.enumerated() {
+            for (index, var timelineScene) in timeline.scenes.enumerated() {
                 if index < act1Scenes {
                     timelineScene.position.act = 1
                 } else if index < act1Scenes + act2Scenes {
@@ -472,6 +473,8 @@ class TimelineDatabase: ObservableObject {
                 } else {
                     timelineScene.position.act = 3
                 }
+                // Update the scene in the array
+                timeline.scenes[index] = timelineScene
             }
             
             // Auto-generate essential beats
@@ -516,7 +519,7 @@ class TimelineDatabase: ObservableObject {
         return true
     }
     
-    func exportAsImage() -> UIImage? {
+    func exportAsImage() -> NSImage? {
         // This would render the timeline as an image
         // For now, return nil
         return nil

@@ -3,53 +3,47 @@ import SwiftUI
 // MARK: - Timeline Main View
 struct TimelineView: View {
     @ObservedObject var timelineDatabase: TimelineDatabase
-    @GestureState private var dragOffset: CGSize = .zero
-    @State private var lastOffset: CGSize = .zero
+    @GestureState private var dragOffset = CGSize.zero
     
     var body: some View {
         VStack(spacing: 0) {
             TimelineHeaderView(statistics: timelineDatabase.statistics)
             
             GeometryReader { geometry in
-                ScrollView([.horizontal, .vertical], showsIndicators: true) {
-                    ZStack(alignment: .topLeading) {
-                        // Timeline axis
-                        TimelineAxisView(
-                            acts: timelineDatabase.timeline.acts,
-                            width: geometry.size.width * max(1, timelineDatabase.zoomLevel),
-                            height: 80
-                        )
-                        .offset(x: timelineDatabase.panOffset.x + dragOffset.width, y: timelineDatabase.panOffset.y + dragOffset.height)
-                        
-                        // Timeline scenes
-                        TimelineScenesView(
-                            scenes: timelineDatabase.timeline.scenes,
-                            beats: timelineDatabase.timeline.storyBeats,
-                            acts: timelineDatabase.timeline.acts,
-                            zoomLevel: timelineDatabase.zoomLevel,
-                            selectedElement: $timelineDatabase.selectedElement
-                        )
-                        .offset(x: timelineDatabase.panOffset.x + dragOffset.width, y: timelineDatabase.panOffset.y + dragOffset.height + 80)
-                    }
-                    .frame(width: geometry.size.width * max(1, timelineDatabase.zoomLevel), height: 400)
-                    .background(Color(.systemGray6))
-                    .gesture(
-                        DragGesture()
-                            .updating($dragOffset) { value, state, _ in
-                                state = value.translation
-                            }
-                            .onEnded { value in
-                                timelineDatabase.panOffset.x += value.translation.width
-                                timelineDatabase.panOffset.y += value.translation.height
-                            }
+                ZStack {
+                    TimelineAxisView(
+                        acts: timelineDatabase.timeline.acts,
+                        width: geometry.size.width * max(1, timelineDatabase.zoomLevel),
+                        height: 400
                     )
+                    
+                    TimelineScenesView(
+                        scenes: timelineDatabase.timeline.scenes,
+                        beats: timelineDatabase.timeline.storyBeats,
+                        acts: timelineDatabase.timeline.acts,
+                        zoomLevel: timelineDatabase.zoomLevel,
+                        selectedElement: $timelineDatabase.selectedElement
+                    )
+                    .offset(x: timelineDatabase.panOffset.x + dragOffset.width, y: timelineDatabase.panOffset.y + dragOffset.height + 80)
                 }
+                .frame(width: geometry.size.width * max(1, timelineDatabase.zoomLevel), height: 400)
+                .background(Color(NSColor.controlBackgroundColor))
+                .gesture(
+                    DragGesture()
+                        .updating($dragOffset) { value, state, _ in
+                            state = value.translation
+                        }
+                        .onEnded { value in
+                            timelineDatabase.panOffset.x += value.translation.width
+                            timelineDatabase.panOffset.y += value.translation.height
+                        }
+                )
             }
             .frame(height: 480)
             
             TimelineControlsView(timelineDatabase: timelineDatabase)
         }
-        .background(Color(.systemBackground))
+        .background(Color(NSColor.windowBackgroundColor))
     }
 }
 
@@ -68,13 +62,13 @@ struct TimelineHeaderView: View {
             }
             Spacer()
             HStack(spacing: 16) {
-                StatCard(title: "Acts", value: "\(statistics.totalActs)", icon: "rectangle.split.3x1")
-                StatCard(title: "Beats", value: "\(statistics.totalBeats)", icon: "waveform.path.ecg")
-                StatCard(title: "Milestones", value: "\(statistics.totalMilestones)", icon: "flag")
+                TimelineStatCard(title: "Acts", value: "\(statistics.totalActs)", icon: "rectangle.split.3x1")
+                TimelineStatCard(title: "Beats", value: "\(statistics.totalBeats)", icon: "waveform.path.ecg")
+                TimelineStatCard(title: "Milestones", value: "\(statistics.totalMilestones)", icon: "flag")
             }
         }
         .padding()
-        .background(Color(.systemGray5))
+        .background(Color(NSColor.controlBackgroundColor))
     }
 }
 
@@ -86,7 +80,7 @@ struct TimelineAxisView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             Rectangle()
-                .fill(Color(.systemGray4))
+                .fill(Color(NSColor.separatorColor))
                 .frame(width: width, height: height)
             HStack(spacing: 0) {
                 ForEach(acts) { act in
@@ -112,7 +106,7 @@ struct TimelineScenesView: View {
     let beats: [StoryBeat]
     let acts: [StoryAct]
     let zoomLevel: Double
-    @Binding var selectedElement: TimelineElement?
+    @Binding var selectedElement: (any TimelineElement)?
     
     var body: some View {
         ZStack {
@@ -145,7 +139,7 @@ struct TimelineSceneCardView: View {
     
     var body: some View {
         let actIndex = max(0, timelineScene.position.act - 1)
-        let actCount = max(1, acts.count)
+        let _ = max(1, acts.count) // Fixed unused variable warning
         let actWidth: CGFloat = 220 * CGFloat(zoomLevel)
         let x = CGFloat(actIndex) * actWidth + CGFloat(timelineScene.position.scene - 1) * 60 * CGFloat(zoomLevel)
         let y: CGFloat = 0
@@ -236,6 +230,26 @@ struct TimelineControlsView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemGray5))
+        .background(Color(NSColor.controlBackgroundColor))
+    }
+}
+
+// MARK: - Timeline Stat Card
+struct TimelineStatCard: View {
+    var title: String
+    var value: String
+    var icon: String
+    var body: some View {
+        VStack {
+            Image(systemName: icon)
+                .font(.title)
+            Text(title)
+                .font(.caption)
+            Text(value)
+                .font(.headline)
+        }
+        .padding(8)
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(8)
     }
 } 

@@ -946,12 +946,12 @@ struct EnhancedAppleToolbar: View {
             EnhancedAppleToolbarButton(
                 icon: "list.bullet",
                 label: "Outline",
-                action: { showOutlineMode = true }
+                action: { self.showOutlineMode = true }
             )
             .overlay(
                 Group {
-                    if outlineDatabase.statistics.totalNodes > 0 {
-                        Text("\(outlineDatabase.statistics.totalNodes)")
+                    if self.outlineDatabase.statistics.totalNodes > 0 {
+                        Text("\(self.outlineDatabase.statistics.totalNodes)")
                             .font(.caption2)
                             .fontWeight(.semibold)
                             .foregroundColor(.white)

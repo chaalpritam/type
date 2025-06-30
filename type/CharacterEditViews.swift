@@ -136,15 +136,15 @@ struct CharacterEditView: View {
                 }
             }
             .navigationTitle(isNewCharacter ? "New Character" : "Edit Character")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveCharacter()
                     }
@@ -254,15 +254,15 @@ struct CharacterArcEditView: View {
                 }
             }
             .navigationTitle(isNewArc ? "New Arc" : "Edit Arc")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveArc()
                     }
@@ -347,15 +347,15 @@ struct CharacterRelationshipEditView: View {
                 }
             }
             .navigationTitle(isNewRelationship ? "New Relationship" : "Edit Relationship")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveRelationship()
                     }
@@ -435,15 +435,15 @@ struct CharacterNoteEditView: View {
                 }
             }
             .navigationTitle(isNewNote ? "New Note" : "Edit Note")
-            .navigationBarTitleDisplayMode(.inline)
+            
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
                         saveNote()
                     }

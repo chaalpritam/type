@@ -405,7 +405,7 @@ enum TimelineIssue: String, CaseIterable, Codable {
 }
 
 // MARK: - Timeline Configuration
-struct TimelineConfiguration {
+struct TimelineConfiguration: Codable, Hashable {
     var showSceneNumbers: Bool = true
     var showSceneTitles: Bool = true
     var showActBreaks: Bool = true
