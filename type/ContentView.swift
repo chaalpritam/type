@@ -21,6 +21,10 @@ struct ContentView: View {
     @StateObject private var autoCompletionManager = AutoCompletionManager()
     @StateObject private var smartFormattingManager = SmartFormattingManager()
     
+    // File Management
+    @StateObject private var fileManager = FileManager()
+    @StateObject private var keyboardShortcutsManager: KeyboardShortcutsManager
+    
     // Enhanced editor state
     @State private var wordCount: Int = 0
     @State private var pageCount: Int = 0
@@ -43,6 +47,18 @@ struct ContentView: View {
     @State private var dailyWordGoal: Int = 1000
     @State private var currentDailyWords: Int = 0
     
+    // File management states
+    @State private var showSaveDialog: Bool = false
+    @State private var showOpenDialog: Bool = false
+    @State private var showExportDialog: Bool = false
+    @State private var showUnsavedChangesAlert: Bool = false
+    
+    init() {
+        let fileManager = FileManager()
+        self._fileManager = StateObject(wrappedValue: fileManager)
+        self._keyboardShortcutsManager = StateObject(wrappedValue: KeyboardShortcutsManager(fileManager: fileManager))
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -51,7 +67,7 @@ struct ContentView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Enhanced Apple-style toolbar
+                    // Enhanced Apple-style toolbar with file operations
                     EnhancedAppleToolbar(
                         showPreview: $showPreview,
                         showLineNumbers: $showLineNumbers,
@@ -66,7 +82,16 @@ struct ContentView: View {
                         isFullScreen: $isFullScreen,
                         selectedTheme: $selectedTheme,
                         showCustomizationPanel: $showCustomizationPanel,
-                        animationSpeed: $animationSpeed
+                        animationSpeed: $animationSpeed,
+                        // File management callbacks
+                        onNewDocument: newDocument,
+                        onOpenDocument: openDocumentSync,
+                        onSaveDocument: saveDocumentSync,
+                        onSaveDocumentAs: saveDocumentAsSync,
+                        onExportDocument: exportDocumentSync,
+                        canSave: fileManager.canSave(),
+                        isDocumentModified: fileManager.isDocumentModified,
+                        currentDocumentName: fileManager.currentDocument?.url?.lastPathComponent ?? "Untitled"
                     )
                     
                     // Find/Replace Bar with enhanced animations
@@ -122,6 +147,9 @@ struct ContentView: View {
                                         if formattedText != newText {
                                             text = formattedText
                                         }
+                                        
+                                        // Mark document as modified
+                                        fileManager.markDocumentAsModified()
                                     }
                                 )
                                 .onChange(of: text) { oldValue, newValue in
@@ -129,6 +157,11 @@ struct ContentView: View {
                                     // Parse Fountain syntax in real-time
                                     fountainParser.parse(newValue)
                                     updateStatistics(text: newValue)
+                                    
+                                    // Update document content
+                                    if fileManager.currentDocument != nil {
+                                        fileManager.currentDocument?.content = newValue
+                                    }
                                 }
                                 
                                 // Enhanced auto-completion overlay
@@ -182,7 +215,7 @@ struct ContentView: View {
                         }
                     }
                     
-                    // Enhanced status bar
+                    // Enhanced status bar with file management info
                     EnhancedAppleStatusBar(
                         wordCount: wordCount,
                         pageCount: pageCount,
@@ -190,7 +223,11 @@ struct ContentView: View {
                         showStatistics: $showStatistics,
                         smartFormattingManager: smartFormattingManager,
                         selectedTheme: selectedTheme,
-                        animationSpeed: animationSpeed
+                        animationSpeed: animationSpeed,
+                        // File management info
+                        autoSaveEnabled: fileManager.autoSaveEnabled,
+                        isDocumentModified: fileManager.isDocumentModified,
+                        currentDocumentName: fileManager.currentDocument?.url?.lastPathComponent ?? "Untitled"
                     )
                 }
                 
@@ -204,120 +241,190 @@ struct ContentView: View {
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCustomizationPanel)
                 }
-            }
-            .onAppear {
-                isTextFieldFocused = true
                 
-                // Load sample Fountain content
-                text = """
-                Title: The Great Screenplay
-                Author: John Doe
-                Draft: First Draft
-                :
-
-                # ACT ONE
-
-                = This is the beginning of our story
-
-                INT. COFFEE SHOP - DAY
-
-                Sarah sits at a corner table, typing furiously on her laptop. The coffee shop is bustling with activity.
-
-                SARAH
-                (without looking up)
-                I can't believe I'm finally writing this screenplay.
-
-                She takes a sip of her coffee and continues typing.
-
-                MIKE
-                (approaching)
-                Hey, Sarah! How's the writing going?
-
-                SARAH
-                (looking up, surprised)
-                Mike! I didn't expect to see you here.
-
-                > THE END <
-                """
-                
-                updateStatistics(text: text)
-                historyManager.addToHistory(text)
-                canUndo = historyManager.canUndo
-                canRedo = historyManager.canRedo
+                // Help overlay
+                if showHelp {
+                    FountainHelpView(isPresented: $showHelp)
+                        .transition(.opacity.combined(with: .scale))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showHelp)
+                }
             }
-            .sheet(isPresented: $showHelp) {
-                FountainHelpView(isPresented: $showHelp)
+        }
+        .onAppear {
+            // Initialize with a new document
+            if fileManager.currentDocument == nil {
+                fileManager.newDocument()
             }
-            .preferredColorScheme(selectedTheme.colorScheme)
+        }
+        // Update text when document changes (manual binding)
+        let doc = fileManager.currentDocument
+        if let document = doc {
+            if text != document.content {
+                text = document.content
+            }
+        }
+        // File management alerts
+        .alert("Save Changes?", isPresented: $showUnsavedChangesAlert) {
+            Button("Save") {
+                Task {
+                    await saveDocument()
+                }
+            }
+            Button("Don't Save") {
+                // Proceed without saving
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Do you want to save the changes to this document?")
         }
     }
     
-    // MARK: - Theme Properties
-    private var themeBackground: Color {
-        switch selectedTheme {
-        case .light:
-            return Color(.windowBackgroundColor)
-        case .dark:
-            return Color(.windowBackgroundColor)
-        case .system:
-            return Color(.windowBackgroundColor)
+    // MARK: - File Management Functions
+    
+    private func newDocument() {
+        if fileManager.hasUnsavedChanges() {
+            showUnsavedChangesAlert = true
+        } else {
+            fileManager.newDocument()
+            text = ""
         }
     }
     
-    private var themePaperBackground: Color {
-        switch selectedTheme {
-        case .light:
-            return Color(.textBackgroundColor)
-        case .dark:
-            return Color(.textBackgroundColor)
-        case .system:
-            return Color(.textBackgroundColor)
+    private func openDocument() {
+        Task {
+            do {
+                _ = try await fileManager.openDocument()
+            } catch {
+                await showError("Failed to open document", error: error)
+            }
         }
     }
     
-    private var themeShadowColor: Color {
-        switch selectedTheme {
-        case .light:
-            return Color.black.opacity(0.08)
-        case .dark:
-            return Color.black.opacity(0.3)
-        case .system:
-            return Color.black.opacity(0.08)
+    private func saveDocument() async {
+        do {
+            try await fileManager.saveDocument()
+        } catch {
+            await showError("Failed to save document", error: error)
         }
     }
+    
+    private func saveDocumentAs() async {
+        do {
+            _ = try await fileManager.saveDocumentAs()
+        } catch {
+            await showError("Failed to save document", error: error)
+        }
+    }
+    
+    private func exportDocument() {
+        Task {
+            let alert = NSAlert()
+            alert.messageText = "Export Document"
+            alert.informativeText = "Choose export format:"
+            alert.addButton(withTitle: "PDF")
+            alert.addButton(withTitle: "Final Draft")
+            alert.addButton(withTitle: "Cancel")
+            alert.alertStyle = .informational
+            
+            let response = await alert.beginSheetModal(for: NSApp.keyWindow!)
+            
+            switch response {
+            case .alertFirstButtonReturn: // PDF
+                do {
+                    _ = try await fileManager.exportToPDF()
+                } catch {
+                    await showError("Failed to export PDF", error: error)
+                }
+            case .alertSecondButtonReturn: // Final Draft
+                do {
+                    _ = try await fileManager.exportToFinalDraft()
+                } catch {
+                    await showError("Failed to export Final Draft", error: error)
+                }
+            default:
+                break
+            }
+        }
+    }
+    
+    private func showError(_ message: String, error: Error) async {
+        let alert = NSAlert()
+        alert.messageText = message
+        alert.informativeText = error.localizedDescription
+        alert.alertStyle = .critical
+        alert.addButton(withTitle: "OK")
+        
+        await alert.beginSheetModal(for: NSApp.keyWindow!)
+    }
+    
+    // MARK: - Existing Functions
     
     private func performUndo() {
-        if let prev = historyManager.undo() {
-            text = prev
-            updateStatistics(text: prev)
+        if let previousText = historyManager.undo() {
+            text = previousText
             canUndo = historyManager.canUndo
             canRedo = historyManager.canRedo
         }
     }
     
     private func performRedo() {
-        if let next = historyManager.redo() {
-            text = next
-            updateStatistics(text: next)
+        if let nextText = historyManager.redo() {
+            text = nextText
             canUndo = historyManager.canUndo
             canRedo = historyManager.canRedo
         }
     }
     
     private func updateStatistics(text: String) {
-        // Word count (excluding Fountain syntax elements)
-        let words = text.components(separatedBy: .whitespacesAndNewlines)
-            .filter { !$0.isEmpty && !$0.hasPrefix("#") && !$0.hasPrefix("=") && !$0.hasPrefix("[[") && !$0.hasPrefix(">") }
+        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
         wordCount = words.count
-        currentDailyWords = words.count // Simplified for demo
+        characterCount = text.count
+        pageCount = max(1, wordCount / 250) // Rough estimate: 250 words per page
         
-        // Character count (excluding whitespace)
-        characterCount = text.replacingOccurrences(of: "\\s", with: "", options: .regularExpression).count
-        
-        // Page count (rough estimate: ~55 lines per page for screenplay format)
-        let lines = text.components(separatedBy: .newlines).filter { !$0.isEmpty }
-        pageCount = max(1, (lines.count / 55) + 1)
+        // Update daily word count for writing goals
+        currentDailyWords = wordCount
     }
+    
+    // MARK: - Theme Computed Properties
+    
+    private var themeBackground: Color {
+        switch selectedTheme {
+        case .light:
+            return Color(nsColor: NSColor.systemGray)
+        case .dark:
+            return Color(nsColor: NSColor.systemGray).opacity(0.8)
+        case .system:
+            return Color(nsColor: NSColor.windowBackgroundColor)
+        }
+    }
+    
+    private var themePaperBackground: Color {
+        switch selectedTheme {
+        case .light:
+            return Color(nsColor: NSColor.textBackgroundColor)
+        case .dark:
+            return Color(nsColor: NSColor.underPageBackgroundColor)
+        case .system:
+            return Color(nsColor: NSColor.textBackgroundColor)
+        }
+    }
+    
+    private var themeShadowColor: Color {
+        switch selectedTheme {
+        case .light:
+            return Color.black.opacity(0.1)
+        case .dark:
+            return Color.black.opacity(0.3)
+        case .system:
+            return Color.primary.opacity(0.1)
+        }
+    }
+    
+    // 1. Synchronous wrappers for async file actions
+    private func saveDocumentSync() { Task { await saveDocument() } }
+    private func saveDocumentAsSync() { Task { await saveDocumentAs() } }
+    private func openDocumentSync() { openDocument() }
+    private func exportDocumentSync() { exportDocument() }
 }
 
 // MARK: - Theme and Animation Enums
@@ -381,6 +488,14 @@ struct EnhancedAppleToolbar: View {
     @Binding var selectedTheme: AppTheme
     @Binding var showCustomizationPanel: Bool
     @Binding var animationSpeed: AnimationSpeed
+    let onNewDocument: () -> Void
+    let onOpenDocument: () -> Void
+    let onSaveDocument: () -> Void
+    let onSaveDocumentAs: () -> Void
+    let onExportDocument: () -> Void
+    let canSave: Bool
+    let isDocumentModified: Bool
+    let currentDocumentName: String
     
     var body: some View {
         HStack(spacing: 12) {
@@ -389,20 +504,39 @@ struct EnhancedAppleToolbar: View {
                 EnhancedAppleToolbarButton(
                     icon: "doc.badge.plus",
                     label: "New",
-                    action: {}
+                    action: onNewDocument
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: "folder",
                     label: "Open",
-                    action: {}
+                    action: onOpenDocument
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: "square.and.arrow.down",
                     label: "Save",
-                    action: {}
+                    action: onSaveDocument
                 )
+                .disabled(!canSave)
+                
+                // Save As dropdown
+                Menu {
+                    Button("Save As...") {
+                        onSaveDocumentAs()
+                    }
+                    Button("Export to PDF...") {
+                        onExportDocument()
+                    }
+                    Button("Export to Final Draft...") {
+                        onExportDocument()
+                    }
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+                .disabled(!canSave)
             }
             
             AppleDivider()
@@ -537,6 +671,14 @@ struct EnhancedAppleButtonStyle: ButtonStyle {
             )
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+    }
+}
+
+struct AppleDivider: View {
+    var body: some View {
+        Rectangle()
+            .frame(width: 1, height: 20)
+            .foregroundColor(Color(.separatorColor))
     }
 }
 
@@ -691,17 +833,41 @@ struct EnhancedAppleStatusBar: View {
     let smartFormattingManager: SmartFormattingManager
     let selectedTheme: AppTheme
     let animationSpeed: AnimationSpeed
+    let autoSaveEnabled: Bool
+    let isDocumentModified: Bool
+    let currentDocumentName: String
     
     var body: some View {
         HStack(spacing: 16) {
-            // Left side - Smart formatting status
-            HStack(spacing: 6) {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 11))
-                    .foregroundColor(.blue)
-                Text("Smart formatting enabled")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+            // Left side - Document info and status
+            HStack(spacing: 12) {
+                // Document name and modification status
+                HStack(spacing: 6) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    
+                    Text(currentDocumentName)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.primary)
+                    
+                    if isDocumentModified {
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 6))
+                            .foregroundColor(.orange)
+                    }
+                }
+                
+                // Auto-save status
+                HStack(spacing: 4) {
+                    Image(systemName: autoSaveEnabled ? "clock.arrow.circlepath" : "clock.slash")
+                        .font(.system(size: 11))
+                        .foregroundColor(autoSaveEnabled ? .green : .secondary)
+                    
+                    Text(autoSaveEnabled ? "Auto-save" : "Manual save")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
@@ -718,12 +884,24 @@ struct EnhancedAppleStatusBar: View {
             }
             .buttonStyle(EnhancedAppleButtonStyle())
             
-            // Right side - Additional info
+            // Right side - Smart formatting and ready status
             HStack(spacing: 16) {
+                // Smart formatting status
+                HStack(spacing: 6) {
+                    Image(systemName: "wand.and.stars")
+                        .font(.system(size: 11))
+                        .foregroundColor(.blue)
+                    Text("Smart formatting enabled")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+                
+                // Fountain format indicator
                 Text("Fountain Format")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                 
+                // Ready status
                 HStack(spacing: 4) {
                     Circle()
                         .fill(Color.green)
@@ -1005,14 +1183,6 @@ struct EnhancedAppleFindReplaceView: View {
     }
 }
 
-struct AppleDivider: View {
-    var body: some View {
-        Rectangle()
-            .frame(width: 1, height: 16)
-            .foregroundColor(Color(.separatorColor))
-    }
-}
-
 struct AppleToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button(action: { configuration.isOn.toggle() }) {
@@ -1035,3 +1205,5 @@ struct AppleToggleStyle: ToggleStyle {
 #Preview {
     ContentView()
 }
+
+
