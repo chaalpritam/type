@@ -658,10 +658,9 @@ struct ArcMilestoneEditView: View {
                     }
                 }
                 
-                Section("Reference") {
+                Section(header: Text("Reference")) {
                     TextField("Scene", text: $scene)
                     TextField("Line Number", text: $lineNumber)
-                        .keyboardType(.numberPad)
                 }
                 
                 Section("Notes") {

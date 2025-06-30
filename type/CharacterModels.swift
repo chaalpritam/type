@@ -3,7 +3,7 @@ import SwiftUI
 
 // MARK: - Character Model
 struct Character: Identifiable, Codable, Hashable {
-    let id = UUID()
+    let id: UUID
     var name: String
     var description: String
     var age: Int?
@@ -26,6 +26,7 @@ struct Character: Identifiable, Codable, Hashable {
     var updatedAt: Date
     
     init(name: String, description: String = "") {
+        self.id = UUID()
         self.name = name
         self.description = description
         self.goals = []
@@ -43,7 +44,7 @@ struct Character: Identifiable, Codable, Hashable {
 
 // MARK: - Character Arc Model
 struct CharacterArc: Identifiable, Codable, Hashable {
-    let id = UUID()
+    let id: UUID
     var name: String
     var description: String
     var arcType: ArcType
@@ -56,6 +57,7 @@ struct CharacterArc: Identifiable, Codable, Hashable {
     var updatedAt: Date
     
     init(name: String, description: String = "", arcType: ArcType = .character) {
+        self.id = UUID()
         self.name = name
         self.description = description
         self.arcType = arcType
@@ -69,7 +71,7 @@ struct CharacterArc: Identifiable, Codable, Hashable {
 
 // MARK: - Arc Milestone
 struct ArcMilestone: Identifiable, Codable, Hashable {
-    let id = UUID()
+    let id: UUID
     var name: String
     var description: String
     var scene: String?
@@ -79,6 +81,7 @@ struct ArcMilestone: Identifiable, Codable, Hashable {
     var createdAt: Date
     
     init(name: String, description: String = "") {
+        self.id = UUID()
         self.name = name
         self.description = description
         self.status = .planned
@@ -89,7 +92,7 @@ struct ArcMilestone: Identifiable, Codable, Hashable {
 
 // MARK: - Character Relationship
 struct CharacterRelationship: Identifiable, Codable, Hashable {
-    let id = UUID()
+    let id: UUID
     var targetCharacter: String
     var relationshipType: RelationshipType
     var description: String
@@ -98,6 +101,7 @@ struct CharacterRelationship: Identifiable, Codable, Hashable {
     var createdAt: Date
     
     init(targetCharacter: String, relationshipType: RelationshipType = .neutral) {
+        self.id = UUID()
         self.targetCharacter = targetCharacter
         self.relationshipType = relationshipType
         self.description = ""
@@ -109,7 +113,7 @@ struct CharacterRelationship: Identifiable, Codable, Hashable {
 
 // MARK: - Character Note
 struct CharacterNote: Identifiable, Codable, Hashable {
-    let id = UUID()
+    let id: UUID
     var title: String
     var content: String
     var type: NoteType
@@ -118,6 +122,7 @@ struct CharacterNote: Identifiable, Codable, Hashable {
     var createdAt: Date
     
     init(title: String, content: String, type: NoteType = .general) {
+        self.id = UUID()
         self.title = title
         self.content = content
         self.type = type

@@ -75,7 +75,7 @@ class OutlineDatabase: ObservableObject {
     
     func moveNode(_ nodeId: UUID, to targetId: UUID, position: OutlineDropTarget) {
         guard let node = findNode(nodeId, in: outline.rootNodes) else { return }
-        guard let targetNode = findNode(targetId, in: outline.rootNodes) else { return }
+        guard findNode(targetId, in: outline.rootNodes) != nil else { return }
         
         // Remove from current position
         removeNodeFromTree(nodeId, in: &outline.rootNodes)
@@ -350,7 +350,7 @@ class OutlineDatabase: ObservableObject {
     }
     
     func saveAsTemplate(_ name: String, templateType: OutlineTemplateType) {
-        let template = OutlineTemplate(name: name, templateType: templateType)
+        var template = OutlineTemplate(name: name, templateType: templateType)
         template.structure = outline.rootNodes
         templates.append(template)
         saveTemplates()
@@ -358,11 +358,11 @@ class OutlineDatabase: ObservableObject {
     
     private func setupDefaultTemplates() {
         if templates.isEmpty {
-            let threeActTemplate = OutlineTemplate(name: "Three Act Structure", templateType: .threeAct)
+            var threeActTemplate = OutlineTemplate(name: "Three Act Structure", templateType: .threeAct)
             threeActTemplate.structure = createThreeActStructure()
             templates.append(threeActTemplate)
             
-            let heroJourneyTemplate = OutlineTemplate(name: "Hero's Journey", templateType: .heroJourney)
+            var heroJourneyTemplate = OutlineTemplate(name: "Hero's Journey", templateType: .heroJourney)
             heroJourneyTemplate.structure = createHeroJourneyStructure()
             templates.append(heroJourneyTemplate)
             
@@ -476,7 +476,7 @@ class OutlineDatabase: ObservableObject {
         
         // Check for inconsistent levels
         let levelCounts = Dictionary(grouping: allNodes, by: { $0.level }).mapValues { $0.count }
-        let averageLevelCount = levelCounts.values.reduce(0, +) / max(1, levelCounts.count)
+        let averageLevelCount = Double(levelCounts.values.reduce(0, +)) / Double(max(1, levelCounts.count))
         let inconsistentLevels = levelCounts.values.filter { abs(Double($0) - averageLevelCount) > averageLevelCount * 0.5 }
         if !inconsistentLevels.isEmpty {
             issues.append(.inconsistentLevels)

@@ -121,7 +121,10 @@ struct ContentView: View {
                         showTemplateSelector: $showTemplateSelector,
                         // Character database
                         showCharacterDatabase: $showCharacterDatabase,
-                        characterCount: characterDatabase.statistics.totalCharacters
+                        characterCount: characterDatabase.statistics.totalCharacters,
+                        // Outline database
+                        showOutlineMode: $showOutlineMode,
+                        outlineDatabase: outlineDatabase
                     )
                     
                     // Find/Replace Bar with enhanced animations
@@ -723,6 +726,10 @@ struct EnhancedAppleToolbar: View {
     // Character database
     @Binding var showCharacterDatabase: Bool
     let characterCount: Int
+    
+    // Outline database
+    @Binding var showOutlineMode: Bool
+    let outlineDatabase: OutlineDatabase
     
     var body: some View {
         HStack(spacing: 12) {

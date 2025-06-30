@@ -43,97 +43,165 @@ struct CharacterEditView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                // Basic Information
-                Section("Basic Information") {
-                    TextField("Character Name", text: $name)
-                    
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
-                    
-                    HStack {
-                        TextField("Age", text: $age)
-                            .keyboardType(.numberPad)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Basic Information
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Basic Information")
+                            .font(.headline)
+                            .foregroundColor(.primary)
                         
-                        Picker("Gender", selection: $gender) {
-                            Text("Unspecified").tag(nil as Gender?)
-                            ForEach(Gender.allCases, id: \.self) { gender in
-                                Text(gender.rawValue).tag(gender as Gender?)
+                        VStack(spacing: 8) {
+                            TextField("Character Name", text: $name)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            TextField("Description", text: $description, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(3...6)
+                            
+                            HStack {
+                                TextField("Age", text: $age)
+                                
+                                Picker("Gender", selection: $gender) {
+                                    Text("Unspecified").tag(nil as Gender?)
+                                    ForEach(Gender.allCases, id: \.self) { gender in
+                                        Text(gender.rawValue).tag(gender as Gender?)
+                                    }
+                                }
+                            }
+                            
+                            TextField("Occupation", text: $occupation)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    
+                    // Character Details
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Character Details")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Appearance", text: $appearance, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(2...4)
+                            
+                            TextField("Personality", text: $personality, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(2...4)
+                            
+                            TextField("Background", text: $background, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(3...6)
+                        }
+                    }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    
+                    // Goals
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Goals")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            ForEach(goals, id: \.self) { goal in
+                                Text(goal)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(4)
+                            }
+                            .onDelete(perform: deleteGoal)
+                            
+                            HStack {
+                                TextField("Add goal", text: $newGoal)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                Button("Add") {
+                                    if !newGoal.isEmpty {
+                                        goals.append(newGoal)
+                                        newGoal = ""
+                                    }
+                                }
+                                .disabled(newGoal.isEmpty)
                             }
                         }
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                     
-                    TextField("Occupation", text: $occupation)
-                }
-                
-                // Character Details
-                Section("Character Details") {
-                    TextField("Appearance", text: $appearance, axis: .vertical)
-                        .lineLimit(2...4)
-                    
-                    TextField("Personality", text: $personality, axis: .vertical)
-                        .lineLimit(2...4)
-                    
-                    TextField("Background", text: $background, axis: .vertical)
-                        .lineLimit(3...6)
-                }
-                
-                // Goals
-                Section("Goals") {
-                    ForEach(goals, id: \.self) { goal in
-                        Text(goal)
-                    }
-                    .onDelete(perform: deleteGoal)
-                    
-                    HStack {
-                        TextField("Add goal", text: $newGoal)
-                        Button("Add") {
-                            if !newGoal.isEmpty {
-                                goals.append(newGoal)
-                                newGoal = ""
+                    // Conflicts
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Conflicts")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            ForEach(conflicts, id: \.self) { conflict in
+                                Text(conflict)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.red.opacity(0.1))
+                                    .cornerRadius(4)
+                            }
+                            .onDelete(perform: deleteConflict)
+                            
+                            HStack {
+                                TextField("Add conflict", text: $newConflict)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                Button("Add") {
+                                    if !newConflict.isEmpty {
+                                        conflicts.append(newConflict)
+                                        newConflict = ""
+                                    }
+                                }
+                                .disabled(newConflict.isEmpty)
                             }
                         }
-                        .disabled(newGoal.isEmpty)
                     }
-                }
-                
-                // Conflicts
-                Section("Conflicts") {
-                    ForEach(conflicts, id: \.self) { conflict in
-                        Text(conflict)
-                    }
-                    .onDelete(perform: deleteConflict)
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                     
-                    HStack {
-                        TextField("Add conflict", text: $newConflict)
-                        Button("Add") {
-                            if !newConflict.isEmpty {
-                                conflicts.append(newConflict)
-                                newConflict = ""
+                    // Tags
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Tags")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            ForEach(tags, id: \.self) { tag in
+                                Text(tag)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.green.opacity(0.1))
+                                    .cornerRadius(4)
+                            }
+                            .onDelete(perform: deleteTag)
+                            
+                            HStack {
+                                TextField("Add tag", text: $newTag)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                Button("Add") {
+                                    if !newTag.isEmpty {
+                                        tags.append(newTag)
+                                        newTag = ""
+                                    }
+                                }
+                                .disabled(newTag.isEmpty)
                             }
                         }
-                        .disabled(newConflict.isEmpty)
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                 }
-                
-                // Tags
-                Section("Tags") {
-                    ForEach(tags, id: \.self) { tag in
-                        Text(tag)
-                    }
-                    .onDelete(perform: deleteTag)
-                    
-                    HStack {
-                        TextField("Add tag", text: $newTag)
-                        Button("Add") {
-                            if !newTag.isEmpty {
-                                tags.append(newTag)
-                                newTag = ""
-                            }
-                        }
-                        .disabled(newTag.isEmpty)
-                    }
-                }
+                .padding()
             }
             .navigationTitle(isNewCharacter ? "New Character" : "Edit Character")
             
@@ -223,35 +291,71 @@ struct CharacterArcEditView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Arc Information") {
-                    TextField("Arc Name", text: $name)
-                    
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
-                    
-                    Picker("Arc Type", selection: $arcType) {
-                        ForEach(ArcType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Arc Information
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Arc Information")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Arc Name", text: $name)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            TextField("Description", text: $description, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(3...6)
+                            
+                            Picker("Arc Type", selection: $arcType) {
+                                ForEach(ArcType.allCases, id: \.self) { type in
+                                    Text(type.rawValue).tag(type)
+                                }
+                            }
+                            
+                            Picker("Status", selection: $status) {
+                                ForEach(ArcStatus.allCases, id: \.self) { status in
+                                    Text(status.rawValue).tag(status)
+                                }
+                            }
                         }
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                     
-                    Picker("Status", selection: $status) {
-                        ForEach(ArcStatus.allCases, id: \.self) { status in
-                            Text(status.rawValue).tag(status)
+                    // Scenes
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Scenes")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Start Scene", text: $startScene)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("End Scene", text: $endScene)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    
+                    // Notes
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Notes")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        TextField("Notes", text: $notes, axis: .vertical)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .lineLimit(3...8)
+                    }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                 }
-                
-                Section("Scenes") {
-                    TextField("Start Scene", text: $startScene)
-                    TextField("End Scene", text: $endScene)
-                }
-                
-                Section("Notes") {
-                    TextField("Notes", text: $notes, axis: .vertical)
-                        .lineLimit(3...8)
-                }
+                .padding()
             }
             .navigationTitle(isNewArc ? "New Arc" : "Edit Arc")
             
@@ -321,30 +425,54 @@ struct CharacterRelationshipEditView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Relationship Information") {
-                    TextField("Target Character", text: $targetCharacter)
-                    
-                    Picker("Relationship Type", selection: $relationshipType) {
-                        ForEach(RelationshipType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Relationship Information
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Relationship Information")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Target Character", text: $targetCharacter)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            Picker("Relationship Type", selection: $relationshipType) {
+                                ForEach(RelationshipType.allCases, id: \.self) { type in
+                                    Text(type.rawValue).tag(type)
+                                }
+                            }
+                            
+                            TextField("Description", text: $description, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(3...6)
+                            
+                            Picker("Strength", selection: $strength) {
+                                ForEach(RelationshipStrength.allCases, id: \.self) { strength in
+                                    Text(strength.rawValue).tag(strength)
+                                }
+                            }
                         }
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                     
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
-                    
-                    Picker("Strength", selection: $strength) {
-                        ForEach(RelationshipStrength.allCases, id: \.self) { strength in
-                            Text(strength.rawValue).tag(strength)
-                        }
+                    // Notes
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Notes")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        TextField("Notes", text: $notes, axis: .vertical)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .lineLimit(3...8)
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                 }
-                
-                Section("Notes") {
-                    TextField("Notes", text: $notes, axis: .vertical)
-                        .lineLimit(3...8)
-                }
+                .padding()
             }
             .navigationTitle(isNewRelationship ? "New Relationship" : "Edit Relationship")
             
@@ -412,27 +540,61 @@ struct CharacterNoteEditView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Note Information") {
-                    TextField("Title", text: $title)
-                    
-                    Picker("Type", selection: $type) {
-                        ForEach(NoteType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Note Information
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Note Information")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Title", text: $title)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            Picker("Type", selection: $type) {
+                                ForEach(NoteType.allCases, id: \.self) { type in
+                                    Text(type.rawValue).tag(type)
+                                }
+                            }
                         }
                     }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    
+                    // Content
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Content")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        TextField("Note content", text: $content, axis: .vertical)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .lineLimit(5...15)
+                    }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    
+                    // Reference
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Reference")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        VStack(spacing: 8) {
+                            TextField("Scene", text: $scene)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            TextField("Line Number", text: $lineNumber)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
+                    .padding()
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
                 }
-                
-                Section("Content") {
-                    TextField("Note content", text: $content, axis: .vertical)
-                        .lineLimit(5...15)
-                }
-                
-                Section("Reference") {
-                    TextField("Scene", text: $scene)
-                    TextField("Line Number", text: $lineNumber)
-                        .keyboardType(.numberPad)
-                }
+                .padding()
             }
             .navigationTitle(isNewNote ? "New Note" : "Edit Note")
             

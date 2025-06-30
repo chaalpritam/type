@@ -508,25 +508,29 @@ struct OutlineNodeStatisticsView: View {
                 OutlineStatCard(
                     title: "Children",
                     value: "\(node.children.count)",
-                    icon: "list.bullet"
+                    systemImage: "list.bullet",
+                    color: .blue
                 )
                 
                 OutlineStatCard(
                     title: "Level",
                     value: "\(node.level)",
-                    icon: "arrow.down.right"
+                    systemImage: "arrow.down.right",
+                    color: .green
                 )
                 
                 OutlineStatCard(
                     title: "Order",
                     value: "\(node.order)",
-                    icon: "number"
+                    systemImage: "number",
+                    color: .orange
                 )
                 
                 OutlineStatCard(
                     title: "Created",
                     value: formatDate(node.createdAt),
-                    icon: "calendar"
+                    systemImage: "calendar",
+                    color: .purple
                 )
             }
         }
