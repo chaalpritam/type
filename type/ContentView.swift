@@ -56,9 +56,7 @@ struct ContentView: View {
     @State private var isFullScreen: Bool = false
     
     // UI/UX Enhancement states
-    @State private var isDarkMode: Bool = false
     @State private var showCustomizationPanel: Bool = false
-    @State private var selectedTheme: AppTheme = .system
     @State private var animationSpeed: AnimationSpeed = .normal
     @State private var showWritingGoals: Bool = false
     @State private var dailyWordGoal: Int = 1000
@@ -80,8 +78,8 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Dynamic background based on theme
-                themeBackground
+                // Fixed light background
+                Color.white
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -98,7 +96,6 @@ struct ContentView: View {
                         selectedFont: $selectedFont,
                         fontSize: $fontSize,
                         isFullScreen: $isFullScreen,
-                        selectedTheme: $selectedTheme,
                         showCustomizationPanel: $showCustomizationPanel,
                         animationSpeed: $animationSpeed,
                         // File management callbacks
@@ -157,8 +154,7 @@ struct ContentView: View {
                         ZStack(alignment: .topLeading) {
                                 // Enhanced paper background
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(themePaperBackground)
-                                    .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
+                                    .fill(Color.white)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                             
                                 // Enhanced Fountain Text Editor
@@ -235,14 +231,14 @@ struct ContentView: View {
                                 elements: fountainParser.elements,
                                 titlePage: fountainParser.titlePage
                             )
-                                .background(themePaperBackground)
+                                .background(Color.white)
                                 .cornerRadius(12)
-                                .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
+                                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
                             .padding(.horizontal, 20)
                             .padding(.bottom, 20)
                         }
                         .frame(width: geometry.size.width * 0.5)
-                            .background(themeBackground)
+                            .background(Color.white)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .trailing),
                                 removal: .move(edge: .trailing)
@@ -258,7 +254,6 @@ struct ContentView: View {
                         characterCount: characterCount,
                         showStatistics: $showStatistics,
                         smartFormattingManager: smartFormattingManager,
-                        selectedTheme: selectedTheme,
                         animationSpeed: animationSpeed,
                         // File management info
                         autoSaveEnabled: fileManager.autoSaveEnabled,
@@ -288,12 +283,12 @@ struct ContentView: View {
                 // Customization panel overlay
                 if showCustomizationPanel {
                     CustomizationPanel(
-                        selectedTheme: $selectedTheme,
                         animationSpeed: $animationSpeed,
                         isVisible: $showCustomizationPanel
                     )
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCustomizationPanel)
+                    .zIndex(1000)
                 }
                 
                 // Help overlay
@@ -506,41 +501,6 @@ struct ContentView: View {
         currentDailyWords = wordCount
     }
     
-    // MARK: - Theme Computed Properties
-    
-    private var themeBackground: Color {
-        switch selectedTheme {
-        case .light:
-            return Color(nsColor: NSColor.systemGray)
-        case .dark:
-            return Color(nsColor: NSColor.systemGray).opacity(0.8)
-        case .system:
-            return Color(nsColor: NSColor.windowBackgroundColor)
-        }
-    }
-    
-    private var themePaperBackground: Color {
-        switch selectedTheme {
-        case .light:
-            return Color(nsColor: NSColor.textBackgroundColor)
-        case .dark:
-            return Color(nsColor: NSColor.underPageBackgroundColor)
-        case .system:
-            return Color(nsColor: NSColor.textBackgroundColor)
-        }
-    }
-    
-    private var themeShadowColor: Color {
-        switch selectedTheme {
-        case .light:
-            return Color.black.opacity(0.1)
-        case .dark:
-            return Color.black.opacity(0.3)
-        case .system:
-            return Color.primary.opacity(0.1)
-        }
-    }
-    
     // 1. Synchronous wrappers for async file actions
     private func saveDocumentSync() { Task { await saveDocument() } }
     private func saveDocumentAsSync() { Task { await saveDocumentAs() } }
@@ -630,7 +590,7 @@ struct TemplateSelectorView: View {
                 }
             }
             .padding(24)
-            .background(Color(nsColor: NSColor.windowBackgroundColor))
+            .background(Color.white)
             .cornerRadius(16)
             .shadow(radius: 20)
             .frame(maxWidth: 600, maxHeight: 600)
@@ -683,7 +643,7 @@ struct TemplateCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color(nsColor: NSColor.controlBackgroundColor))
+                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.white)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
@@ -694,29 +654,7 @@ struct TemplateCard: View {
     }
 }
 
-// MARK: - Theme and Animation Enums
-enum AppTheme: String, CaseIterable {
-    case light = "Light"
-    case dark = "Dark"
-    case system = "System"
-    
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return nil
-        }
-    }
-    
-    var icon: String {
-        switch self {
-        case .light: return "sun.max"
-        case .dark: return "moon"
-        case .system: return "gear"
-        }
-    }
-}
-
+// MARK: - Animation Speed Enum
 enum AnimationSpeed: String, CaseIterable {
     case slow = "Slow"
     case normal = "Normal"
@@ -752,7 +690,6 @@ struct EnhancedAppleToolbar: View {
     @Binding var selectedFont: String
     @Binding var fontSize: CGFloat
     @Binding var isFullScreen: Bool
-    @Binding var selectedTheme: AppTheme
     @Binding var showCustomizationPanel: Bool
     @Binding var animationSpeed: AnimationSpeed
     let onNewDocument: () -> Void
@@ -1235,7 +1172,6 @@ struct EnhancedAppleStatusBar: View {
     let characterCount: Int
     @Binding var showStatistics: Bool
     let smartFormattingManager: SmartFormattingManager
-    let selectedTheme: AppTheme
     let animationSpeed: AnimationSpeed
     let autoSaveEnabled: Bool
     let isDocumentModified: Bool
@@ -1330,7 +1266,6 @@ struct EnhancedAppleStatusBar: View {
 
 // MARK: - Customization Panel
 struct CustomizationPanel: View {
-    @Binding var selectedTheme: AppTheme
     @Binding var animationSpeed: AnimationSpeed
     @Binding var isVisible: Bool
     
@@ -1346,37 +1281,6 @@ struct CustomizationPanel: View {
                         .font(.system(size: 14))
                 }
                 .buttonStyle(EnhancedAppleButtonStyle())
-            }
-            
-            // Theme Selection
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Theme")
-                    .font(.system(size: 14, weight: .medium))
-                
-                ForEach(AppTheme.allCases, id: \.self) { theme in
-                    Button(action: { selectedTheme = theme }) {
-                        HStack {
-                            Image(systemName: theme.icon)
-                                .font(.system(size: 14))
-                            Text(theme.rawValue)
-                                .font(.system(size: 14))
-                            Spacer()
-                            if selectedTheme == theme {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .foregroundColor(.primary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(selectedTheme == theme ? Color(.controlColor) : Color.clear)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                }
             }
             
             // Animation Speed
