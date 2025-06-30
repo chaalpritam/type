@@ -106,14 +106,14 @@ Mike! I didn't expect to see you here.
 - [ ] **iCloud sync** for seamless cross-device access
 
 #### Enhanced Editor Features
-- [ ] **Spell check and grammar** with screenplay-specific dictionaries
-- [ ] **Auto-completion** for character names, scene headings, transitions
-- [ ] **Smart formatting** (auto-capitalize character names, proper spacing)
-- [ ] **Undo/redo** with better state management
-- [ ] **Find and replace** functionality with regex support
+- [x] **Spell check and grammar** with screenplay-specific dictionaries
+- [x] **Auto-completion** for character names, scene headings, transitions
+- [x] **Smart formatting** (auto-capitalize character names, proper spacing)
+- [x] **Undo/redo** with better state management
+- [x] **Find and replace** functionality with regex support
 - [ ] **Multiple cursors** for batch editing
-- [ ] **Line numbers** in editor
-- [ ] **Word count** and **page count** display
+- [x] **Line numbers** in editor
+- [x] **Word count** and **page count** display
 
 #### Advanced Fountain Support
 - [ ] **Force elements** (use `!` for forced scene headings, `@` for forced action)
