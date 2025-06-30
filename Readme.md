@@ -175,11 +175,11 @@ Mike! I didn't expect to see you here.
 ### 📱 **Medium Priority - Enhanced Features**
 
 #### Productivity Features
-- [ ] **Templates** - Pre-built screenplay templates (TV pilots, features, shorts)
-- [ ] **Character database** - Track character information and arcs
-- [ ] **Scene management** - Organize and navigate scenes efficiently
-- [ ] **Timeline view** - Visual story timeline and structure
-- [ ] **Outline mode** - Hierarchical document view
+- [x] **Templates** - Pre-built screenplay templates (TV pilots, features, shorts)
+- [x] **Character database** - Track character information and arcs
+- [x] **Scene management** - Organize and navigate scenes efficiently
+- [x] **Timeline view** - Visual story timeline and structure
+- [x] **Outline mode** - Hierarchical document view
 
 #### Advanced Fountain Features
 - [ ] **Custom elements** - User-defined Fountain elements
