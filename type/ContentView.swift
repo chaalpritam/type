@@ -34,16 +34,25 @@ struct ContentView: View {
     @State private var showStatistics: Bool = true
     @State private var isFullScreen: Bool = false
     
+    // UI/UX Enhancement states
+    @State private var isDarkMode: Bool = false
+    @State private var showCustomizationPanel: Bool = false
+    @State private var selectedTheme: AppTheme = .system
+    @State private var animationSpeed: AnimationSpeed = .normal
+    @State private var showWritingGoals: Bool = false
+    @State private var dailyWordGoal: Int = 1000
+    @State private var currentDailyWords: Int = 0
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Apple-style background
-                Color(.windowBackgroundColor)
+                // Dynamic background based on theme
+                themeBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Apple-style toolbar
-                    AppleToolbar(
+                    // Enhanced Apple-style toolbar
+                    EnhancedAppleToolbar(
                         showPreview: $showPreview,
                         showLineNumbers: $showLineNumbers,
                         showFindReplace: $showFindReplace,
@@ -54,37 +63,44 @@ struct ContentView: View {
                         onRedo: performRedo,
                         selectedFont: $selectedFont,
                         fontSize: $fontSize,
-                        isFullScreen: $isFullScreen
+                        isFullScreen: $isFullScreen,
+                        selectedTheme: $selectedTheme,
+                        showCustomizationPanel: $showCustomizationPanel,
+                        animationSpeed: $animationSpeed
                     )
                     
-                    // Find/Replace Bar with Apple styling
+                    // Find/Replace Bar with enhanced animations
                     if showFindReplace {
-                        AppleFindReplaceView(isVisible: $showFindReplace, text: $text)
+                        EnhancedAppleFindReplaceView(isVisible: $showFindReplace, text: $text)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .top).combined(with: .opacity),
                                 removal: .move(edge: .top).combined(with: .opacity)
                             ))
+                            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showFindReplace)
                     }
                     
-                    // Main Content Area
+                    // Main Content Area with enhanced animations
                     HStack(spacing: 0) {
                         // Editor Panel
                         VStack(spacing: 0) {
-                            // Apple-style editor header
-                            AppleEditorHeader(
+                            // Enhanced editor header
+                            EnhancedAppleEditorHeader(
                                 wordCount: wordCount,
                                 pageCount: pageCount,
                                 characterCount: characterCount,
                                 showStatistics: showStatistics,
-                                showAutoCompletion: $showAutoCompletion
+                                showAutoCompletion: $showAutoCompletion,
+                                showWritingGoals: $showWritingGoals,
+                                dailyWordGoal: dailyWordGoal,
+                                currentDailyWords: currentDailyWords
                             )
                             
-                            // Apple-style editor content
+                            // Enhanced editor content
                             ZStack(alignment: .topLeading) {
-                                // Apple-style paper background
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(.textBackgroundColor))
-                                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                                // Enhanced paper background
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(themePaperBackground)
+                                    .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 
                                 // Enhanced Fountain Text Editor
@@ -115,9 +131,9 @@ struct ContentView: View {
                                     updateStatistics(text: newValue)
                                 }
                                 
-                                // Apple-style auto-completion overlay
+                                // Enhanced auto-completion overlay
                                 if showAutoCompletion && autoCompletionManager.showSuggestions {
-                                    AppleAutoCompletionOverlay(
+                                    EnhancedAppleAutoCompletionOverlay(
                                         suggestions: autoCompletionManager.suggestions,
                                         selectedIndex: autoCompletionManager.selectedIndex,
                                         onSelect: { suggestion in
@@ -125,43 +141,68 @@ struct ContentView: View {
                                             autoCompletionManager.hideSuggestions()
                                         }
                                     )
+                                    .transition(.scale.combined(with: .opacity))
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: autoCompletionManager.showSuggestions)
                                 }
                             }
                             .padding(.horizontal, 20)
                             .padding(.bottom, 20)
                         }
                         .frame(width: showPreview ? geometry.size.width * 0.5 : geometry.size.width)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .leading),
+                            removal: .move(edge: .leading)
+                        ))
+                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showPreview)
                         
-                        // Preview Panel
+                        // Preview Panel with enhanced styling
                         if showPreview {
                             VStack(spacing: 0) {
-                                // Apple-style preview header
-                                ApplePreviewHeader(elementCount: fountainParser.elements.count)
+                                // Enhanced preview header
+                                EnhancedApplePreviewHeader(elementCount: fountainParser.elements.count)
                                 
-                                // Apple-style preview content
+                                // Enhanced preview content
                                 ScreenplayPreview(
                                     elements: fountainParser.elements,
                                     titlePage: fountainParser.titlePage
                                 )
-                                .background(Color(.textBackgroundColor))
-                                .cornerRadius(8)
-                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                                .background(themePaperBackground)
+                                .cornerRadius(12)
+                                .shadow(color: themeShadowColor, radius: 12, x: 0, y: 4)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 20)
                             }
                             .frame(width: geometry.size.width * 0.5)
-                            .background(Color(.windowBackgroundColor))
+                            .background(themeBackground)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .trailing)
+                            ))
+                            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showPreview)
                         }
                     }
                     
-                    // Apple-style status bar
-                    AppleStatusBar(
+                    // Enhanced status bar
+                    EnhancedAppleStatusBar(
                         wordCount: wordCount,
                         pageCount: pageCount,
                         characterCount: characterCount,
                         showStatistics: $showStatistics,
-                        smartFormattingManager: smartFormattingManager
+                        smartFormattingManager: smartFormattingManager,
+                        selectedTheme: selectedTheme,
+                        animationSpeed: animationSpeed
                     )
+                }
+                
+                // Customization panel overlay
+                if showCustomizationPanel {
+                    CustomizationPanel(
+                        selectedTheme: $selectedTheme,
+                        animationSpeed: $animationSpeed,
+                        isVisible: $showCustomizationPanel
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showCustomizationPanel)
                 }
             }
             .onAppear {
@@ -207,6 +248,41 @@ struct ContentView: View {
             .sheet(isPresented: $showHelp) {
                 FountainHelpView(isPresented: $showHelp)
             }
+            .preferredColorScheme(selectedTheme.colorScheme)
+        }
+    }
+    
+    // MARK: - Theme Properties
+    private var themeBackground: Color {
+        switch selectedTheme {
+        case .light:
+            return Color(.windowBackgroundColor)
+        case .dark:
+            return Color(.windowBackgroundColor)
+        case .system:
+            return Color(.windowBackgroundColor)
+        }
+    }
+    
+    private var themePaperBackground: Color {
+        switch selectedTheme {
+        case .light:
+            return Color(.textBackgroundColor)
+        case .dark:
+            return Color(.textBackgroundColor)
+        case .system:
+            return Color(.textBackgroundColor)
+        }
+    }
+    
+    private var themeShadowColor: Color {
+        switch selectedTheme {
+        case .light:
+            return Color.black.opacity(0.08)
+        case .dark:
+            return Color.black.opacity(0.3)
+        case .system:
+            return Color.black.opacity(0.08)
         }
     }
     
@@ -233,6 +309,7 @@ struct ContentView: View {
         let words = text.components(separatedBy: .whitespacesAndNewlines)
             .filter { !$0.isEmpty && !$0.hasPrefix("#") && !$0.hasPrefix("=") && !$0.hasPrefix("[[") && !$0.hasPrefix(">") }
         wordCount = words.count
+        currentDailyWords = words.count // Simplified for demo
         
         // Character count (excluding whitespace)
         characterCount = text.replacingOccurrences(of: "\\s", with: "", options: .regularExpression).count
@@ -243,8 +320,53 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Apple-style Toolbar
-struct AppleToolbar: View {
+// MARK: - Theme and Animation Enums
+enum AppTheme: String, CaseIterable {
+    case light = "Light"
+    case dark = "Dark"
+    case system = "System"
+    
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light: return .light
+        case .dark: return .dark
+        case .system: return nil
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        case .system: return "gear"
+        }
+    }
+}
+
+enum AnimationSpeed: String, CaseIterable {
+    case slow = "Slow"
+    case normal = "Normal"
+    case fast = "Fast"
+    
+    var duration: Double {
+        switch self {
+        case .slow: return 0.8
+        case .normal: return 0.4
+        case .fast: return 0.2
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .slow: return "tortoise"
+        case .normal: return "speedometer"
+        case .fast: return "hare"
+        }
+    }
+}
+
+// MARK: - Enhanced Apple-style Toolbar
+struct EnhancedAppleToolbar: View {
     @Binding var showPreview: Bool
     @Binding var showLineNumbers: Bool
     @Binding var showFindReplace: Bool
@@ -256,24 +378,27 @@ struct AppleToolbar: View {
     @Binding var selectedFont: String
     @Binding var fontSize: CGFloat
     @Binding var isFullScreen: Bool
+    @Binding var selectedTheme: AppTheme
+    @Binding var showCustomizationPanel: Bool
+    @Binding var animationSpeed: AnimationSpeed
     
     var body: some View {
         HStack(spacing: 12) {
-            // File operations with Apple styling
+            // File operations with enhanced styling
             HStack(spacing: 6) {
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "doc.badge.plus",
                     label: "New",
                     action: {}
                 )
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "folder",
                     label: "Open",
                     action: {}
                 )
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "square.and.arrow.down",
                     label: "Save",
                     action: {}
@@ -284,19 +409,19 @@ struct AppleToolbar: View {
             
             // Edit operations
             HStack(spacing: 6) {
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.uturn.backward",
                     action: onUndo
                 )
                 .disabled(!canUndo)
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.uturn.forward",
                     action: onRedo
                 )
                 .disabled(!canRedo)
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "magnifyingglass",
                     action: { showFindReplace.toggle() }
                 )
@@ -304,7 +429,7 @@ struct AppleToolbar: View {
             
             AppleDivider()
             
-            // Formatting options with Apple styling
+            // Formatting options with enhanced styling
             HStack(spacing: 8) {
                 Picker("Font", selection: $selectedFont) {
                     Text("SF Mono").tag("SF Mono")
@@ -315,7 +440,7 @@ struct AppleToolbar: View {
                 .frame(width: 100)
                 
                 HStack(spacing: 4) {
-                    AppleToolbarButton(
+                    EnhancedAppleToolbarButton(
                         icon: "textformat.size.smaller",
                         action: { fontSize = max(10, fontSize - 1) }
                     )
@@ -325,7 +450,7 @@ struct AppleToolbar: View {
                         .foregroundColor(.secondary)
                         .frame(width: 25)
                     
-                    AppleToolbarButton(
+                    EnhancedAppleToolbarButton(
                         icon: "textformat.size.larger",
                         action: { fontSize = min(20, fontSize + 1) }
                     )
@@ -334,24 +459,29 @@ struct AppleToolbar: View {
             
             Spacer()
             
-            // View controls
+            // View controls with customization
             HStack(spacing: 6) {
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: showLineNumbers ? "list.number" : "list.number.fill",
                     action: { showLineNumbers.toggle() }
                 )
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
+                    icon: "paintbrush",
+                    action: { showCustomizationPanel.toggle() }
+                )
+                
+                EnhancedAppleToolbarButton(
                     icon: "questionmark.circle",
                     action: { showHelp = true }
                 )
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: showPreview ? "eye.slash" : "eye",
                     action: { showPreview.toggle() }
                 )
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: isFullScreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right",
                     action: { isFullScreen.toggle() }
                 )
@@ -369,8 +499,8 @@ struct AppleToolbar: View {
     }
 }
 
-// MARK: - Apple-style Components
-struct AppleToolbarButton: View {
+// MARK: - Enhanced Apple-style Components
+struct EnhancedAppleToolbarButton: View {
     let icon: String
     var label: String?
     let action: () -> Void
@@ -394,11 +524,11 @@ struct AppleToolbarButton: View {
             )
             .contentShape(Rectangle())
         }
-        .buttonStyle(AppleButtonStyle())
+        .buttonStyle(EnhancedAppleButtonStyle())
     }
 }
 
-struct AppleButtonStyle: ButtonStyle {
+struct EnhancedAppleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(
@@ -410,21 +540,16 @@ struct AppleButtonStyle: ButtonStyle {
     }
 }
 
-struct AppleDivider: View {
-    var body: some View {
-        Rectangle()
-            .frame(width: 1, height: 16)
-            .foregroundColor(Color(.separatorColor))
-    }
-}
-
-// MARK: - Apple-style Editor Header
-struct AppleEditorHeader: View {
+// MARK: - Enhanced Editor Header
+struct EnhancedAppleEditorHeader: View {
     let wordCount: Int
     let pageCount: Int
     let characterCount: Int
     let showStatistics: Bool
     @Binding var showAutoCompletion: Bool
+    @Binding var showWritingGoals: Bool
+    let dailyWordGoal: Int
+    let currentDailyWords: Int
     
     var body: some View {
         HStack {
@@ -436,9 +561,17 @@ struct AppleEditorHeader: View {
             
             if showStatistics {
                 HStack(spacing: 16) {
-                    AppleStatisticView(label: "Words", value: "\(wordCount)")
-                    AppleStatisticView(label: "Pages", value: "\(pageCount)")
-                    AppleStatisticView(label: "Chars", value: "\(characterCount)")
+                    EnhancedAppleStatisticView(label: "Words", value: "\(wordCount)")
+                    EnhancedAppleStatisticView(label: "Pages", value: "\(pageCount)")
+                    EnhancedAppleStatisticView(label: "Chars", value: "\(characterCount)")
+                    
+                    // Writing goal progress
+                    if showWritingGoals {
+                        WritingGoalProgressView(
+                            current: currentDailyWords,
+                            goal: dailyWordGoal
+                        )
+                    }
                 }
             }
             
@@ -447,7 +580,14 @@ struct AppleEditorHeader: View {
                     .font(.system(size: 14))
                     .foregroundColor(.primary)
             }
-            .buttonStyle(AppleButtonStyle())
+            .buttonStyle(EnhancedAppleButtonStyle())
+            
+            Button(action: { showWritingGoals.toggle() }) {
+                Image(systemName: "target")
+                    .font(.system(size: 14))
+                    .foregroundColor(.primary)
+            }
+            .buttonStyle(EnhancedAppleButtonStyle())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -455,8 +595,73 @@ struct AppleEditorHeader: View {
     }
 }
 
-// MARK: - Apple-style Preview Header
-struct ApplePreviewHeader: View {
+// MARK: - Enhanced Supporting Views
+struct EnhancedAppleStatisticView: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 12, weight: .semibold))
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+struct WritingGoalProgressView: View {
+    let current: Int
+    let goal: Int
+    
+    private var progress: Double {
+        min(Double(current) / Double(goal), 1.0)
+    }
+    
+    var body: some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 4) {
+                Text("\(current)")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("/")
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                Text("\(goal)")
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+            }
+            
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Rectangle()
+                        .fill(Color(.separatorColor))
+                        .frame(height: 2)
+                    
+                    Rectangle()
+                        .fill(progressColor)
+                        .frame(width: geometry.size.width * progress, height: 2)
+                        .animation(.easeInOut(duration: 0.3), value: progress)
+                }
+            }
+            .frame(width: 40, height: 2)
+        }
+    }
+    
+    private var progressColor: Color {
+        if progress >= 1.0 {
+            return .green
+        } else if progress >= 0.7 {
+            return .orange
+        } else {
+            return .blue
+        }
+    }
+}
+
+// MARK: - Enhanced Preview Header
+struct EnhancedApplePreviewHeader: View {
     let elementCount: Int
     
     var body: some View {
@@ -477,13 +682,15 @@ struct ApplePreviewHeader: View {
     }
 }
 
-// MARK: - Apple-style Status Bar
-struct AppleStatusBar: View {
+// MARK: - Enhanced Status Bar
+struct EnhancedAppleStatusBar: View {
     let wordCount: Int
     let pageCount: Int
     let characterCount: Int
     @Binding var showStatistics: Bool
     let smartFormattingManager: SmartFormattingManager
+    let selectedTheme: AppTheme
+    let animationSpeed: AnimationSpeed
     
     var body: some View {
         HStack(spacing: 16) {
@@ -509,7 +716,7 @@ struct AppleStatusBar: View {
                 }
                 .foregroundColor(.secondary)
             }
-            .buttonStyle(AppleButtonStyle())
+            .buttonStyle(EnhancedAppleButtonStyle())
             
             // Right side - Additional info
             HStack(spacing: 16) {
@@ -539,8 +746,101 @@ struct AppleStatusBar: View {
     }
 }
 
-// MARK: - Apple-style Supporting Views
-struct AppleAutoCompletionOverlay: View {
+// MARK: - Customization Panel
+struct CustomizationPanel: View {
+    @Binding var selectedTheme: AppTheme
+    @Binding var animationSpeed: AnimationSpeed
+    @Binding var isVisible: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // Header
+            HStack {
+                Text("Customization")
+                    .font(.system(size: 16, weight: .semibold))
+                Spacer()
+                Button(action: { isVisible = false }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14))
+                }
+                .buttonStyle(EnhancedAppleButtonStyle())
+            }
+            
+            // Theme Selection
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Theme")
+                    .font(.system(size: 14, weight: .medium))
+                
+                ForEach(AppTheme.allCases, id: \.self) { theme in
+                    Button(action: { selectedTheme = theme }) {
+                        HStack {
+                            Image(systemName: theme.icon)
+                                .font(.system(size: 14))
+                            Text(theme.rawValue)
+                                .font(.system(size: 14))
+                            Spacer()
+                            if selectedTheme == theme {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(selectedTheme == theme ? Color(.controlColor) : Color.clear)
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            
+            // Animation Speed
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Animation Speed")
+                    .font(.system(size: 14, weight: .medium))
+                
+                ForEach(AnimationSpeed.allCases, id: \.self) { speed in
+                    Button(action: { animationSpeed = speed }) {
+                        HStack {
+                            Image(systemName: speed.icon)
+                                .font(.system(size: 14))
+                            Text(speed.rawValue)
+                                .font(.system(size: 14))
+                            Spacer()
+                            if animationSpeed == speed {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(animationSpeed == speed ? Color(.controlColor) : Color.clear)
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(20)
+        .frame(width: 250)
+        .background(.ultraThinMaterial)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
+        .padding(.trailing, 20)
+    }
+}
+
+// MARK: - Enhanced Auto-completion Overlay
+struct EnhancedAppleAutoCompletionOverlay: View {
     let suggestions: [String]
     let selectedIndex: Int
     let onSelect: (String) -> Void
@@ -574,23 +874,8 @@ struct AppleAutoCompletionOverlay: View {
     }
 }
 
-struct AppleStatisticView: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.system(size: 12, weight: .semibold))
-            Text(label)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-        }
-    }
-}
-
-// MARK: - Apple-style Find/Replace View
-struct AppleFindReplaceView: View {
+// MARK: - Enhanced Find/Replace View
+struct EnhancedAppleFindReplaceView: View {
     @Binding var isVisible: Bool
     @Binding var text: String
     @State private var searchText: String = ""
@@ -657,25 +942,25 @@ struct AppleFindReplaceView: View {
             
             // Action buttons
             HStack(spacing: 6) {
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.up",
                     action: previousResult
                 )
                 .disabled(searchResults.isEmpty)
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.down",
                     action: nextResult
                 )
                 .disabled(searchResults.isEmpty)
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.triangle.2.circlepath",
                     action: replaceCurrent
                 )
                 .disabled(searchResults.isEmpty)
                 
-                AppleToolbarButton(
+                EnhancedAppleToolbarButton(
                     icon: "arrow.triangle.2.circlepath.circle",
                     action: replaceAll
                 )
@@ -683,7 +968,7 @@ struct AppleFindReplaceView: View {
             }
             
             // Close button
-            AppleToolbarButton(
+            EnhancedAppleToolbarButton(
                 icon: "xmark",
                 action: { isVisible = false }
             )
@@ -717,6 +1002,14 @@ struct AppleFindReplaceView: View {
     
     private func replaceAll() {
         // Implementation would go here
+    }
+}
+
+struct AppleDivider: View {
+    var body: some View {
+        Rectangle()
+            .frame(width: 1, height: 16)
+            .foregroundColor(Color(.separatorColor))
     }
 }
 
