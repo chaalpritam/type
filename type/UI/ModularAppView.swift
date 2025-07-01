@@ -281,13 +281,13 @@ struct ModularContentView: View {
         Group {
             switch appCoordinator.currentView {
             case .editor:
-                EditorView(coordinator: appCoordinator.editorCoordinator)
+                appCoordinator.editorCoordinator.createView()
             case .characters:
-                CharacterView(coordinator: appCoordinator.characterCoordinator)
+                appCoordinator.characterCoordinator.createView()
             case .outline:
-                OutlineView(coordinator: appCoordinator.outlineCoordinator)
+                appCoordinator.outlineCoordinator.createView()
             case .collaboration:
-                CollaborationView(coordinator: appCoordinator.collaborationCoordinator)
+                appCoordinator.collaborationCoordinator.createView()
             }
         }
         .background(Color.white)
@@ -328,58 +328,5 @@ struct ModularStatusBar: View {
         .padding(.vertical, 4)
         .background(Color(.systemGray6))
         .border(Color(.systemGray4), width: 0.5)
-    }
-}
-
-// MARK: - Placeholder Views (to be implemented)
-struct EditorView: View {
-    @ObservedObject var coordinator: EditorCoordinator
-    
-    var body: some View {
-        VStack {
-            Text("Editor View")
-                .font(.title)
-            Text("Text: \(coordinator.text.prefix(50))...")
-                .font(.caption)
-        }
-    }
-}
-
-struct CharacterView: View {
-    @ObservedObject var coordinator: CharacterCoordinator
-    
-    var body: some View {
-        VStack {
-            Text("Character View")
-                .font(.title)
-            Text("Characters: \(coordinator.characters.count)")
-                .font(.caption)
-        }
-    }
-}
-
-struct OutlineView: View {
-    @ObservedObject var coordinator: OutlineCoordinator
-    
-    var body: some View {
-        VStack {
-            Text("Outline View")
-                .font(.title)
-            Text("Outlines: \(coordinator.outlines.count)")
-                .font(.caption)
-        }
-    }
-}
-
-struct CollaborationView: View {
-    @ObservedObject var coordinator: CollaborationCoordinator
-    
-    var body: some View {
-        VStack {
-            Text("Collaboration View")
-                .font(.title)
-            Text("Collaborators: \(coordinator.collaborators.count)")
-                .font(.caption)
-        }
     }
 } 

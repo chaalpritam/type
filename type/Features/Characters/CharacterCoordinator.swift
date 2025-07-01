@@ -10,7 +10,9 @@ import Core.ModuleCoordinator
 // MARK: - Character Coordinator
 /// Coordinates all character-related functionality
 @MainActor
-class CharacterCoordinator: BaseModuleCoordinator {
+class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
+    typealias ModuleView = CharacterMainView
+    
     // MARK: - Published Properties
     @Published var characters: [Character] = []
     @Published var selectedCharacter: Character?
@@ -49,6 +51,12 @@ class CharacterCoordinator: BaseModuleCoordinator {
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
         setupCharacterBindings()
+    }
+    
+    // MARK: - ModuleCoordinator Implementation
+    
+    func createView() -> CharacterMainView {
+        return CharacterMainView(coordinator: self)
     }
     
     // MARK: - Public Methods
@@ -180,6 +188,107 @@ class CharacterCoordinator: BaseModuleCoordinator {
     }
 }
 
+// MARK: - Character Main View
+struct CharacterMainView: View {
+    @ObservedObject var coordinator: CharacterCoordinator
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Main character list
+            VStack(spacing: 0) {
+                // Character toolbar
+                CharacterToolbarView(coordinator: coordinator)
+                
+                // Character content
+                CharacterDatabaseView(
+                    characterDatabase: coordinator.characterDatabase,
+                    isVisible: .constant(true)
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
+            // Detail panel
+            if coordinator.showCharacterDetail, let character = coordinator.selectedCharacter {
+                CharacterDetailView(
+                    character: character,
+                    characterDatabase: coordinator.characterDatabase
+                )
+                .frame(width: 350)
+                .transition(.move(edge: .trailing))
+            }
+        }
+        .sheet(isPresented: $coordinator.showCharacterEdit) {
+            if let character = coordinator.selectedCharacter {
+                CharacterEditView(
+                    character: character,
+                    characterDatabase: coordinator.characterDatabase,
+                    isNewCharacter: false
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Character Toolbar View
+struct CharacterToolbarView: View {
+    @ObservedObject var coordinator: CharacterCoordinator
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Character operations
+            HStack(spacing: 8) {
+                Button("New Character") {
+                    coordinator.createNewCharacter()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Import") {
+                    Task {
+                        try? await coordinator.importCharacters()
+                    }
+                }
+                .buttonStyle(.bordered)
+                
+                Button("Export") {
+                    Task {
+                        try? await coordinator.exportCharacters()
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            Divider()
+            
+            // Filter controls
+            HStack(spacing: 8) {
+                Picker("Filter", selection: $coordinator.selectedFilter) {
+                    ForEach(CharacterFilter.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            Spacer()
+            
+            // Statistics
+            HStack(spacing: 16) {
+                Text("Total: \(coordinator.statistics.totalCharacters)")
+                    .font(.caption)
+                Text("With Dialogue: \(coordinator.statistics.charactersWithDialogue)")
+                    .font(.caption)
+                Text("With Arcs: \(coordinator.statistics.charactersWithArcs)")
+                    .font(.caption)
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .border(Color(.systemGray4), width: 0.5)
+    }
+}
+
 // MARK: - Character Filter
 enum CharacterFilter: String, CaseIterable {
     case all = "All"
@@ -190,7 +299,7 @@ enum CharacterFilter: String, CaseIterable {
     var icon: String {
         switch self {
         case .all: return "person.2"
-        case .withDialogue: return "bubble.left"
+        case .withDialogue: return "message"
         case .withArcs: return "chart.line.uptrend.xyaxis"
         case .recentlyUpdated: return "clock"
         }

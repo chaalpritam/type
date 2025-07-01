@@ -8,7 +8,9 @@ import Features.Collaboration.CollaborationManager
 // MARK: - Collaboration Coordinator
 /// Coordinates all collaboration-related functionality
 @MainActor
-class CollaborationCoordinator: BaseModuleCoordinator {
+class CollaborationCoordinator: BaseModuleCoordinator, ModuleCoordinator {
+    typealias ModuleView = CollaborationMainView
+    
     // MARK: - Published Properties
     @Published var collaborators: [Collaborator] = []
     @Published var comments: [Comment] = []
@@ -42,6 +44,12 @@ class CollaborationCoordinator: BaseModuleCoordinator {
         self.collaborationManager = CollaborationManager(documentId: documentId)
         super.init(documentService: documentService)
         setupCollaborationBindings()
+    }
+    
+    // MARK: - ModuleCoordinator Implementation
+    
+    func createView() -> CollaborationMainView {
+        return CollaborationMainView(coordinator: self)
     }
     
     // MARK: - Public Methods
@@ -211,6 +219,294 @@ class CollaborationCoordinator: BaseModuleCoordinator {
                 self?.versions = versions
             }
             .store(in: &cancellables)
+    }
+}
+
+// MARK: - Collaboration Main View
+struct CollaborationMainView: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Main collaboration dashboard
+            VStack(spacing: 0) {
+                // Collaboration toolbar
+                CollaborationToolbarView(coordinator: coordinator)
+                
+                // Collaboration content
+                CollaborationDashboardView(coordinator: coordinator)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
+            // Side panels
+            VStack(spacing: 0) {
+                if coordinator.showCommentsPanel {
+                    CommentsPanel(
+                        collaborationManager: coordinator.collaborationManager,
+                        isVisible: $coordinator.showCommentsPanel
+                    )
+                    .frame(width: 350)
+                    .transition(.move(edge: .trailing))
+                }
+                
+                if coordinator.showVersionHistory {
+                    VersionHistory(
+                        collaborationManager: coordinator.collaborationManager,
+                        isVisible: $coordinator.showVersionHistory
+                    )
+                    .frame(width: 350)
+                    .transition(.move(edge: .trailing))
+                }
+                
+                if coordinator.showCollaboratorsPanel {
+                    CollaboratorsPanel(
+                        collaborationManager: coordinator.collaborationManager,
+                        isVisible: $coordinator.showCollaboratorsPanel
+                    )
+                    .frame(width: 300)
+                    .transition(.move(edge: .trailing))
+                }
+            }
+        }
+        .sheet(isPresented: $coordinator.showSharingDialog) {
+            SharingDialog(coordinator: coordinator)
+        }
+    }
+}
+
+// MARK: - Collaboration Toolbar View
+struct CollaborationToolbarView: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Collaboration controls
+            HStack(spacing: 8) {
+                Button(coordinator.isCollaborating ? "Stop Collaboration" : "Start Collaboration") {
+                    if coordinator.isCollaborating {
+                        coordinator.stopCollaboration()
+                    } else {
+                        coordinator.startCollaboration()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .background(coordinator.isCollaborating ? Color.red.opacity(0.2) : Color.green.opacity(0.2))
+                
+                Button("Share") {
+                    coordinator.shareDocument()
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            Divider()
+            
+            // Panel toggles
+            HStack(spacing: 8) {
+                Button("Comments") {
+                    coordinator.toggleCommentsPanel()
+                }
+                .background(coordinator.showCommentsPanel ? Color.blue.opacity(0.2) : Color.clear)
+                
+                Button("Versions") {
+                    coordinator.toggleVersionHistory()
+                }
+                .background(coordinator.showVersionHistory ? Color.blue.opacity(0.2) : Color.clear)
+                
+                Button("Collaborators") {
+                    coordinator.toggleCollaboratorsPanel()
+                }
+                .background(coordinator.showCollaboratorsPanel ? Color.blue.opacity(0.2) : Color.clear)
+            }
+            
+            Spacer()
+            
+            // Statistics
+            HStack(spacing: 16) {
+                Text("Collaborators: \(coordinator.collaborators.count)")
+                    .font(.caption)
+                Text("Comments: \(coordinator.comments.count)")
+                    .font(.caption)
+                Text("Versions: \(coordinator.versions.count)")
+                    .font(.caption)
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .border(Color(.systemGray4), width: 0.5)
+    }
+}
+
+// MARK: - Collaboration Dashboard View
+struct CollaborationDashboardView: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Collaboration status
+                CollaborationStatusCard(coordinator: coordinator)
+                
+                // Recent activity
+                RecentActivityCard(coordinator: coordinator)
+                
+                // Quick actions
+                QuickActionsCard(coordinator: coordinator)
+            }
+            .padding()
+        }
+    }
+}
+
+// MARK: - Collaboration Status Card
+struct CollaborationStatusCard: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Collaboration Status")
+                .font(.headline)
+            
+            HStack {
+                Circle()
+                    .fill(coordinator.isCollaborating ? Color.green : Color.gray)
+                    .frame(width: 12, height: 12)
+                
+                Text(coordinator.isCollaborating ? "Active" : "Inactive")
+                    .font(.subheadline)
+                    .foregroundColor(coordinator.isCollaborating ? .green : .secondary)
+            }
+            
+            if coordinator.isCollaborating {
+                Text("\(coordinator.collaborators.count) collaborators online")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Recent Activity Card
+struct RecentActivityCard: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recent Activity")
+                .font(.headline)
+            
+            if coordinator.comments.isEmpty && coordinator.versions.isEmpty {
+                Text("No recent activity")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(coordinator.comments.prefix(3), id: \.id) { comment in
+                        HStack {
+                            Text("• Comment on line \(comment.lineNumber ?? 0)")
+                                .font(.caption)
+                            Spacer()
+                            Text(comment.createdAt, style: .relative)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Quick Actions Card
+struct QuickActionsCard: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick Actions")
+                .font(.headline)
+            
+            VStack(spacing: 8) {
+                Button("Create Version") {
+                    coordinator.createVersion("Auto-save", description: "Auto-generated version")
+                }
+                .buttonStyle(.bordered)
+                
+                Button("Export Comments") {
+                    Task {
+                        try? await coordinator.exportComments()
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Sharing Dialog
+struct SharingDialog: View {
+    @ObservedObject var coordinator: CollaborationCoordinator
+    @Environment(\.dismiss) private var dismiss
+    @State private var emailAddresses = ""
+    @State private var selectedRole: CollaboratorRole = .commenter
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Share Document")
+                .font(.title2)
+                .fontWeight(.semibold)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Email Addresses")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                TextField("Enter email addresses separated by commas", text: $emailAddresses, axis: .vertical)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .lineLimit(2...4)
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Permission Level")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Picker("Role", selection: $selectedRole) {
+                    ForEach(CollaboratorRole.allCases, id: \.self) { role in
+                        Text(role.rawValue).tag(role)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            HStack {
+                Button("Cancel") {
+                    dismiss()
+                }
+                .buttonStyle(.bordered)
+                
+                Spacer()
+                
+                Button("Share") {
+                    // Implementation would go here
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(emailAddresses.isEmpty)
+            }
+        }
+        .padding()
+        .frame(width: 400)
     }
 }
 

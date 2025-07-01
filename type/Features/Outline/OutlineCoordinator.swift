@@ -10,7 +10,9 @@ import Core.ModuleCoordinator
 // MARK: - Outline Coordinator
 /// Coordinates all outline-related functionality
 @MainActor
-class OutlineCoordinator: BaseModuleCoordinator {
+class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
+    typealias ModuleView = OutlineMainView
+    
     // MARK: - Published Properties
     @Published var outlines: [Outline] = []
     @Published var selectedOutline: Outline?
@@ -51,49 +53,44 @@ class OutlineCoordinator: BaseModuleCoordinator {
         setupOutlineBindings()
     }
     
+    // MARK: - ModuleCoordinator Implementation
+    
+    func createView() -> OutlineMainView {
+        return OutlineMainView(coordinator: self)
+    }
+    
     // MARK: - Public Methods
     
     override func updateDocument(_ document: ScreenplayDocument?) {
         if let document = document {
-            // Parse outlines from Fountain content
-            let fountainParser = FountainParser()
-            fountainParser.parse(document.content)
-            outlineDatabase.parseOutlinesFromFountain(fountainParser.elements)
-            
-            // Update local state
-            outlines = outlineDatabase.outlines
+            // Update outline database with new document
+            outlineDatabase.updateOutline(outlineDatabase.outline)
             updateStatistics()
         } else {
-            outlines = []
+            // Clear outline when no document
             updateStatistics()
         }
     }
     
     func addOutline(_ outline: Outline) {
-        outlineDatabase.addOutline(outline)
-        outlines = outlineDatabase.outlines
+        outlines.append(outline)
         updateStatistics()
     }
     
     func updateOutline(_ outline: Outline) {
-        outlineDatabase.updateOutline(outline)
-        outlines = outlineDatabase.outlines
-        updateStatistics()
-        
-        if selectedOutline?.id == outline.id {
-            selectedOutline = outline
+        if let index = outlines.firstIndex(where: { $0.id == outline.id }) {
+            outlines[index] = outline
+            updateStatistics()
         }
     }
     
     func deleteOutline(_ outline: Outline) {
-        outlineDatabase.deleteOutline(outline)
-        outlines = outlineDatabase.outlines
-        updateStatistics()
-        
+        outlines.removeAll { $0.id == outline.id }
         if selectedOutline?.id == outline.id {
             selectedOutline = nil
             showOutlineDetail = false
         }
+        updateStatistics()
     }
     
     func selectOutline(_ outline: Outline) {
@@ -107,7 +104,7 @@ class OutlineCoordinator: BaseModuleCoordinator {
     }
     
     func createNewOutline() {
-        let newOutline = Outline(title: "New Outline", description: "")
+        let newOutline = Outline(title: "New Outline", description: "Outline description")
         selectedOutline = newOutline
         showOutlineEdit = true
     }
@@ -198,6 +195,189 @@ class OutlineCoordinator: BaseModuleCoordinator {
     
     private func updateStatistics() {
         statistics = outlineDatabase.statistics
+    }
+}
+
+// MARK: - Outline Main View
+struct OutlineMainView: View {
+    @ObservedObject var coordinator: OutlineCoordinator
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            // Main outline view
+            VStack(spacing: 0) {
+                // Outline toolbar
+                OutlineToolbarView(coordinator: coordinator)
+                
+                // Outline content
+                OutlineView(
+                    outlineDatabase: coordinator.outlineDatabase,
+                    isVisible: .constant(true)
+                )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
+            // Detail panel
+            if coordinator.showOutlineDetail, let outline = coordinator.selectedOutline {
+                OutlineDetailPanel(outline: outline, coordinator: coordinator)
+                    .frame(width: 350)
+                    .transition(.move(edge: .trailing))
+            }
+        }
+        .sheet(isPresented: $coordinator.showOutlineEdit) {
+            if let outline = coordinator.selectedOutline {
+                OutlineEditView(outline: outline, coordinator: coordinator)
+            }
+        }
+    }
+}
+
+// MARK: - Outline Toolbar View
+struct OutlineToolbarView: View {
+    @ObservedObject var coordinator: OutlineCoordinator
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Outline operations
+            HStack(spacing: 8) {
+                Button("New Outline") {
+                    coordinator.createNewOutline()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Generate from Document") {
+                    coordinator.generateOutlineFromDocument()
+                }
+                .buttonStyle(.bordered)
+                
+                Button("Import") {
+                    Task {
+                        try? await coordinator.importOutline()
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            Divider()
+            
+            // Filter controls
+            HStack(spacing: 8) {
+                Picker("Filter", selection: $coordinator.selectedFilter) {
+                    ForEach(OutlineFilter.allCases, id: \.self) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            Spacer()
+            
+            // Statistics
+            HStack(spacing: 16) {
+                Text("Total Nodes: \(coordinator.statistics.totalNodes)")
+                    .font(.caption)
+                Text("Total Sections: \(coordinator.statistics.totalSections)")
+                    .font(.caption)
+                Text("Total Words: \(coordinator.statistics.totalWords)")
+                    .font(.caption)
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .border(Color(.systemGray4), width: 0.5)
+    }
+}
+
+// MARK: - Outline Detail Panel
+struct OutlineDetailPanel: View {
+    let outline: Outline
+    @ObservedObject var coordinator: OutlineCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Outline Details")
+                .font(.headline)
+                .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Title: \(outline.title)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Text("Description: \(outline.description)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text("Status: \(outline.status.rawValue)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text("Items: \(outline.items.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+        }
+        .padding(.vertical)
+        .background(Color(.systemGray6))
+        .border(Color(.systemGray4), width: 0.5)
+    }
+}
+
+// MARK: - Outline Edit View
+struct OutlineEditView: View {
+    let outline: Outline
+    @ObservedObject var coordinator: OutlineCoordinator
+    @Environment(\.dismiss) private var dismiss
+    @State private var title: String
+    @State private var description: String
+    @State private var status: OutlineStatus
+    
+    init(outline: Outline, coordinator: OutlineCoordinator) {
+        self.outline = outline
+        self.coordinator = coordinator
+        self._title = State(initialValue: outline.title)
+        self._description = State(initialValue: outline.description)
+        self._status = State(initialValue: outline.status)
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Basic Information") {
+                    TextField("Title", text: $title)
+                    TextField("Description", text: $description, axis: .vertical)
+                        .lineLimit(3...6)
+                    Picker("Status", selection: $status) {
+                        ForEach(OutlineStatus.allCases, id: \.self) { status in
+                            Text(status.rawValue).tag(status)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Edit Outline")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Save") {
+                        var updatedOutline = outline
+                        updatedOutline.title = title
+                        updatedOutline.description = description
+                        updatedOutline.status = status
+                        coordinator.updateOutline(updatedOutline)
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 

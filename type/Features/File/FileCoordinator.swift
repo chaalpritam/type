@@ -8,7 +8,9 @@ import Core.ModuleCoordinator
 // MARK: - File Coordinator
 /// Coordinates all file-related operations
 @MainActor
-class FileCoordinator: BaseModuleCoordinator {
+class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
+    typealias ModuleView = FileMainView
+    
     // MARK: - Published Properties
     @Published var showSaveDialog: Bool = false
     @Published var showOpenDialog: Bool = false
@@ -16,6 +18,7 @@ class FileCoordinator: BaseModuleCoordinator {
     @Published var showUnsavedChangesAlert: Bool = false
     @Published var exportFormat: ExportFormat = .pdf
     @Published var isExporting: Bool = false
+    @Published var showRecentFiles: Bool = false
     
     // MARK: - Computed Properties
     var canSave: Bool {
@@ -34,6 +37,12 @@ class FileCoordinator: BaseModuleCoordinator {
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
         setupFileBindings()
+    }
+    
+    // MARK: - ModuleCoordinator Implementation
+    
+    func createView() -> FileMainView {
+        return FileMainView(coordinator: self)
     }
     
     // MARK: - Public Methods
@@ -114,6 +123,10 @@ class FileCoordinator: BaseModuleCoordinator {
     
     func forceSaveAs() async {
         await saveDocumentAs()
+    }
+    
+    func toggleRecentFiles() {
+        showRecentFiles.toggle()
     }
     
     // MARK: - Private Methods
@@ -199,6 +212,295 @@ class FileCoordinator: BaseModuleCoordinator {
         """
         
         return xmlString.data(using: .utf8) ?? Data()
+    }
+}
+
+// MARK: - File Main View
+struct FileMainView: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // File toolbar
+            FileToolbarView(coordinator: coordinator)
+            
+            // File content
+            FileContentView(coordinator: coordinator)
+        }
+        .sheet(isPresented: $coordinator.showRecentFiles) {
+            RecentFilesView(coordinator: coordinator)
+        }
+        .alert("Unsaved Changes", isPresented: $coordinator.showUnsavedChangesAlert) {
+            Button("Save") {
+                Task {
+                    await coordinator.forceSave()
+                }
+            }
+            Button("Don't Save", role: .cancel) { }
+        } message: {
+            Text("Do you want to save your changes before closing?")
+        }
+    }
+}
+
+// MARK: - File Toolbar View
+struct FileToolbarView: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // File operations
+            HStack(spacing: 8) {
+                Button("New") {
+                    coordinator.newDocument()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Open") {
+                    Task {
+                        await coordinator.openDocument()
+                    }
+                }
+                .buttonStyle(.bordered)
+                
+                Button("Save") {
+                    Task {
+                        await coordinator.saveDocument()
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(!coordinator.canSave)
+                
+                Button("Save As...") {
+                    Task {
+                        await coordinator.saveDocumentAs()
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+            
+            Divider()
+            
+            // Export controls
+            HStack(spacing: 8) {
+                Picker("Export Format", selection: $coordinator.exportFormat) {
+                    ForEach(ExportFormat.allCases, id: \.self) { format in
+                        Text(format.displayName).tag(format)
+                    }
+                }
+                .pickerStyle(.menu)
+                
+                Button("Export") {
+                    Task {
+                        await coordinator.exportDocument()
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(coordinator.isExporting)
+            }
+            
+            Divider()
+            
+            // Recent files
+            Button("Recent Files") {
+                coordinator.toggleRecentFiles()
+            }
+            .buttonStyle(.bordered)
+            
+            Spacer()
+            
+            // Document info
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(coordinator.currentDocumentName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                
+                if coordinator.isDocumentModified {
+                    Text("Modified")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .border(Color(.systemGray4), width: 0.5)
+    }
+}
+
+// MARK: - File Content View
+struct FileContentView: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Document status
+            DocumentStatusCard(coordinator: coordinator)
+            
+            // Quick actions
+            QuickActionsCard(coordinator: coordinator)
+            
+            // Export options
+            ExportOptionsCard(coordinator: coordinator)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - Document Status Card
+struct DocumentStatusCard: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Document Status")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Name:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(coordinator.currentDocumentName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+                
+                HStack {
+                    Text("Status:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(coordinator.isDocumentModified ? "Modified" : "Saved")
+                        .font(.subheadline)
+                        .foregroundColor(coordinator.isDocumentModified ? .orange : .green)
+                }
+                
+                HStack {
+                    Text("Can Save:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Text(coordinator.canSave ? "Yes" : "No")
+                        .font(.subheadline)
+                        .foregroundColor(coordinator.canSave ? .green : .red)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Quick Actions Card
+struct QuickActionsCard: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Quick Actions")
+                .font(.headline)
+            
+            VStack(spacing: 8) {
+                Button("Create New Document") {
+                    coordinator.newDocument()
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Open Recent File") {
+                    coordinator.toggleRecentFiles()
+                }
+                .buttonStyle(.bordered)
+                
+                if coordinator.isDocumentModified {
+                    Button("Save Changes") {
+                        Task {
+                            await coordinator.saveDocument()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.orange)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Export Options Card
+struct ExportOptionsCard: View {
+    @ObservedObject var coordinator: FileCoordinator
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Export Options")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(ExportFormat.allCases, id: \.self) { format in
+                    HStack {
+                        Button(format.displayName) {
+                            coordinator.exportFormat = format
+                            Task {
+                                await coordinator.exportDocument()
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(coordinator.isExporting)
+                        
+                        Spacer()
+                        
+                        Text(format.fileExtension.uppercased())
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Recent Files View
+struct RecentFilesView: View {
+    @ObservedObject var coordinator: FileCoordinator
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            List(coordinator.documentService.recentFiles, id: \.self) { url in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(url.lastPathComponent)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                    
+                    Text(url.path)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    Task {
+                        try? await coordinator.documentService.loadDocument(from: url)
+                        dismiss()
+                    }
+                }
+            }
+            .navigationTitle("Recent Files")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .frame(width: 500, height: 400)
     }
 }
 
