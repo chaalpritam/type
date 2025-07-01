@@ -4,6 +4,7 @@ import Features.Editor.EditorCoordinator
 import Features.Characters.CharacterCoordinator
 import Features.Outline.OutlineCoordinator
 import Features.Collaboration.CollaborationCoordinator
+// EnhancedAppleComponents is in the same module, no need for explicit import
 
 // MARK: - Modular App View
 /// Main app view using the modular coordinator architecture
@@ -18,25 +19,61 @@ struct ModularAppView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Main toolbar
-                    ModularToolbar(appCoordinator: appCoordinator)
+                    // Enhanced Apple-style toolbar
+                    EnhancedAppleToolbar(
+                        showPreview: $appCoordinator.editorCoordinator.showPreview,
+                        showLineNumbers: .constant(true),
+                        showFindReplace: $appCoordinator.editorCoordinator.showFindReplace,
+                        showHelp: $appCoordinator.editorCoordinator.showHelp,
+                        canUndo: appCoordinator.editorCoordinator.canUndo,
+                        canRedo: appCoordinator.editorCoordinator.canRedo,
+                        onUndo: { appCoordinator.editorCoordinator.performUndo() },
+                        onRedo: { appCoordinator.editorCoordinator.performRedo() },
+                        selectedFont: .constant("SF Mono"),
+                        fontSize: .constant(13),
+                        isFullScreen: $appCoordinator.isFullScreen,
+                        showCustomizationPanel: .constant(false),
+                        animationSpeed: .constant(.normal),
+                        onNewDocument: { appCoordinator.fileManagementService.newDocument() },
+                        onOpenDocument: { appCoordinator.fileManagementService.openDocumentSync() },
+                        onSaveDocument: { appCoordinator.fileManagementService.saveDocumentSync() },
+                        onSaveDocumentAs: { appCoordinator.fileManagementService.saveDocumentAsSync() },
+                        onExportDocument: { appCoordinator.fileManagementService.exportDocumentSync() },
+                        canSave: appCoordinator.fileManagementService.canSave,
+                        isDocumentModified: appCoordinator.fileManagementService.isDocumentModified,
+                        currentDocumentName: appCoordinator.fileManagementService.currentDocumentName,
+                        showCommentsPanel: $appCoordinator.collaborationCoordinator.showCommentsPanel,
+                        showVersionHistory: $appCoordinator.collaborationCoordinator.showVersionHistory,
+                        showCollaboratorsPanel: $appCoordinator.collaborationCoordinator.showCollaboratorsPanel,
+                        showSharingDialog: $appCoordinator.collaborationCoordinator.showSharingDialog,
+                        collaboratorCount: appCoordinator.collaborationCoordinator.collaborators.count,
+                        commentCount: appCoordinator.collaborationCoordinator.comments.count,
+                        showTemplateSelector: $appCoordinator.editorCoordinator.showTemplateSelector,
+                        showCharacterDatabase: $appCoordinator.characterCoordinator.showCharacterDatabase,
+                        characterCount: appCoordinator.characterCoordinator.characterDatabase.statistics.totalCharacters,
+                        showOutlineMode: $appCoordinator.outlineCoordinator.showOutlineMode,
+                        outlineDatabase: appCoordinator.outlineCoordinator.outlineDatabase
+                    )
                     
                     // Main content area
                     HStack(spacing: 0) {
-                        // Sidebar navigation
-                        if !appCoordinator.isFullScreen {
-                            ModularSidebar(appCoordinator: appCoordinator)
-                                .frame(width: 200)
-                                .transition(.move(edge: .leading))
-                        }
-                        
                         // Main content
                         ModularContentView(appCoordinator: appCoordinator)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                     
-                    // Status bar
-                    ModularStatusBar(appCoordinator: appCoordinator)
+                    // Enhanced Apple-style status bar
+                    EnhancedAppleStatusBar(
+                        wordCount: appCoordinator.statisticsService.wordCount,
+                        pageCount: appCoordinator.statisticsService.pageCount,
+                        characterCount: appCoordinator.statisticsService.characterCount,
+                        showStatistics: $appCoordinator.statisticsService.showWritingGoals,
+                        smartFormattingManager: appCoordinator.editorCoordinator.smartFormattingManager,
+                        animationSpeed: .constant(.normal),
+                        autoSaveEnabled: appCoordinator.fileManagementService.autoSaveEnabled,
+                        isDocumentModified: appCoordinator.fileManagementService.isDocumentModified,
+                        currentDocumentName: appCoordinator.fileManagementService.currentDocumentName
+                    )
                 }
             }
         }

@@ -7,6 +7,8 @@ import Features.Editor.SmartFormattingManager
 import Features.Editor.FountainTemplate
 import Data.ScreenplayDocument
 import Services.DocumentService
+import Services.FileManagementService
+import Services.StatisticsService
 import Core.ModuleCoordinator
 
 // MARK: - Editor Coordinator
@@ -30,10 +32,12 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var showSpellCheck: Bool = false
     
     // MARK: - Services
-    private let fountainParser = FountainParser()
+    let fountainParser = FountainParser()
     private let historyManager = TextHistoryManager()
     private let autoCompletionManager = AutoCompletionManager()
-    private let smartFormattingManager = SmartFormattingManager()
+    let smartFormattingManager = SmartFormattingManager()
+    private let fileManagementService = FileManagementService()
+    private let statisticsService = StatisticsService()
     
     // MARK: - Initialization
     override init(documentService: DocumentService) {
@@ -139,10 +143,10 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     }
     
     private func updateStatistics(text: String) {
-        let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-        wordCount = words.count
-        characterCount = text.count
-        pageCount = calculatePageCount(text: text)
+        statisticsService.updateStatistics(text: text)
+        wordCount = statisticsService.wordCount
+        characterCount = statisticsService.characterCount
+        pageCount = statisticsService.pageCount
     }
     
     private func calculatePageCount(text: String) -> Int {

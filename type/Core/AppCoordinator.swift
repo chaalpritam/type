@@ -3,6 +3,8 @@ import Combine
 import Data.ScreenplayDocument
 import Services.DocumentService
 import Services.SettingsService
+import Services.FileManagementService
+import Services.StatisticsService
 import Features.Editor.EditorCoordinator
 import Features.Characters.CharacterCoordinator
 import Features.Outline.OutlineCoordinator
@@ -28,6 +30,8 @@ class AppCoordinator: ObservableObject {
     // MARK: - Shared Services
     let documentService: DocumentService
     let settingsService: SettingsService
+    let fileManagementService: FileManagementService
+    let statisticsService: StatisticsService
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -37,6 +41,8 @@ class AppCoordinator: ObservableObject {
         // Initialize shared services
         self.documentService = DocumentService()
         self.settingsService = SettingsService()
+        self.fileManagementService = FileManagementService()
+        self.statisticsService = StatisticsService()
         
         // Initialize module coordinators
         self.editorCoordinator = EditorCoordinator(documentService: documentService)

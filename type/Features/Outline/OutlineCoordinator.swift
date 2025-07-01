@@ -18,12 +18,13 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var selectedOutline: Outline?
     @Published var showOutlineDetail: Bool = false
     @Published var showOutlineEdit: Bool = false
+    @Published var showOutlineMode: Bool = false
     @Published var searchText: String = ""
     @Published var selectedFilter: OutlineFilter = .all
     @Published var statistics: OutlineStatistics = OutlineStatistics()
     
     // MARK: - Services
-    private let outlineDatabase = OutlineDatabase()
+    let outlineDatabase = OutlineDatabase()
     
     // MARK: - Computed Properties
     var filteredOutlines: [Outline] {

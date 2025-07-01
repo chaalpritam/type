@@ -18,12 +18,13 @@ class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var selectedCharacter: Character?
     @Published var showCharacterDetail: Bool = false
     @Published var showCharacterEdit: Bool = false
+    @Published var showCharacterDatabase: Bool = false
     @Published var searchText: String = ""
     @Published var selectedFilter: CharacterFilter = .all
     @Published var statistics: CharacterStatistics = CharacterStatistics()
     
     // MARK: - Services
-    private let characterDatabase = CharacterDatabase()
+    let characterDatabase = CharacterDatabase()
     
     // MARK: - Computed Properties
     var filteredCharacters: [Character] {
