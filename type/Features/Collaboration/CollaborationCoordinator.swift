@@ -1,5 +1,9 @@
 import SwiftUI
 import Combine
+import Data.ScreenplayDocument
+import Services.DocumentService
+import Core.ModuleCoordinator
+import Features.Collaboration.CollaborationManager
 
 // MARK: - Collaboration Coordinator
 /// Coordinates all collaboration-related functionality

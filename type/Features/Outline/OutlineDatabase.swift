@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Data.OutlineModels
 
 class OutlineDatabase: ObservableObject {
     @Published var outline: DocumentOutline

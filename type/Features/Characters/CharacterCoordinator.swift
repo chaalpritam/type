@@ -1,5 +1,11 @@
 import SwiftUI
 import Combine
+import Data.CharacterModels
+import Features.Characters.CharacterDatabase
+import Features.Editor.FountainParser
+import Data.ScreenplayDocument
+import Services.DocumentService
+import Core.ModuleCoordinator
 
 // MARK: - Character Coordinator
 /// Coordinates all character-related functionality

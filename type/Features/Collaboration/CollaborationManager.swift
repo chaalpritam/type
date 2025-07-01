@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import Data.ScreenplayDocument
 
 @MainActor
 class CollaborationManager: ObservableObject {

@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import Data.ScreenplayDocument
 
 // MARK: - Document Service
 /// Centralized service for managing screenplay documents

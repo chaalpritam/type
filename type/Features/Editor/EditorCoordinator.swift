@@ -1,5 +1,13 @@
 import SwiftUI
 import Combine
+import Features.Editor.FountainParser
+import Features.Editor.TextHistoryManager
+import Features.Editor.AutoCompletionManager
+import Features.Editor.SmartFormattingManager
+import Features.Editor.FountainTemplate
+import Data.ScreenplayDocument
+import Services.DocumentService
+import Core.ModuleCoordinator
 
 // MARK: - Editor Coordinator
 /// Coordinates all editor-related functionality

@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import Data.ScreenplayDocument
+import Services.DocumentService
+import Core.ModuleCoordinator
 
 // MARK: - File Coordinator
 /// Coordinates all file-related operations

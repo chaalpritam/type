@@ -1,4 +1,6 @@
 import SwiftUI
+import Data.CharacterModels
+import Features.Characters.CharacterDatabase
 
 // MARK: - Character Arc Detail View
 struct CharacterArcDetailView: View {

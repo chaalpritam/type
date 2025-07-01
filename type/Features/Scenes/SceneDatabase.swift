@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Data.SceneModels
 
 class SceneDatabase: ObservableObject {
     @Published var scenes: [Scene] = []

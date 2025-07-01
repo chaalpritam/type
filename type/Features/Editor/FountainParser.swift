@@ -1,4 +1,5 @@
 import Foundation
+import Data.ScreenplayDocument
 
 // MARK: - Fountain Element Types
 enum FountainElementType {

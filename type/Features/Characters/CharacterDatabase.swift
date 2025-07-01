@@ -1,5 +1,7 @@
 import Foundation
 import SwiftUI
+import Data.CharacterModels
+import Features.Editor.FountainParser
 
 class CharacterDatabase: ObservableObject {
     @Published var characters: [Character] = []

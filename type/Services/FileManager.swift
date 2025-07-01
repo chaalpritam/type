@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
+import Data.ScreenplayDocument
 
 @MainActor
 class FileManager: ObservableObject {

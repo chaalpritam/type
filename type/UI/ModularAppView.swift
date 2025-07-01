@@ -1,4 +1,9 @@
 import SwiftUI
+import Core.AppCoordinator
+import Features.Editor.EditorCoordinator
+import Features.Characters.CharacterCoordinator
+import Features.Outline.OutlineCoordinator
+import Features.Collaboration.CollaborationCoordinator
 
 // MARK: - Modular App View
 /// Main app view using the modular coordinator architecture

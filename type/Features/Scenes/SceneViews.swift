@@ -1,4 +1,6 @@
 import SwiftUI
+import Data.SceneModels
+import Features.Scenes.SceneDatabase
 
 // MARK: - Scene Management Main View
 struct SceneManagementView: View {

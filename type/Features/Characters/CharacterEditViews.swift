@@ -1,4 +1,6 @@
 import SwiftUI
+import Data.CharacterModels
+import Features.Characters.CharacterDatabase
 
 // MARK: - Character Edit View
 struct CharacterEditView: View {
