@@ -1,7 +1,5 @@
 import SwiftUI
 import Combine
-import Data.ScreenplayDocument
-import Services.DocumentService
 import Services.SettingsService
 import Services.FileManagementService
 import Services.StatisticsService
