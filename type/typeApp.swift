@@ -12,6 +12,7 @@ struct typeApp: App {
     var body: some SwiftUI.Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.light)
         }
     }
 }

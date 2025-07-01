@@ -129,14 +129,14 @@ Mike! I didn't expect to see you here.
 - [x] **Subtle shadows** - Light shadows for depth without heaviness
 
 #### Advanced UI/UX Improvements
-- [x] **Dark mode support** - Complete theme switching (Light/Dark/System)
+- [x] **Light mode only** - App always stays in light mode for consistent appearance
 - [x] **Advanced animations** - Spring animations with configurable speed
-- [x] **Customization panel** - Theme and animation speed controls
+- [x] **Customization panel** - Animation speed controls
 - [x] **Writing goals** - Daily word count targets with progress visualization
 - [x] **Enhanced visual feedback** - Improved button states and interactions
 - [x] **Smooth transitions** - Panel animations and state changes
 - [x] **Progress indicators** - Visual progress bars for writing goals
-- [x] **Theme-aware styling** - Dynamic colors and shadows based on theme
+- [x] **Light theme styling** - Optimized colors and shadows for light mode
 - [x] **Customizable animations** - Slow/Normal/Fast animation speed options
 - [x] **Enhanced statistics** - Better organized and more informative displays
 
@@ -229,7 +229,7 @@ Mike! I didn't expect to see you here.
 - [x] ✅ Professional toolbar and status bar
 - [x] ✅ Advanced Fountain syntax support
 - [x] ✅ Enhanced editor features
-- [x] ✅ Dark mode and theme support
+- [x] ✅ Light mode only - consistent appearance
 - [x] ✅ Advanced animations and transitions
 - [x] ✅ Writing goals and progress tracking
 - [x] ✅ Basic save/load with file picker

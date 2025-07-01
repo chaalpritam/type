@@ -246,10 +246,7 @@ class KeyboardShortcutsManager: ObservableObject {
             return nil
             
         case "t":
-            // Cmd+T: Toggle Theme
-            Task {
-                await self.toggleTheme()
-            }
+            // Cmd+T: Theme toggle disabled - app always stays in light mode
             return nil
             
         default:
@@ -456,10 +453,11 @@ class KeyboardShortcutsManager: ObservableObject {
         print("Toggle preview")
     }
     
-    private func toggleTheme() async {
-        // Implementation depends on your theme system
-        print("Toggle theme")
-    }
+    // Theme toggle disabled - app always stays in light mode
+    // private func toggleTheme() async {
+    //     // Implementation depends on your theme system
+    //     print("Toggle theme")
+    // }
     
     private func showError(_ message: String, error: Error) async {
         let alert = NSAlert()
