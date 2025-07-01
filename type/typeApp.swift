@@ -11,7 +11,7 @@ import SwiftUI
 struct typeApp: App {
     var body: some SwiftUI.Scene {
         WindowGroup {
-            ContentView()
+            ModularAppView()
                 .preferredColorScheme(.light)
         }
     }
