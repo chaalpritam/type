@@ -14,19 +14,19 @@ NC='\033[0m' # No Color
 
 # Function to print colored output
 print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCESS]${NC} $1" >&2
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[WARNING]${NC} $1" >&2
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 # Function to check if command exists
@@ -99,7 +99,8 @@ find_built_app() {
     fi
     
     print_success "Found built app: $BUILT_APP"
-    echo "$BUILT_APP"
+    # Return the path without any colored output
+    printf "%s" "$BUILT_APP"
 }
 
 # Function to install the app
@@ -108,6 +109,14 @@ install_app() {
     local target_app="/Applications/type.app"
     
     print_status "Installing app to Applications..."
+    print_status "Source app: $source_app"
+    print_status "Target app: $target_app"
+    
+    # Check if source app exists
+    if [ ! -d "$source_app" ]; then
+        print_error "Source app does not exist: $source_app"
+        exit 1
+    fi
     
     # Remove existing app if it exists
     if [ -d "$target_app" ]; then
