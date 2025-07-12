@@ -5,6 +5,8 @@ import Features.Editor.TextHistoryManager
 import Features.Editor.AutoCompletionManager
 import Features.Editor.SmartFormattingManager
 import Features.Editor.FountainTemplate
+import Features.Editor.AdvancedEditorFeatures
+import Features.Editor.CodeFoldingManager
 import Data.ScreenplayDocument
 import Services.DocumentService
 import Services.FileManagementService
@@ -30,6 +32,7 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var canRedo: Bool = false
     @Published var showFindReplace: Bool = false
     @Published var showSpellCheck: Bool = false
+    @Published var showMinimap: Bool = false
     
     // MARK: - Services
     let fountainParser = FountainParser()
@@ -38,6 +41,9 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     let smartFormattingManager = SmartFormattingManager()
     private let fileManagementService = FileManagementService()
     private let statisticsService = StatisticsService()
+    let advancedFeatures = AdvancedEditorFeatures()
+    let multipleCursorsManager = MultipleCursorsManager()
+    let codeFoldingManager = CodeFoldingManager()
     
     // MARK: - Initialization
     override init(documentService: DocumentService) {
@@ -131,6 +137,39 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         showSpellCheck.toggle()
     }
     
+    // MARK: - Advanced Features
+    
+    func toggleFocusMode() {
+        advancedFeatures.toggleFocusMode()
+    }
+    
+    func toggleTypewriterMode() {
+        advancedFeatures.toggleTypewriterMode()
+    }
+    
+    func toggleMultipleCursors() {
+        // Toggle multiple cursors mode
+        if multipleCursorsManager.cursors.isEmpty {
+            // Add a cursor at current position
+            multipleCursorsManager.addCursor(at: text.count / 2)
+        } else {
+            // Clear all cursors
+            multipleCursorsManager.clearAllCursors()
+        }
+    }
+    
+    func toggleCodeFolding() {
+        codeFoldingManager.showFoldingControls.toggle()
+    }
+    
+    func parseFoldingRanges() {
+        codeFoldingManager.parseFoldingRanges(from: text)
+    }
+    
+    func toggleMinimap() {
+        showMinimap.toggle()
+    }
+    
     // MARK: - Private Methods
     
     private func setupEditorBindings() {
@@ -161,50 +200,83 @@ struct EditorMainView: View {
     @ObservedObject var coordinator: EditorCoordinator
     
     var body: some View {
-        HStack(spacing: 0) {
-            // Main editor
-            VStack(spacing: 0) {
-                // Editor toolbar
-                EditorToolbarView(coordinator: coordinator)
-                
-                // Editor content
+        Group {
+            if coordinator.advancedFeatures.isFocusMode {
+                FocusModeView(
+                    coordinator: coordinator,
+                    advancedFeatures: coordinator.advancedFeatures
+                )
+            } else {
                 HStack(spacing: 0) {
-                    // Text editor
-                    EnhancedFountainTextEditor(
-                        text: $coordinator.text,
-                        coordinator: coordinator
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Main editor
+                    VStack(spacing: 0) {
+                        // Editor toolbar
+                        EditorToolbarView(coordinator: coordinator)
+                        
+                        // Editor content
+                        HStack(spacing: 0) {
+                            // Text editor
+                            if !coordinator.multipleCursorsManager.cursors.isEmpty {
+                                MultipleCursorsTextEditor(
+                                    text: $coordinator.text,
+                                    coordinator: coordinator,
+                                    cursorsManager: coordinator.multipleCursorsManager
+                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            } else {
+                                EnhancedFountainTextEditor(
+                                    text: $coordinator.text,
+                                    coordinator: coordinator
+                                )
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                            
+                            // Preview panel
+                            if coordinator.showPreview {
+                                ScreenplayPreview(
+                                    fountainParser: coordinator.fountainParser,
+                                    text: coordinator.text
+                                )
+                                .frame(width: 300)
+                                .transition(.move(edge: .trailing))
+                            }
+                        }
+                    }
                     
-                    // Preview panel
-                    if coordinator.showPreview {
-                        ScreenplayPreview(
-                            fountainParser: coordinator.fountainParser,
-                            text: coordinator.text
-                        )
-                        .frame(width: 300)
-                        .transition(.move(edge: .trailing))
+                    // Side panels
+                    VStack(spacing: 0) {
+                        if coordinator.showHelp {
+                            FountainHelpView()
+                                .frame(width: 250)
+                                .transition(.move(edge: .trailing))
+                        }
+                        
+                        if coordinator.showFindReplace {
+                            FindReplaceView(coordinator: coordinator)
+                                .frame(width: 250)
+                                .transition(.move(edge: .trailing))
+                        }
+                        
+                        if coordinator.codeFoldingManager.showFoldingControls {
+                            CodeFoldingView(
+                                foldingManager: coordinator.codeFoldingManager,
+                                coordinator: coordinator
+                            )
+                            .frame(width: 250)
+                            .transition(.move(edge: .trailing))
+                        }
+                        
+                        if coordinator.showMinimap {
+                            MinimapView(coordinator: coordinator)
+                                .frame(width: 200)
+                                .transition(.move(edge: .trailing))
+                        }
                     }
                 }
-            }
-            
-            // Side panels
-            VStack(spacing: 0) {
-                if coordinator.showHelp {
-                    FountainHelpView()
-                        .frame(width: 250)
-                        .transition(.move(edge: .trailing))
-                }
-                
-                if coordinator.showFindReplace {
-                    FindReplaceView(coordinator: coordinator)
-                        .frame(width: 250)
-                        .transition(.move(edge: .trailing))
+                .sheet(isPresented: $coordinator.showTemplateSelector) {
+                    TemplateSelectorView(coordinator: coordinator)
                 }
             }
-        }
-        .sheet(isPresented: $coordinator.showTemplateSelector) {
-            TemplateSelectorView(coordinator: coordinator)
         }
     }
 }
@@ -246,6 +318,51 @@ struct EditorToolbarView: View {
                     coordinator.toggleFindReplace()
                 }
                 .background(coordinator.showFindReplace ? Color.blue.opacity(0.2) : Color.clear)
+            }
+            
+            Divider()
+            
+            // Advanced features
+            HStack(spacing: 8) {
+                Button(action: {
+                    coordinator.toggleFocusMode()
+                }) {
+                    Image(systemName: coordinator.advancedFeatures.isFocusMode ? "eye.slash.fill" : "eye.slash")
+                        .foregroundColor(coordinator.advancedFeatures.isFocusMode ? .blue : .primary)
+                }
+                .help("Focus Mode - Distraction-free writing")
+                
+                Button(action: {
+                    coordinator.toggleTypewriterMode()
+                }) {
+                    Image(systemName: coordinator.advancedFeatures.isTypewriterMode ? "typewriter.fill" : "typewriter")
+                        .foregroundColor(coordinator.advancedFeatures.isTypewriterMode ? .blue : .primary)
+                }
+                .help("Typewriter Mode - Centered cursor with auto-scroll")
+                
+                Button(action: {
+                    coordinator.toggleMultipleCursors()
+                }) {
+                    Image(systemName: coordinator.multipleCursorsManager.cursors.isEmpty ? "cursorarrow.rays" : "cursorarrow.rays.fill")
+                        .foregroundColor(coordinator.multipleCursorsManager.cursors.isEmpty ? .primary : .blue)
+                }
+                .help("Multiple Cursors - Edit multiple locations simultaneously")
+                
+                Button(action: {
+                    coordinator.toggleCodeFolding()
+                }) {
+                    Image(systemName: coordinator.codeFoldingManager.showFoldingControls ? "chevron.up.chevron.down" : "chevron.up.chevron.down")
+                        .foregroundColor(coordinator.codeFoldingManager.showFoldingControls ? .blue : .primary)
+                }
+                .help("Code Folding - Collapse/expand sections and scenes")
+                
+                Button(action: {
+                    coordinator.toggleMinimap()
+                }) {
+                    Image(systemName: coordinator.showMinimap ? "map.fill" : "map")
+                        .foregroundColor(coordinator.showMinimap ? .blue : .primary)
+                }
+                .help("Minimap - Document overview and navigation")
             }
             
             Spacer()
