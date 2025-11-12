@@ -276,7 +276,7 @@ struct EnhancedAppleToolbar: View {
                 
                 EnhancedAppleToolbarButton(
                     icon: "questionmark.circle",
-                    action: { showHelp = true }
+                    action: { showHelp.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(

@@ -125,15 +125,39 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     }
     
     func toggleHelp() {
-        showHelp.toggle()
+        let willShow = !showHelp
+        showHelp = willShow
+        if willShow {
+            showFindReplace = false
+            showSpellCheck = false
+            codeFoldingManager.showFoldingControls = false
+            isCodeFoldingActive = false
+            showMinimap = false
+        }
     }
     
     func toggleFindReplace() {
-        showFindReplace.toggle()
+        let willShow = !showFindReplace
+        showFindReplace = willShow
+        if willShow {
+            showHelp = false
+            showSpellCheck = false
+            codeFoldingManager.showFoldingControls = false
+            isCodeFoldingActive = false
+            showMinimap = false
+        }
     }
     
     func toggleSpellCheck() {
-        showSpellCheck.toggle()
+        let willShow = !showSpellCheck
+        showSpellCheck = willShow
+        if willShow {
+            showHelp = false
+            showFindReplace = false
+            codeFoldingManager.showFoldingControls = false
+            isCodeFoldingActive = false
+            showMinimap = false
+        }
     }
     
     // MARK: - Advanced Features
@@ -158,7 +182,15 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     }
     
     func toggleCodeFolding() {
-        codeFoldingManager.showFoldingControls.toggle()
+        let willShow = !codeFoldingManager.showFoldingControls
+        codeFoldingManager.showFoldingControls = willShow
+        isCodeFoldingActive = willShow
+        if willShow {
+            showHelp = false
+            showFindReplace = false
+            showSpellCheck = false
+            showMinimap = false
+        }
     }
     
     func parseFoldingRanges() {
@@ -166,7 +198,15 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     }
     
     func toggleMinimap() {
-        showMinimap.toggle()
+        let willShow = !showMinimap
+        showMinimap = willShow
+        if willShow {
+            showHelp = false
+            showFindReplace = false
+            showSpellCheck = false
+            codeFoldingManager.showFoldingControls = false
+            isCodeFoldingActive = false
+        }
     }
     
     // MARK: - Private Methods
@@ -201,12 +241,6 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         multipleCursorsManager.$cursors
             .sink { [weak self] cursors in
                 self?.hasMultipleCursorsActive = !cursors.isEmpty
-            }
-            .store(in: &cancellables)
-        
-        codeFoldingManager.$showFoldingControls
-            .sink { [weak self] value in
-                self?.isCodeFoldingActive = value
             }
             .store(in: &cancellables)
     }

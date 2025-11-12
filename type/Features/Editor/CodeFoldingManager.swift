@@ -8,7 +8,7 @@ class CodeFoldingManager: ObservableObject {
     // MARK: - Published Properties
     @Published var foldedSections: Set<String> = []
     @Published var foldedScenes: Set<String> = []
-    @Published var showFoldingControls: Bool = true
+    @Published var showFoldingControls: Bool = false
     
     // MARK: - Published Properties
     @Published var sectionRanges: [String: NSRange] = [:]
