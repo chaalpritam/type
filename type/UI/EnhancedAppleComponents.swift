@@ -26,7 +26,6 @@ struct EditorToolbarContext {
     let isFocusMode: Bool
     let isTypewriterMode: Bool
     let hasMultipleCursors: Bool
-    let isCodeFoldingVisible: Bool
     let isMinimapVisible: Bool
     let wordCount: Int
     let pageCount: Int
@@ -34,7 +33,6 @@ struct EditorToolbarContext {
     let toggleFocusMode: () -> Void
     let toggleTypewriterMode: () -> Void
     let toggleMultipleCursors: () -> Void
-    let toggleCodeFolding: () -> Void
     let toggleMinimap: () -> Void
 }
 
@@ -197,7 +195,7 @@ struct EnhancedAppleToolbar: View {
                     action: onSaveDocument
                 )
                 .disabled(!canSave)
-            
+                
                 Menu {
                     Button("Save As...") {
                         onSaveDocumentAs()
@@ -214,8 +212,8 @@ struct EnhancedAppleToolbar: View {
                 .menuStyle(.borderlessButton)
                 .disabled(!canSave)
             }
-    }
-    
+            }
+            
     private var templateButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "doc.text",
@@ -265,11 +263,11 @@ struct EnhancedAppleToolbar: View {
                 .frame(height: ToolbarMetrics.buttonHeight)
                 
                 HStack(spacing: ToolbarMetrics.itemSpacing) {
-                EnhancedAppleToolbarButton(
-                    icon: "textformat.size.smaller",
+                    EnhancedAppleToolbarButton(
+                        icon: "textformat.size.smaller",
                     isActive: false,
-                    action: { fontSize = max(10, fontSize - 1) }
-                )
+                        action: { fontSize = max(10, fontSize - 1) }
+                    )
                     
                     Text("\(Int(fontSize))")
                         .font(.system(size: ToolbarMetrics.labelFontSize, weight: .medium))
@@ -283,8 +281,8 @@ struct EnhancedAppleToolbar: View {
                     )
                 }
             }
-    }
-    
+            }
+            
     private var viewControlsGroup: some View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
@@ -348,14 +346,6 @@ struct EnhancedAppleToolbar: View {
                 label: "Cursors",
                 help: "Toggle Multiple Cursors",
                 action: context.toggleMultipleCursors
-            )
-            
-            ToolbarToggleButton(
-                isActive: context.isCodeFoldingVisible,
-                icon: "chevron.up.chevron.down",
-                label: "Folding",
-                help: "Toggle Code Folding Controls",
-                action: context.toggleCodeFolding
             )
             
             ToolbarToggleButton(
@@ -442,8 +432,8 @@ struct EnhancedAppleToolbar: View {
                     action: { showSharingDialog.toggle() }
                 )
             }
-    }
-    
+            }
+            
     private var charactersButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "person.3",
@@ -469,7 +459,7 @@ struct EnhancedAppleToolbar: View {
                 }
             )
     }
-    
+            
     private var outlineButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "list.bullet",
@@ -493,7 +483,7 @@ struct EnhancedAppleToolbar: View {
                             .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
                     }
                 }
-            )
+        )
     }
 }
 
@@ -603,11 +593,11 @@ struct EnhancedAppleEditorHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Text("Editor")
+            Text("Editor")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.primary)
-                
-                Spacer()
+                .foregroundColor(.primary)
+            
+            Spacer()
                 
                 HStack(spacing: ToolbarMetrics.itemSpacing) {
                     HeaderIconButton(
@@ -640,7 +630,7 @@ struct EnhancedAppleEditorHeader: View {
                     Spacer(minLength: 0)
                 }
             }
-        }
+            }
         .padding(.horizontal, ToolbarMetrics.horizontalPadding)
         .padding(.vertical, ToolbarMetrics.verticalPadding)
         .background(.ultraThinMaterial)

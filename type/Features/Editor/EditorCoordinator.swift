@@ -309,38 +309,7 @@ struct EditorMainView: View {
                         }
                     }
                     
-                    // Side panels
-                    VStack(spacing: 0) {
-                        if coordinator.showHelp {
-                            FountainHelpView(isPresented: $coordinator.showHelp)
-                                .frame(width: 250)
-                                .transition(.move(edge: .trailing))
-                        }
-                        
-                        if coordinator.showFindReplace {
-                            FindReplaceView(
-                                isVisible: $coordinator.showFindReplace,
-                                text: $coordinator.text
-                            )
-                            .frame(width: 250)
-                            .transition(.move(edge: .trailing))
-                        }
-                        
-                        if coordinator.codeFoldingManager.showFoldingControls {
-                            CodeFoldingView(
-                                foldingManager: coordinator.codeFoldingManager,
-                                coordinator: coordinator
-                            )
-                            .frame(width: 250)
-                            .transition(.move(edge: .trailing))
-                        }
-                        
-                        if coordinator.showMinimap {
-                            MinimapView(coordinator: coordinator)
-                                .frame(width: 200)
-                                .transition(.move(edge: .trailing))
-                        }
-                    }
+            // Side panels removed
                 }
                 .sheet(isPresented: $coordinator.showTemplateSelector) {
                     TemplateSelectorView(

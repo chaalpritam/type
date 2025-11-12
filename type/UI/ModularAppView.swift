@@ -85,7 +85,6 @@ struct ModularAppView: View {
                             isFocusMode: appCoordinator.editorCoordinator.isFocusModeActive,
                             isTypewriterMode: appCoordinator.editorCoordinator.isTypewriterModeActive,
                             hasMultipleCursors: appCoordinator.editorCoordinator.hasMultipleCursorsActive,
-                            isCodeFoldingVisible: appCoordinator.editorCoordinator.isCodeFoldingActive,
                             isMinimapVisible: appCoordinator.editorCoordinator.showMinimap,
                             wordCount: appCoordinator.editorCoordinator.wordCount,
                             pageCount: appCoordinator.editorCoordinator.pageCount,
@@ -93,7 +92,6 @@ struct ModularAppView: View {
                             toggleFocusMode: { appCoordinator.editorCoordinator.toggleFocusMode() },
                             toggleTypewriterMode: { appCoordinator.editorCoordinator.toggleTypewriterMode() },
                             toggleMultipleCursors: { appCoordinator.editorCoordinator.toggleMultipleCursors() },
-                            toggleCodeFolding: { appCoordinator.editorCoordinator.toggleCodeFolding() },
                             toggleMinimap: { appCoordinator.editorCoordinator.toggleMinimap() }
                         ) : nil
                     )
