@@ -63,8 +63,8 @@ enum AnimationSpeed: String, CaseIterable {
 struct EnhancedAppleToolbar: View {
     @Binding var showPreview: Bool
     @Binding var showLineNumbers: Bool
-    @Binding var showFindReplace: Bool
-    @Binding var showHelp: Bool
+    let showFindReplace: Bool
+    let showHelp: Bool
     let canUndo: Bool
     let canRedo: Bool
     let onUndo: () -> Void
@@ -104,6 +104,9 @@ struct EnhancedAppleToolbar: View {
     
     // Editor specific context
     let editorContext: EditorToolbarContext?
+    
+    let onToggleFindReplace: () -> Void
+    let onToggleHelp: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: ToolbarMetrics.rowSpacing) {
@@ -245,7 +248,7 @@ struct EnhancedAppleToolbar: View {
                     icon: "magnifyingglass",
                     label: "Find",
                     isActive: showFindReplace,
-                    action: { showFindReplace.toggle() }
+                    action: onToggleFindReplace
                 )
             }
     }
@@ -303,7 +306,7 @@ struct EnhancedAppleToolbar: View {
                     icon: "questionmark.circle",
                     label: "Help",
                     isActive: showHelp,
-                    action: { showHelp.toggle() }
+                    action: onToggleHelp
                 )
                 
                 EnhancedAppleToolbarButton(

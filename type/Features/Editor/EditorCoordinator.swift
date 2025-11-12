@@ -2,6 +2,15 @@ import SwiftUI
 import Combine
 import AppKit
 
+enum EditorModal: Identifiable {
+    case help
+    case findReplace
+    case spellCheck
+    case minimap
+    
+    var id: String { String(describing: self) }
+}
+
 // MARK: - Editor Coordinator
 /// Coordinates all editor-related functionality
 @MainActor
@@ -26,7 +35,7 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var isFocusModeActive: Bool = false
     @Published var isTypewriterModeActive: Bool = false
     @Published var hasMultipleCursorsActive: Bool = false
-    @Published var isCodeFoldingActive: Bool = false
+    @Published var activeModal: EditorModal?
     
     // MARK: - Services
     let fountainParser = FountainParser()
@@ -126,39 +135,15 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     }
     
     func toggleHelp() {
-        let willShow = !showHelp
-        showHelp = willShow
-        if willShow {
-            showFindReplace = false
-            showSpellCheck = false
-            codeFoldingManager.showFoldingControls = false
-            isCodeFoldingActive = false
-            showMinimap = false
-        }
+        setModal(.help, isPresented: activeModal != .help)
     }
     
     func toggleFindReplace() {
-        let willShow = !showFindReplace
-        showFindReplace = willShow
-        if willShow {
-            showHelp = false
-            showSpellCheck = false
-            codeFoldingManager.showFoldingControls = false
-            isCodeFoldingActive = false
-            showMinimap = false
-        }
+        setModal(.findReplace, isPresented: activeModal != .findReplace)
     }
     
     func toggleSpellCheck() {
-        let willShow = !showSpellCheck
-        showSpellCheck = willShow
-        if willShow {
-            showHelp = false
-            showFindReplace = false
-            codeFoldingManager.showFoldingControls = false
-            isCodeFoldingActive = false
-            showMinimap = false
-        }
+        setModal(.spellCheck, isPresented: activeModal != .spellCheck)
     }
     
     // MARK: - Advanced Features
@@ -182,42 +167,66 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         }
     }
     
-    func toggleCodeFolding() {
-        let willShow = !codeFoldingManager.showFoldingControls
-        codeFoldingManager.showFoldingControls = willShow
-        isCodeFoldingActive = willShow
-        if willShow {
-            showHelp = false
-            showFindReplace = false
-            showSpellCheck = false
-            showMinimap = false
-        }
-    }
-    
     func parseFoldingRanges() {
         codeFoldingManager.parseFoldingRanges(from: text)
     }
     
     func toggleMinimap() {
-        let willShow = !showMinimap
-        showMinimap = willShow
-        if willShow {
-            showHelp = false
-            showFindReplace = false
-            showSpellCheck = false
-            codeFoldingManager.showFoldingControls = false
-            isCodeFoldingActive = false
+        setModal(.minimap, isPresented: activeModal != .minimap)
+    }
+    
+    func setModal(_ modal: EditorModal, isPresented: Bool) {
+        if isPresented {
+            if activeModal == modal { return }
+            resetModalFlags()
+            activeModal = modal
+            switch modal {
+            case .help:
+                showHelp = true
+            case .findReplace:
+                showFindReplace = true
+            case .spellCheck:
+                showSpellCheck = true
+            case .minimap:
+                showMinimap = true
+            }
+        } else {
+            switch modal {
+            case .help:
+                showHelp = false
+            case .findReplace:
+                showFindReplace = false
+            case .spellCheck:
+                showSpellCheck = false
+            case .minimap:
+                showMinimap = false
+            }
+            if activeModal == modal {
+                activeModal = nil
+            }
+        }
+    }
+    
+    func dismissActiveModal() {
+        if let modal = activeModal {
+            setModal(modal, isPresented: false)
         }
     }
     
     // MARK: - Private Methods
+    
+    private func resetModalFlags() {
+        showHelp = false
+        showFindReplace = false
+        showSpellCheck = false
+        showMinimap = false
+    }
     
     private func setupEditorBindings() {
         // Initial state
         isFocusModeActive = advancedFeatures.isFocusMode
         isTypewriterModeActive = advancedFeatures.isTypewriterMode
         hasMultipleCursorsActive = !multipleCursorsManager.cursors.isEmpty
-        isCodeFoldingActive = codeFoldingManager.showFoldingControls
         
         // Listen for document changes
         documentService.$currentDocument
@@ -265,7 +274,7 @@ struct EditorMainView: View {
     @ObservedObject var coordinator: EditorCoordinator
     
     var body: some View {
-        ZStack {
+        let mainContent = ZStack {
             if coordinator.advancedFeatures.isFocusMode {
                 FocusModeView(
                     coordinator: coordinator,
@@ -308,19 +317,119 @@ struct EditorMainView: View {
                             }
                         }
                     }
-                    
-            // Side panels removed
-                }
-                .sheet(isPresented: $coordinator.showTemplateSelector) {
-                    TemplateSelectorView(
-                        selectedTemplate: $coordinator.selectedTemplate,
-                        isVisible: $coordinator.showTemplateSelector,
-                        onTemplateSelected: { template in
-                            coordinator.selectTemplate(template)
-                        }
-                    )
                 }
             }
         }
+        
+        return mainContent
+            .sheet(item: $coordinator.activeModal, onDismiss: {
+                coordinator.dismissActiveModal()
+            }) { modal in
+                modalContent(for: modal)
+            }
+            .sheet(isPresented: $coordinator.showTemplateSelector) {
+                TemplateSelectorView(
+                    selectedTemplate: $coordinator.selectedTemplate,
+                    isVisible: $coordinator.showTemplateSelector,
+                    onTemplateSelected: { template in
+                        coordinator.selectTemplate(template)
+                    }
+                )
+            }
+    }
+}
+
+// MARK: - Editor Modal Helpers
+extension EditorMainView {
+    @ViewBuilder
+    private func modalContent(for modal: EditorModal) -> some View {
+        switch modal {
+        case .help:
+            FountainHelpView(isPresented: binding(for: .help))
+                .frame(minWidth: 500, minHeight: 420)
+        case .findReplace:
+            FindReplaceView(
+                isVisible: binding(for: .findReplace),
+                text: $coordinator.text
+            )
+            .frame(minWidth: 420, minHeight: 320)
+        case .spellCheck:
+            SpellCheckSheet(
+                coordinator: coordinator,
+                isPresented: binding(for: .spellCheck)
+            )
+        case .minimap:
+            MinimapSheet(
+                coordinator: coordinator,
+                isPresented: binding(for: .minimap)
+            )
+        }
+    }
+    
+    private func binding(for modal: EditorModal) -> Binding<Bool> {
+        Binding(
+            get: {
+                switch modal {
+                case .help:
+                    return coordinator.showHelp
+                case .findReplace:
+                    return coordinator.showFindReplace
+                case .spellCheck:
+                    return coordinator.showSpellCheck
+                case .minimap:
+                    return coordinator.showMinimap
+                }
+            },
+            set: { newValue in
+                coordinator.setModal(modal, isPresented: newValue)
+            }
+        )
+    }
+}
+
+private struct SpellCheckSheet: View {
+    @ObservedObject var coordinator: EditorCoordinator
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        NavigationView {
+            SpellCheckTextEditor(
+                text: $coordinator.text,
+                placeholder: "Spell Check Document",
+                showLineNumbers: coordinator.showLineNumbers,
+                onTextChange: { newText in
+                    coordinator.updateText(newText)
+                }
+            )
+            .navigationTitle("Spell Check")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        isPresented = false
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 500, minHeight: 420)
+    }
+}
+
+private struct MinimapSheet: View {
+    @ObservedObject var coordinator: EditorCoordinator
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        NavigationView {
+            MinimapView(coordinator: coordinator)
+                .navigationTitle("Minimap")
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") {
+                            isPresented = false
+                        }
+                    }
+                }
+        }
+        .frame(minWidth: 320, minHeight: 400)
     }
 }

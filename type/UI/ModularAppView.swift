@@ -24,14 +24,8 @@ struct ModularAppView: View {
                             get: { appCoordinator.editorCoordinator.showLineNumbers },
                             set: { appCoordinator.editorCoordinator.showLineNumbers = $0 }
                         ),
-                        showFindReplace: Binding(
-                            get: { appCoordinator.editorCoordinator.showFindReplace },
-                            set: { appCoordinator.editorCoordinator.showFindReplace = $0 }
-                        ),
-                        showHelp: Binding(
-                            get: { appCoordinator.editorCoordinator.showHelp },
-                            set: { appCoordinator.editorCoordinator.showHelp = $0 }
-                        ),
+                        showFindReplace: appCoordinator.editorCoordinator.showFindReplace,
+                        showHelp: appCoordinator.editorCoordinator.showHelp,
                         canUndo: appCoordinator.editorCoordinator.canUndo,
                         canRedo: appCoordinator.editorCoordinator.canRedo,
                         onUndo: { appCoordinator.editorCoordinator.performUndo() },
@@ -93,7 +87,9 @@ struct ModularAppView: View {
                             toggleTypewriterMode: { appCoordinator.editorCoordinator.toggleTypewriterMode() },
                             toggleMultipleCursors: { appCoordinator.editorCoordinator.toggleMultipleCursors() },
                             toggleMinimap: { appCoordinator.editorCoordinator.toggleMinimap() }
-                        ) : nil
+                        ) : nil,
+                        onToggleFindReplace: { appCoordinator.editorCoordinator.toggleFindReplace() },
+                        onToggleHelp: { appCoordinator.editorCoordinator.toggleHelp() }
                     )
                     
                     // Main content area
