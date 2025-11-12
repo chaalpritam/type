@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import AppKit
 
 // MARK: - File Coordinator
 /// Coordinates all file-related operations
@@ -33,7 +34,9 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Initialization
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
-        setupFileBindings()
+        Task { @MainActor in
+            setupFileBindings()
+        }
     }
     
     // MARK: - ModuleCoordinator Implementation
@@ -321,8 +324,8 @@ struct FileToolbarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
@@ -385,7 +388,7 @@ struct DocumentStatusCard: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(nsColor: .systemGray))
         .cornerRadius(8)
     }
 }
@@ -422,7 +425,7 @@ struct QuickActionsCard: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(nsColor: .systemGray))
         .cornerRadius(8)
     }
 }
@@ -458,7 +461,7 @@ struct ExportOptionsCard: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(nsColor: .systemGray))
         .cornerRadius(8)
     }
 }
@@ -527,30 +530,6 @@ enum ExportFormat: String, CaseIterable {
         case .finalDraft: return UTType(filenameExtension: "fdx") ?? .xml
         case .fountain: return .plainText
         case .plainText: return .plainText
-        }
-    }
-}
-
-// MARK: - File Error
-enum FileError: LocalizedError {
-    case noDocument
-    case noSaveLocation
-    case saveFailed
-    case loadFailed
-    case exportFailed
-    
-    var errorDescription: String? {
-        switch self {
-        case .noDocument:
-            return "No document to save"
-        case .noSaveLocation:
-            return "No save location specified"
-        case .saveFailed:
-            return "Failed to save document"
-        case .loadFailed:
-            return "Failed to load document"
-        case .exportFailed:
-            return "Failed to export document"
         }
     }
 } 

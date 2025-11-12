@@ -9,6 +9,7 @@ import SwiftUI
 import AppKit
 
 // MARK: - File Management Service
+@MainActor
 class FileManagementService: ObservableObject {
     @Published var fileManager: FileManager
     @Published var keyboardShortcutsManager: KeyboardShortcutsManager

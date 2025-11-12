@@ -195,7 +195,7 @@ struct EditorMainView: View {
     @ObservedObject var coordinator: EditorCoordinator
     
     var body: some View {
-        Group {
+        ZStack {
             if coordinator.advancedFeatures.isFocusMode {
                 FocusModeView(
                     coordinator: coordinator,
@@ -221,7 +221,11 @@ struct EditorMainView: View {
                             } else {
                                 EnhancedFountainTextEditor(
                                     text: $coordinator.text,
-                                    coordinator: coordinator
+                                    placeholder: "Start writing your screenplay...",
+                                    showLineNumbers: true,
+                                    onTextChange: { newText in
+                                        coordinator.updateText(newText)
+                                    }
                                 )
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                             }
@@ -229,8 +233,8 @@ struct EditorMainView: View {
                             // Preview panel
                             if coordinator.showPreview {
                                 ScreenplayPreview(
-                                    fountainParser: coordinator.fountainParser,
-                                    text: coordinator.text
+                                    elements: coordinator.fountainParser.elements,
+                                    titlePage: coordinator.fountainParser.titlePage
                                 )
                                 .frame(width: 300)
                                 .transition(.move(edge: .trailing))
@@ -241,15 +245,18 @@ struct EditorMainView: View {
                     // Side panels
                     VStack(spacing: 0) {
                         if coordinator.showHelp {
-                            FountainHelpView()
+                            FountainHelpView(isPresented: $coordinator.showHelp)
                                 .frame(width: 250)
                                 .transition(.move(edge: .trailing))
                         }
                         
                         if coordinator.showFindReplace {
-                            FindReplaceView(coordinator: coordinator)
-                                .frame(width: 250)
-                                .transition(.move(edge: .trailing))
+                            FindReplaceView(
+                                isVisible: $coordinator.showFindReplace,
+                                text: $coordinator.text
+                            )
+                            .frame(width: 250)
+                            .transition(.move(edge: .trailing))
                         }
                         
                         if coordinator.codeFoldingManager.showFoldingControls {
@@ -269,7 +276,13 @@ struct EditorMainView: View {
                     }
                 }
                 .sheet(isPresented: $coordinator.showTemplateSelector) {
-                    TemplateSelectorView(coordinator: coordinator)
+                    TemplateSelectorView(
+                        selectedTemplate: $coordinator.selectedTemplate,
+                        isVisible: $coordinator.showTemplateSelector,
+                        onTemplateSelected: { template in
+                            coordinator.selectTemplate(template)
+                        }
+                    )
                 }
             }
         }

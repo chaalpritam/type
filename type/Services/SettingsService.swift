@@ -113,12 +113,20 @@ struct EditorSettings: Codable {
 
 // MARK: - Appearance Settings
 struct AppearanceSettings: Codable {
-    var colorScheme: ColorScheme = .light
+    var colorSchemeName: String = "light"
     var showStatistics: Bool = true
     var showToolbar: Bool = true
     var showStatusBar: Bool = true
-    var animationSpeed: AnimationSpeed = .normal
+    var animationSpeedRaw: String = "normal"
     var showCustomizationPanel: Bool = false
+    
+    var colorScheme: ColorScheme {
+        colorSchemeName == "dark" ? .dark : .light
+    }
+    
+    var animationSpeed: AnimationSpeed {
+        AnimationSpeed(rawValue: animationSpeedRaw) ?? .normal
+    }
 }
 
 // MARK: - Collaboration Settings
@@ -129,19 +137,4 @@ struct CollaborationSettings: Codable {
     var showCollaboratorsPanel: Bool = false
     var autoSyncInterval: TimeInterval = 5.0
     var enableConflictResolution: Bool = true
-}
-
-// MARK: - Animation Speed
-enum AnimationSpeed: String, CaseIterable, Codable {
-    case slow = "Slow"
-    case normal = "Normal"
-    case fast = "Fast"
-    
-    var duration: Double {
-        switch self {
-        case .slow: return 0.8
-        case .normal: return 0.6
-        case .fast: return 0.3
-        }
-    }
 } 

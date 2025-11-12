@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Document Service
 /// Centralized service for managing screenplay documents
@@ -16,7 +17,7 @@ class DocumentService: ObservableObject {
     private let autoSaveInterval: TimeInterval = 30.0
     private var autoSaveTimer: Timer?
     private let maxRecentFiles = 10
-    private let fileManager = FileManager.default
+    private let fileManager = Foundation.FileManager.default
     private let userDefaults = UserDefaults.standard
     
     // MARK: - Initialization
@@ -26,7 +27,7 @@ class DocumentService: ObservableObject {
     }
     
     deinit {
-        stopAutoSaveTimer()
+        autoSaveTimer?.invalidate()
     }
     
     // MARK: - Document Management

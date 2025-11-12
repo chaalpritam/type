@@ -19,6 +19,7 @@ protocol ModuleCoordinator: ObservableObject {
 
 // MARK: - Base Module Coordinator
 /// Base implementation for module coordinators
+@MainActor
 class BaseModuleCoordinator: ObservableObject {
     // MARK: - Properties
     let documentService: DocumentService

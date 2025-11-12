@@ -85,7 +85,7 @@ class AdvancedEditorFeatures: ObservableObject {
     
     // MARK: - Cleanup
     deinit {
-        stopAutoScroll()
+        autoScrollTimer?.invalidate()
     }
 }
 
@@ -235,7 +235,7 @@ struct FocusModeEditor: View {
     @ObservedObject var coordinator: EditorCoordinator
     @ObservedObject var advancedFeatures: AdvancedEditorFeatures
     @FocusState private var isFocused: Bool
-    @State private var scrollProxy: ScrollViewReader?
+    @State private var scrollProxy: ScrollViewProxy?
     
     var body: some View {
         ScrollViewReader { proxy in
@@ -246,8 +246,7 @@ struct FocusModeEditor: View {
                         TypewriterModeText(
                             text: $text,
                             coordinator: coordinator,
-                            advancedFeatures: advancedFeatures,
-                            scrollProxy: proxy
+                            advancedFeatures: advancedFeatures
                         )
                     } else {
                         // Normal editor
@@ -274,7 +273,7 @@ struct FocusModeEditor: View {
         }
     }
     
-    private func performTypewriterScroll(proxy: ScrollViewReader) {
+    private func performTypewriterScroll(proxy: ScrollViewProxy) {
         // Calculate cursor position and scroll to center it
         // This is a simplified implementation
         withAnimation(.easeInOut(duration: 0.3)) {
@@ -288,7 +287,6 @@ struct TypewriterModeText: View {
     @Binding var text: String
     @ObservedObject var coordinator: EditorCoordinator
     @ObservedObject var advancedFeatures: AdvancedEditorFeatures
-    let scrollProxy: ScrollViewReader
     @FocusState private var isFocused: Bool
     
     var body: some View {
@@ -410,14 +408,6 @@ struct MultipleCursorsEditor: View {
             ForEach(cursorsManager.cursors) { cursor in
                 CursorOverlay(cursor: cursor)
             }
-        }
-        .onKeyPress(.command, action: .keyDown) { press in
-            if press.key == .keyC {
-                // Add cursor at current position
-                // This is a simplified implementation
-                return .handled
-            }
-            return .ignored
         }
     }
 }

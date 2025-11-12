@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import AppKit
 
 // MARK: - Character Coordinator
 /// Coordinates all character-related functionality
@@ -54,7 +55,9 @@ class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Initialization
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
-        setupCharacterBindings()
+        Task { @MainActor in
+            setupCharacterBindings()
+        }
     }
     
     // MARK: - ModuleCoordinator Implementation
@@ -66,18 +69,20 @@ class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Public Methods
     
     override func updateDocument(_ document: ScreenplayDocument?) {
-        if let document = document {
-            // Parse characters from Fountain content
-            let fountainParser = FountainParser()
-            fountainParser.parse(document.content)
-            characterDatabase.parseCharactersFromFountain(fountainParser.elements)
-            
-            // Update local state
-            characters = characterDatabase.characters
-            updateStatistics()
-        } else {
-            characters = []
-            updateStatistics()
+        Task { @MainActor in
+            if let document = document {
+                // Parse characters from Fountain content
+                let fountainParser = FountainParser()
+                fountainParser.parse(document.content)
+                characterDatabase.parseCharactersFromFountain(fountainParser.elements)
+                
+                // Update local state
+                characters = characterDatabase.characters
+                updateStatistics()
+            } else {
+                characters = []
+                updateStatistics()
+            }
         }
     }
     
@@ -288,8 +293,8 @@ struct CharacterToolbarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 

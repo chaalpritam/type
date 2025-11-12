@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import AppKit
 
 // MARK: - Outline Coordinator
 /// Coordinates all outline-related functionality
@@ -16,7 +17,18 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var showOutlineMode: Bool = false
     @Published var searchText: String = ""
     @Published var selectedFilter: OutlineFilter = .all
-    @Published var statistics: OutlineStatistics = OutlineStatistics()
+    @Published var statistics: OutlineStatistics = OutlineStatistics(
+        totalNodes: 0,
+        totalSections: 0,
+        totalWords: 0,
+        averageWordsPerNode: 0.0,
+        completedNodes: 0,
+        nodesByType: [:],
+        nodesByStatus: [:],
+        nodesByPriority: [:],
+        depthDistribution: [:],
+        outlineHealth: OutlineHealth(overallHealth: 0.0, issues: [], recommendations: [], strengths: [])
+    )
     
     // MARK: - Services
     let outlineDatabase = OutlineDatabase()
@@ -35,9 +47,9 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         case .all:
             return filtered
         case .active:
-            return filtered.filter { $0.status == .active }
+            return filtered
         case .completed:
-            return filtered.filter { $0.status == .completed }
+            return filtered
         case .recentlyUpdated:
             return filtered.sorted { $0.updatedAt > $1.updatedAt }
         }
@@ -46,7 +58,9 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Initialization
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
-        setupOutlineBindings()
+        Task { @MainActor in
+            setupOutlineBindings()
+        }
     }
     
     // MARK: - ModuleCoordinator Implementation
@@ -58,13 +72,15 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Public Methods
     
     override func updateDocument(_ document: ScreenplayDocument?) {
-        if let document = document {
-            // Update outline database with new document
-            outlineDatabase.updateOutline(outlineDatabase.outline)
-            updateStatistics()
-        } else {
-            // Clear outline when no document
-            updateStatistics()
+        Task { @MainActor in
+            if let document = document {
+                // Update outline database with new document
+                outlineDatabase.updateOutline(outlineDatabase.outline)
+                updateStatistics()
+            } else {
+                // Clear outline when no document
+                updateStatistics()
+            }
         }
     }
     
@@ -120,18 +136,16 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         fountainParser.parse(document.content)
         
         // Create outline from parsed elements
-        let outline = Outline(title: "Document Outline", description: "Auto-generated from screenplay")
+        var outline = Outline(title: "Document Outline", description: "Auto-generated from screenplay")
         
-        // Add scenes as outline items
+        // Add scenes as outline nodes
         for (index, element) in fountainParser.elements.enumerated() {
-            if case .scene(let sceneTitle) = element {
-                let item = OutlineItem(
-                    title: sceneTitle,
-                    description: "Scene \(index + 1)",
-                    type: .scene,
-                    status: .planned
+            if element.type == .sceneHeading {
+                let node = OutlineNode(
+                    title: element.text,
+                    nodeType: .scene
                 )
-                outline.items.append(item)
+                outline.rootNodes.append(node)
             }
         }
         
@@ -281,8 +295,8 @@ struct OutlineToolbarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
@@ -306,11 +320,9 @@ struct OutlineDetailPanel: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text("Status: \(outline.status.rawValue)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                // Status removed as Outline doesn't have this property
                 
-                Text("Items: \(outline.items.count)")
+                Text("Nodes: \(outline.rootNodes.count)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -319,8 +331,8 @@ struct OutlineDetailPanel: View {
             Spacer()
         }
         .padding(.vertical)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
@@ -331,14 +343,12 @@ struct OutlineEditView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var title: String
     @State private var description: String
-    @State private var status: OutlineStatus
     
     init(outline: Outline, coordinator: OutlineCoordinator) {
         self.outline = outline
         self.coordinator = coordinator
         self._title = State(initialValue: outline.title)
         self._description = State(initialValue: outline.description)
-        self._status = State(initialValue: outline.status)
     }
     
     var body: some View {
@@ -348,11 +358,6 @@ struct OutlineEditView: View {
                     TextField("Title", text: $title)
                     TextField("Description", text: $description, axis: .vertical)
                         .lineLimit(3...6)
-                    Picker("Status", selection: $status) {
-                        ForEach(OutlineStatus.allCases, id: \.self) { status in
-                            Text(status.rawValue).tag(status)
-                        }
-                    }
                 }
             }
             .navigationTitle("Edit Outline")
@@ -367,7 +372,6 @@ struct OutlineEditView: View {
                         var updatedOutline = outline
                         updatedOutline.title = title
                         updatedOutline.description = description
-                        updatedOutline.status = status
                         coordinator.updateOutline(updatedOutline)
                         dismiss()
                     }

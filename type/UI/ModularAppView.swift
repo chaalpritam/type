@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Modular App View
 /// Main app view using the modular coordinator architecture
@@ -15,10 +16,19 @@ struct ModularAppView: View {
                 VStack(spacing: 0) {
                     // Enhanced Apple-style toolbar
                     EnhancedAppleToolbar(
-                        showPreview: $appCoordinator.editorCoordinator.showPreview,
+                        showPreview: Binding(
+                            get: { appCoordinator.editorCoordinator.showPreview },
+                            set: { appCoordinator.editorCoordinator.showPreview = $0 }
+                        ),
                         showLineNumbers: .constant(true),
-                        showFindReplace: $appCoordinator.editorCoordinator.showFindReplace,
-                        showHelp: $appCoordinator.editorCoordinator.showHelp,
+                        showFindReplace: Binding(
+                            get: { appCoordinator.editorCoordinator.showFindReplace },
+                            set: { appCoordinator.editorCoordinator.showFindReplace = $0 }
+                        ),
+                        showHelp: Binding(
+                            get: { appCoordinator.editorCoordinator.showHelp },
+                            set: { appCoordinator.editorCoordinator.showHelp = $0 }
+                        ),
                         canUndo: appCoordinator.editorCoordinator.canUndo,
                         canRedo: appCoordinator.editorCoordinator.canRedo,
                         onUndo: { appCoordinator.editorCoordinator.performUndo() },
@@ -36,16 +46,37 @@ struct ModularAppView: View {
                         canSave: appCoordinator.fileManagementService.canSave,
                         isDocumentModified: appCoordinator.fileManagementService.isDocumentModified,
                         currentDocumentName: appCoordinator.fileManagementService.currentDocumentName,
-                        showCommentsPanel: $appCoordinator.collaborationCoordinator.showCommentsPanel,
-                        showVersionHistory: $appCoordinator.collaborationCoordinator.showVersionHistory,
-                        showCollaboratorsPanel: $appCoordinator.collaborationCoordinator.showCollaboratorsPanel,
-                        showSharingDialog: $appCoordinator.collaborationCoordinator.showSharingDialog,
+                        showCommentsPanel: Binding(
+                            get: { appCoordinator.collaborationCoordinator.showCommentsPanel },
+                            set: { appCoordinator.collaborationCoordinator.showCommentsPanel = $0 }
+                        ),
+                        showVersionHistory: Binding(
+                            get: { appCoordinator.collaborationCoordinator.showVersionHistory },
+                            set: { appCoordinator.collaborationCoordinator.showVersionHistory = $0 }
+                        ),
+                        showCollaboratorsPanel: Binding(
+                            get: { appCoordinator.collaborationCoordinator.showCollaboratorsPanel },
+                            set: { appCoordinator.collaborationCoordinator.showCollaboratorsPanel = $0 }
+                        ),
+                        showSharingDialog: Binding(
+                            get: { appCoordinator.collaborationCoordinator.showSharingDialog },
+                            set: { appCoordinator.collaborationCoordinator.showSharingDialog = $0 }
+                        ),
                         collaboratorCount: appCoordinator.collaborationCoordinator.collaborators.count,
                         commentCount: appCoordinator.collaborationCoordinator.comments.count,
-                        showTemplateSelector: $appCoordinator.editorCoordinator.showTemplateSelector,
-                        showCharacterDatabase: $appCoordinator.characterCoordinator.showCharacterDatabase,
+                        showTemplateSelector: Binding(
+                            get: { appCoordinator.editorCoordinator.showTemplateSelector },
+                            set: { appCoordinator.editorCoordinator.showTemplateSelector = $0 }
+                        ),
+                        showCharacterDatabase: Binding(
+                            get: { appCoordinator.characterCoordinator.showCharacterDatabase },
+                            set: { appCoordinator.characterCoordinator.showCharacterDatabase = $0 }
+                        ),
                         characterCount: appCoordinator.characterCoordinator.characterDatabase.statistics.totalCharacters,
-                        showOutlineMode: $appCoordinator.outlineCoordinator.showOutlineMode,
+                        showOutlineMode: Binding(
+                            get: { appCoordinator.outlineCoordinator.showOutlineMode },
+                            set: { appCoordinator.outlineCoordinator.showOutlineMode = $0 }
+                        ),
                         outlineDatabase: appCoordinator.outlineCoordinator.outlineDatabase
                     )
                     
@@ -61,9 +92,12 @@ struct ModularAppView: View {
                         wordCount: appCoordinator.statisticsService.wordCount,
                         pageCount: appCoordinator.statisticsService.pageCount,
                         characterCount: appCoordinator.statisticsService.characterCount,
-                        showStatistics: $appCoordinator.statisticsService.showWritingGoals,
+                        showStatistics: Binding(
+                            get: { appCoordinator.statisticsService.showWritingGoals },
+                            set: { appCoordinator.statisticsService.showWritingGoals = $0 }
+                        ),
                         smartFormattingManager: appCoordinator.editorCoordinator.smartFormattingManager,
-                        animationSpeed: .constant(.normal),
+                        animationSpeed: AnimationSpeed.normal,
                         autoSaveEnabled: appCoordinator.fileManagementService.autoSaveEnabled,
                         isDocumentModified: appCoordinator.fileManagementService.isDocumentModified,
                         currentDocumentName: appCoordinator.fileManagementService.currentDocumentName
@@ -107,8 +141,8 @@ struct ModularToolbar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
@@ -236,8 +270,8 @@ struct ModularSidebar: View {
             
             Spacer()
         }
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
@@ -357,7 +391,7 @@ struct ModularStatusBar: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 4)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 } 
