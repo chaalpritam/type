@@ -6,6 +6,19 @@ A modern screenplay writing app for macOS with real-time Fountain format parsing
 
 ## Features
 
+## Documentation
+
+All detailed documentation has been moved to the `docs/` directory:
+
+- [`docs/COMPREHENSIVE_DOCUMENTATION.md`](docs/COMPREHENSIVE_DOCUMENTATION.md) – Full project overview
+- [`docs/MODULAR_ARCHITECTURE.md`](docs/MODULAR_ARCHITECTURE.md) & [`docs/MODULAR_IMPLEMENTATION_SUMMARY.md`](docs/MODULAR_IMPLEMENTATION_SUMMARY.md) – Architecture notes
+- [`docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md`](docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md) – Editor feature breakdown
+- [`docs/BEAT_ANALYSIS_AND_IMPROVEMENTS.md`](docs/BEAT_ANALYSIS_AND_IMPROVEMENTS.md) – Beat-specific research/notes
+- [`docs/CHARACTER_DATABASE_README.md`](docs/CHARACTER_DATABASE_README.md) – Character database guide
+- [`docs/IMPROVEMENT_TODO.md`](docs/IMPROVEMENT_TODO.md) – Backlog of improvement ideas
+
+Refer to that folder for additional references and guides.
+
 ### ✨ Real-time Fountain Parsing
 - **Live Preview**: See your screenplay formatted in real-time as you type
 - **Syntax Highlighting**: Fountain elements are color-coded in the editor
