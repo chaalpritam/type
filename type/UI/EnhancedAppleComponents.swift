@@ -7,6 +7,21 @@
 
 import SwiftUI
 
+private enum ToolbarMetrics {
+    static let rowSpacing: CGFloat = 6
+    static let buttonHeight: CGFloat = 28
+    static let iconSize: CGFloat = 13
+    static let labelFontSize: CGFloat = 12
+    static let horizontalPadding: CGFloat = 12
+    static let verticalPadding: CGFloat = 6
+    static let groupSpacing: CGFloat = 12
+    static let itemSpacing: CGFloat = 8
+    static let buttonHorizontalPadding: CGFloat = 10
+    static let dividerHeight: CGFloat = 24
+    static let badgeHorizontalOffset: CGFloat = 10
+    static let barHeight: CGFloat = buttonHeight * 2 + rowSpacing + verticalPadding * 2
+}
+
 // MARK: - Animation Speed Enum
 enum AnimationSpeed: String, CaseIterable {
     case slow = "Slow"
@@ -74,9 +89,57 @@ struct EnhancedAppleToolbar: View {
     let outlineDatabase: OutlineDatabase
     
     var body: some View {
-        HStack(spacing: 12) {
-            // File operations with enhanced styling
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ToolbarMetrics.rowSpacing) {
+            // Top row
+            HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
+                fileOperationsGroup
+                
+                AppleDivider()
+                
+                templateButton
+                
+                AppleDivider()
+                
+                editOperationsGroup
+                
+                AppleDivider()
+                
+                formattingGroup
+                
+                Spacer(minLength: 0)
+            }
+            
+            // Bottom row
+            HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
+                viewControlsGroup
+                
+                AppleDivider()
+                
+                collaborationGroup
+                
+                AppleDivider()
+                
+                charactersButton
+                
+                outlineButton
+                
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+        .padding(.vertical, ToolbarMetrics.verticalPadding)
+        .frame(minHeight: ToolbarMetrics.barHeight, alignment: .center)
+        .background(.ultraThinMaterial)
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(Color(.separatorColor)),
+            alignment: .bottom
+        )
+    }
+    
+    private var fileOperationsGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: "doc.badge.plus",
                     label: "New",
@@ -108,26 +171,23 @@ struct EnhancedAppleToolbar: View {
                         onExportDocument()
                     }
                 } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
+                    EnhancedAppleToolbarMenuLabel(icon: "chevron.down", accessibilityLabel: "More save options")
                 }
+                .menuStyle(.borderlessButton)
                 .disabled(!canSave)
             }
-            
-            AppleDivider()
-            
-            // Template selector
+    }
+    
+    private var templateButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "doc.text",
                 label: "Template",
                 action: { showTemplateSelector = true }
             )
-            
-            AppleDivider()
-            
-            // Edit operations
-            HStack(spacing: 6) {
+    }
+    
+    private var editOperationsGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: "arrow.uturn.backward",
                     action: onUndo
@@ -145,29 +205,30 @@ struct EnhancedAppleToolbar: View {
                     action: { showFindReplace.toggle() }
                 )
             }
-            
-            AppleDivider()
-            
-            // Formatting options with enhanced styling
-            HStack(spacing: 8) {
+    }
+    
+    private var formattingGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
                 Picker("Font", selection: $selectedFont) {
                     Text("SF Mono").tag("SF Mono")
                     Text("Menlo").tag("Menlo")
                     Text("Monaco").tag("Monaco")
                 }
                 .pickerStyle(MenuPickerStyle())
-                .frame(width: 100)
+                .labelsHidden()
+                .frame(width: 110)
+                .frame(height: ToolbarMetrics.buttonHeight)
                 
-                HStack(spacing: 4) {
+                HStack(spacing: ToolbarMetrics.itemSpacing) {
                     EnhancedAppleToolbarButton(
                         icon: "textformat.size.smaller",
                         action: { fontSize = max(10, fontSize - 1) }
                     )
                     
                     Text("\(Int(fontSize))")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: ToolbarMetrics.labelFontSize, weight: .medium))
                         .foregroundColor(.secondary)
-                        .frame(width: 25)
+                        .frame(width: 28, height: ToolbarMetrics.buttonHeight)
                     
                     EnhancedAppleToolbarButton(
                         icon: "textformat.size.larger",
@@ -175,11 +236,10 @@ struct EnhancedAppleToolbar: View {
                     )
                 }
             }
-            
-            Spacer()
-            
-            // View controls with customization
-            HStack(spacing: 6) {
+    }
+    
+    private var viewControlsGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: showLineNumbers ? "list.number" : "list.number.fill",
                     action: { showLineNumbers.toggle() }
@@ -205,11 +265,10 @@ struct EnhancedAppleToolbar: View {
                     action: { isFullScreen.toggle() }
                 )
             }
-            
-            AppleDivider()
-            
-            // Collaboration controls
-            HStack(spacing: 6) {
+    }
+    
+    private var collaborationGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: "bubble.left.and.bubble.right",
                     action: { showCommentsPanel.toggle() }
@@ -227,7 +286,7 @@ struct EnhancedAppleToolbar: View {
                                     Capsule()
                                         .fill(Color.red)
                                 )
-                                .offset(x: 8, y: -8)
+                                .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
                         }
                     }
                 )
@@ -254,7 +313,7 @@ struct EnhancedAppleToolbar: View {
                                     Capsule()
                                         .fill(Color.green)
                                 )
-                                .offset(x: 8, y: -8)
+                                .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
                         }
                     }
                 )
@@ -264,10 +323,9 @@ struct EnhancedAppleToolbar: View {
                     action: { showSharingDialog = true }
                 )
             }
-            
-            AppleDivider()
-            
-            // Character database
+    }
+    
+    private var charactersButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "person.3",
                 label: "Characters",
@@ -286,12 +344,13 @@ struct EnhancedAppleToolbar: View {
                                 Capsule()
                                     .fill(Color.blue)
                             )
-                            .offset(x: 8, y: -8)
+                            .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
                     }
                 }
             )
-            
-            // Outline mode
+    }
+    
+    private var outlineButton: some View {
             EnhancedAppleToolbarButton(
                 icon: "list.bullet",
                 label: "Outline",
@@ -310,20 +369,10 @@ struct EnhancedAppleToolbar: View {
                                 Capsule()
                                     .fill(Color.green)
                             )
-                            .offset(x: 8, y: -8)
+                            .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
                     }
                 }
             )
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
-        .overlay(
-            Rectangle()
-                .frame(height: 0.5)
-                .foregroundColor(Color(.separatorColor)),
-            alignment: .bottom
-        )
     }
 }
 
@@ -335,22 +384,15 @@ struct EnhancedAppleToolbarButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 13))
+                    .font(.system(size: ToolbarMetrics.iconSize))
                 if let label = label {
                     Text(label)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: ToolbarMetrics.labelFontSize, weight: .medium))
                 }
             }
             .foregroundColor(.primary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.clear)
-            )
-            .contentShape(Rectangle())
         }
         .buttonStyle(EnhancedAppleButtonStyle())
     }
@@ -359,11 +401,14 @@ struct EnhancedAppleToolbarButton: View {
 struct EnhancedAppleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .frame(height: ToolbarMetrics.buttonHeight)
+            .padding(.horizontal, ToolbarMetrics.buttonHorizontalPadding)
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .fill(configuration.isPressed ? Color(.controlColor) : Color.clear)
             )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .contentShape(RoundedRectangle(cornerRadius: 6))
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
@@ -371,8 +416,28 @@ struct EnhancedAppleButtonStyle: ButtonStyle {
 struct AppleDivider: View {
     var body: some View {
         Rectangle()
-            .frame(width: 1, height: 20)
+            .frame(width: 1, height: ToolbarMetrics.dividerHeight)
             .foregroundColor(Color(.separatorColor))
+    }
+}
+
+struct EnhancedAppleToolbarMenuLabel: View {
+    let icon: String
+    var accessibilityLabel: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .font(.system(size: ToolbarMetrics.iconSize))
+        }
+        .foregroundColor(.primary)
+        .frame(height: ToolbarMetrics.buttonHeight)
+        .padding(.horizontal, ToolbarMetrics.buttonHorizontalPadding)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(Color.clear)
+        )
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 
@@ -388,15 +453,15 @@ struct EnhancedAppleEditorHeader: View {
     let currentDailyWords: Int
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Text("Editor")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.primary)
             
             Spacer()
             
             if showStatistics {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     EnhancedAppleStatisticView(label: "Words", value: "\(wordCount)")
                     EnhancedAppleStatisticView(label: "Pages", value: "\(pageCount)")
                     EnhancedAppleStatisticView(label: "Chars", value: "\(characterCount)")
@@ -413,20 +478,20 @@ struct EnhancedAppleEditorHeader: View {
             
             Button(action: { showAutoCompletion.toggle() }) {
                 Image(systemName: showAutoCompletion ? "textformat.abc" : "textformat.abc.dottedunderline")
-                    .font(.system(size: 14))
+                    .font(.system(size: 13))
                     .foregroundColor(.primary)
             }
             .buttonStyle(EnhancedAppleButtonStyle())
             
             Button(action: { showWritingGoals.toggle() }) {
                 Image(systemName: "target")
-                    .font(.system(size: 14))
+                    .font(.system(size: 13))
                     .foregroundColor(.primary)
             }
             .buttonStyle(EnhancedAppleButtonStyle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
         .background(.ultraThinMaterial)
     }
 }
@@ -437,11 +502,11 @@ struct EnhancedAppleStatisticView: View {
     let value: String
     
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 1) {
             Text(value)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
             Text(label)
-                .font(.system(size: 10))
+                .font(.system(size: 9))
                 .foregroundColor(.secondary)
         }
     }
@@ -456,15 +521,15 @@ struct WritingGoalProgressView: View {
     }
     
     var body: some View {
-        VStack(spacing: 2) {
-            HStack(spacing: 4) {
+        VStack(spacing: 1) {
+            HStack(spacing: 3) {
                 Text("\(current)")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                 Text("/")
-                    .font(.system(size: 10))
+                    .font(.system(size: 9))
                     .foregroundColor(.secondary)
                 Text("\(goal)")
-                    .font(.system(size: 10))
+                    .font(.system(size: 9))
                     .foregroundColor(.secondary)
             }
             
@@ -473,15 +538,15 @@ struct WritingGoalProgressView: View {
                 ZStack(alignment: .leading) {
                     Rectangle()
                         .fill(Color(.separatorColor))
-                        .frame(height: 2)
+                        .frame(height: 1.5)
                     
                     Rectangle()
                         .fill(progressColor)
-                        .frame(width: geometry.size.width * progress, height: 2)
+                        .frame(width: geometry.size.width * progress, height: 1.5)
                         .animation(.easeInOut(duration: 0.3), value: progress)
                 }
             }
-            .frame(width: 40, height: 2)
+            .frame(width: 38, height: 2)
         }
     }
     
