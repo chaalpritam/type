@@ -17,9 +17,9 @@ private enum ToolbarMetrics {
     static let groupSpacing: CGFloat = 12
     static let itemSpacing: CGFloat = 8
     static let buttonHorizontalPadding: CGFloat = 10
-    static let dividerHeight: CGFloat = 24
+    static let dividerHeight: CGFloat = 20
     static let badgeHorizontalOffset: CGFloat = 10
-    static let barHeight: CGFloat = buttonHeight * 2 + rowSpacing + verticalPadding * 2
+    static let barHeight: CGFloat = buttonHeight * 3 + rowSpacing * 2 + verticalPadding * 2
 }
 
 struct EditorToolbarContext {
@@ -109,46 +109,9 @@ struct EnhancedAppleToolbar: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: ToolbarMetrics.rowSpacing) {
-            // Top row
-            HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
-                fileOperationsGroup
-                
-                AppleDivider()
-                
-                templateButton
-                
-                AppleDivider()
-                
-                editOperationsGroup
-                
-                AppleDivider()
-                
-                formattingGroup
-                
-                Spacer(minLength: 0)
-            }
-            
-            // Bottom row
-            HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
-                viewControlsGroup
-                
-                if let context = editorContext {
-                    AppleDivider()
-                    editorFeaturesGroup(context)
-                    
-                    AppleDivider()
-                    editorStatsGroup(context)
-                }
-                
-                Spacer(minLength: 0)
-                
-                AppleDivider()
-                collaborationGroup
-                
-                AppleDivider()
-                charactersButton
-                outlineButton
-            }
+            topRow
+            middleRow
+            bottomRow
         }
         .padding(.horizontal, ToolbarMetrics.horizontalPadding)
         .padding(.vertical, ToolbarMetrics.verticalPadding)
@@ -160,6 +123,55 @@ struct EnhancedAppleToolbar: View {
                 .foregroundColor(Color(.separatorColor)),
             alignment: .bottom
         )
+    }
+    
+    private var topRow: some View {
+        HStack(alignment: .center, spacing: ToolbarMetrics.itemSpacing * 2) {
+            fileOperationsGroup
+            
+            AppleDivider()
+            
+            templateButton
+            
+            AppleDivider()
+            
+            editOperationsGroup
+            
+            Spacer(minLength: 0)
+        }
+    }
+    
+    private var middleRow: some View {
+        HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
+            formattingGroup
+            
+            AppleDivider()
+            
+            viewControlsGroup
+            
+            if let context = editorContext {
+                AppleDivider()
+                editorFeaturesGroup(context)
+            }
+            
+            Spacer(minLength: 0)
+        }
+    }
+    
+    private var bottomRow: some View {
+        HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
+            if let context = editorContext {
+                editorStatsGroup(context)
+                
+                AppleDivider()
+            }
+            
+            collaborationGroup
+            
+            AppleDivider()
+            charactersButton
+            outlineButton
+        }
     }
     
     private var fileOperationsGroup: some View {
@@ -182,8 +194,8 @@ struct EnhancedAppleToolbar: View {
                     action: onSaveDocument
                 )
                 .disabled(!canSave)
-                
-                // Save As dropdown
+            
+            
                 Menu {
                     Button("Save As...") {
                         onSaveDocumentAs()
@@ -195,7 +207,7 @@ struct EnhancedAppleToolbar: View {
                         onExportDocument()
                     }
                 } label: {
-                    EnhancedAppleToolbarMenuLabel(icon: "chevron.down", accessibilityLabel: "More save options")
+                    EnhancedAppleToolbarMenuLabel(icon: "chevron.down", accessibilityLabel: "Save & Export Options")
                 }
                 .menuStyle(.borderlessButton)
                 .disabled(!canSave)
