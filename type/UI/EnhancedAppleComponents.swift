@@ -214,18 +214,21 @@ struct EnhancedAppleToolbar: View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: "arrow.uturn.backward",
+                    label: "Undo",
                     action: onUndo
                 )
                 .disabled(!canUndo)
                 
                 EnhancedAppleToolbarButton(
                     icon: "arrow.uturn.forward",
+                    label: "Redo",
                     action: onRedo
                 )
                 .disabled(!canRedo)
                 
                 EnhancedAppleToolbarButton(
                     icon: "magnifyingglass",
+                    label: "Find",
                     action: { showFindReplace.toggle() }
                 )
             }
@@ -266,26 +269,31 @@ struct EnhancedAppleToolbar: View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: showLineNumbers ? "list.number" : "list.number.fill",
+                    label: "Line #",
                     action: { showLineNumbers.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: "paintbrush",
+                    label: "Style",
                     action: { showCustomizationPanel.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: "questionmark.circle",
+                    label: "Help",
                     action: { showHelp.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: showPreview ? "eye.slash" : "eye",
+                    label: "Preview",
                     action: { showPreview.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: isFullScreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right",
+                    label: isFullScreen ? "Exit Full" : "Full",
                     action: { isFullScreen.toggle() }
                 )
             }
@@ -297,6 +305,7 @@ struct EnhancedAppleToolbar: View {
                 isActive: context.isFocusMode,
                 activeIcon: "eye.slash.fill",
                 inactiveIcon: "eye.slash",
+                label: "Focus",
                 help: "Toggle Focus Mode",
                 action: context.toggleFocusMode
             )
@@ -305,6 +314,7 @@ struct EnhancedAppleToolbar: View {
                 isActive: context.isTypewriterMode,
                 activeIcon: "keyboard.fill",
                 inactiveIcon: "keyboard",
+                label: "Typewriter",
                 help: "Toggle Typewriter Mode",
                 action: context.toggleTypewriterMode
             )
@@ -313,6 +323,7 @@ struct EnhancedAppleToolbar: View {
                 isActive: context.hasMultipleCursors,
                 activeIcon: "cursorarrow.rays",
                 inactiveIcon: "cursorarrow.rays",
+                label: "Cursors",
                 help: "Toggle Multiple Cursors",
                 action: context.toggleMultipleCursors
             )
@@ -321,6 +332,7 @@ struct EnhancedAppleToolbar: View {
                 isActive: context.isCodeFoldingVisible,
                 activeIcon: "chevron.up.chevron.down",
                 inactiveIcon: "chevron.up.chevron.down",
+                label: "Folding",
                 help: "Toggle Code Folding Controls",
                 action: context.toggleCodeFolding
             )
@@ -329,6 +341,7 @@ struct EnhancedAppleToolbar: View {
                 isActive: context.isMinimapVisible,
                 activeIcon: "map.fill",
                 inactiveIcon: "map",
+                label: "Minimap",
                 help: "Toggle Minimap",
                 action: context.toggleMinimap
             )
@@ -349,6 +362,7 @@ struct EnhancedAppleToolbar: View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
                     icon: "bubble.left.and.bubble.right",
+                    label: "Comments",
                     action: { showCommentsPanel.toggle() }
                 )
                 .overlay(
@@ -371,11 +385,13 @@ struct EnhancedAppleToolbar: View {
                 
                 EnhancedAppleToolbarButton(
                     icon: "clock.arrow.circlepath",
+                    label: "Versions",
                     action: { showVersionHistory.toggle() }
                 )
                 
                 EnhancedAppleToolbarButton(
                     icon: "person.2",
+                    label: "Collaborators",
                     action: { showCollaboratorsPanel.toggle() }
                 )
                 .overlay(
@@ -398,6 +414,7 @@ struct EnhancedAppleToolbar: View {
                 
                 EnhancedAppleToolbarButton(
                     icon: "square.and.arrow.up",
+                    label: "Share",
                     action: { showSharingDialog = true }
                 )
             }
@@ -480,14 +497,19 @@ private struct ToolbarToggleButton: View {
     let isActive: Bool
     let activeIcon: String
     let inactiveIcon: String
+    let label: String
     let help: String?
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Image(systemName: isActive ? activeIcon : inactiveIcon)
-                .font(.system(size: ToolbarMetrics.iconSize))
-                .foregroundColor(isActive ? .accentColor : .primary)
+            HStack(spacing: 6) {
+                Image(systemName: isActive ? activeIcon : inactiveIcon)
+                    .font(.system(size: ToolbarMetrics.iconSize))
+                Text(label)
+                    .font(.system(size: ToolbarMetrics.labelFontSize, weight: .medium))
+            }
+            .foregroundColor(isActive ? .accentColor : .primary)
         }
         .buttonStyle(EnhancedAppleButtonStyle())
         .background(
@@ -495,7 +517,7 @@ private struct ToolbarToggleButton: View {
                 .fill(isActive ? Color.accentColor.opacity(0.12) : Color.clear)
         )
         .help(help ?? "")
-        .accessibilityLabel(help ?? (isActive ? activeIcon : inactiveIcon))
+        .accessibilityLabel(help ?? label)
     }
 }
 
