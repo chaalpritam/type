@@ -22,6 +22,10 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var showFindReplace: Bool = false
     @Published var showSpellCheck: Bool = false
     @Published var showMinimap: Bool = false
+    @Published var isFocusModeActive: Bool = false
+    @Published var isTypewriterModeActive: Bool = false
+    @Published var hasMultipleCursorsActive: Bool = false
+    @Published var isCodeFoldingActive: Bool = false
     
     // MARK: - Services
     let fountainParser = FountainParser()
@@ -168,10 +172,41 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Private Methods
     
     private func setupEditorBindings() {
+        // Initial state
+        isFocusModeActive = advancedFeatures.isFocusMode
+        isTypewriterModeActive = advancedFeatures.isTypewriterMode
+        hasMultipleCursorsActive = !multipleCursorsManager.cursors.isEmpty
+        isCodeFoldingActive = codeFoldingManager.showFoldingControls
+        
         // Listen for document changes
         documentService.$currentDocument
             .sink { [weak self] document in
                 self?.updateDocument(document)
+            }
+            .store(in: &cancellables)
+        
+        // Observe advanced feature states
+        advancedFeatures.$isFocusMode
+            .sink { [weak self] value in
+                self?.isFocusModeActive = value
+            }
+            .store(in: &cancellables)
+        
+        advancedFeatures.$isTypewriterMode
+            .sink { [weak self] value in
+                self?.isTypewriterModeActive = value
+            }
+            .store(in: &cancellables)
+        
+        multipleCursorsManager.$cursors
+            .sink { [weak self] cursors in
+                self?.hasMultipleCursorsActive = !cursors.isEmpty
+            }
+            .store(in: &cancellables)
+        
+        codeFoldingManager.$showFoldingControls
+            .sink { [weak self] value in
+                self?.isCodeFoldingActive = value
             }
             .store(in: &cancellables)
     }
@@ -205,9 +240,6 @@ struct EditorMainView: View {
                 HStack(spacing: 0) {
                     // Main editor
                     VStack(spacing: 0) {
-                        // Editor toolbar
-                        EditorToolbarView(coordinator: coordinator)
-                        
                         // Editor content
                         HStack(spacing: 0) {
                             // Text editor
@@ -288,107 +320,3 @@ struct EditorMainView: View {
         }
     }
 }
-
-// MARK: - Editor Toolbar View
-struct EditorToolbarView: View {
-    @ObservedObject var coordinator: EditorCoordinator
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // File operations
-            HStack(spacing: 8) {
-                Button("Undo") {
-                    coordinator.performUndo()
-                }
-                .disabled(!coordinator.canUndo)
-                
-                Button("Redo") {
-                    coordinator.performRedo()
-                }
-                .disabled(!coordinator.canRedo)
-            }
-            
-            Divider()
-            
-            // View controls
-            HStack(spacing: 8) {
-                Button("Preview") {
-                    coordinator.togglePreview()
-                }
-                .background(coordinator.showPreview ? Color.blue.opacity(0.2) : Color.clear)
-                
-                Button("Help") {
-                    coordinator.toggleHelp()
-                }
-                .background(coordinator.showHelp ? Color.blue.opacity(0.2) : Color.clear)
-                
-                Button("Find/Replace") {
-                    coordinator.toggleFindReplace()
-                }
-                .background(coordinator.showFindReplace ? Color.blue.opacity(0.2) : Color.clear)
-            }
-            
-            Divider()
-            
-            // Advanced features
-            HStack(spacing: 8) {
-                Button(action: {
-                    coordinator.toggleFocusMode()
-                }) {
-                    Image(systemName: coordinator.advancedFeatures.isFocusMode ? "eye.slash.fill" : "eye.slash")
-                        .foregroundColor(coordinator.advancedFeatures.isFocusMode ? .blue : .primary)
-                }
-                .help("Focus Mode - Distraction-free writing")
-                
-                Button(action: {
-                    coordinator.toggleTypewriterMode()
-                }) {
-                    Image(systemName: coordinator.advancedFeatures.isTypewriterMode ? "typewriter.fill" : "typewriter")
-                        .foregroundColor(coordinator.advancedFeatures.isTypewriterMode ? .blue : .primary)
-                }
-                .help("Typewriter Mode - Centered cursor with auto-scroll")
-                
-                Button(action: {
-                    coordinator.toggleMultipleCursors()
-                }) {
-                    Image(systemName: coordinator.multipleCursorsManager.cursors.isEmpty ? "cursorarrow.rays" : "cursorarrow.rays.fill")
-                        .foregroundColor(coordinator.multipleCursorsManager.cursors.isEmpty ? .primary : .blue)
-                }
-                .help("Multiple Cursors - Edit multiple locations simultaneously")
-                
-                Button(action: {
-                    coordinator.toggleCodeFolding()
-                }) {
-                    Image(systemName: coordinator.codeFoldingManager.showFoldingControls ? "chevron.up.chevron.down" : "chevron.up.chevron.down")
-                        .foregroundColor(coordinator.codeFoldingManager.showFoldingControls ? .blue : .primary)
-                }
-                .help("Code Folding - Collapse/expand sections and scenes")
-                
-                Button(action: {
-                    coordinator.toggleMinimap()
-                }) {
-                    Image(systemName: coordinator.showMinimap ? "map.fill" : "map")
-                        .foregroundColor(coordinator.showMinimap ? .blue : .primary)
-                }
-                .help("Minimap - Document overview and navigation")
-            }
-            
-            Spacer()
-            
-            // Statistics
-            HStack(spacing: 16) {
-                Text("Words: \(coordinator.wordCount)")
-                    .font(.caption)
-                Text("Pages: \(coordinator.pageCount)")
-                    .font(.caption)
-                Text("Characters: \(coordinator.characterCount)")
-                    .font(.caption)
-            }
-            .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color(nsColor: .systemGray))
-        .border(Color(nsColor: .separatorColor), width: 0.5)
-    }
-} 

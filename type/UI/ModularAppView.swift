@@ -77,7 +77,22 @@ struct ModularAppView: View {
                             get: { appCoordinator.outlineCoordinator.showOutlineMode },
                             set: { appCoordinator.outlineCoordinator.showOutlineMode = $0 }
                         ),
-                        outlineDatabase: appCoordinator.outlineCoordinator.outlineDatabase
+                        outlineDatabase: appCoordinator.outlineCoordinator.outlineDatabase,
+                        editorContext: appCoordinator.currentView == .editor ? EditorToolbarContext(
+                            isFocusMode: appCoordinator.editorCoordinator.isFocusModeActive,
+                            isTypewriterMode: appCoordinator.editorCoordinator.isTypewriterModeActive,
+                            hasMultipleCursors: appCoordinator.editorCoordinator.hasMultipleCursorsActive,
+                            isCodeFoldingVisible: appCoordinator.editorCoordinator.isCodeFoldingActive,
+                            isMinimapVisible: appCoordinator.editorCoordinator.showMinimap,
+                            wordCount: appCoordinator.editorCoordinator.wordCount,
+                            pageCount: appCoordinator.editorCoordinator.pageCount,
+                            characterCount: appCoordinator.editorCoordinator.characterCount,
+                            toggleFocusMode: { appCoordinator.editorCoordinator.toggleFocusMode() },
+                            toggleTypewriterMode: { appCoordinator.editorCoordinator.toggleTypewriterMode() },
+                            toggleMultipleCursors: { appCoordinator.editorCoordinator.toggleMultipleCursors() },
+                            toggleCodeFolding: { appCoordinator.editorCoordinator.toggleCodeFolding() },
+                            toggleMinimap: { appCoordinator.editorCoordinator.toggleMinimap() }
+                        ) : nil
                     )
                     
                     // Main content area

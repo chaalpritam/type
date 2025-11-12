@@ -22,6 +22,22 @@ private enum ToolbarMetrics {
     static let barHeight: CGFloat = buttonHeight * 2 + rowSpacing + verticalPadding * 2
 }
 
+struct EditorToolbarContext {
+    let isFocusMode: Bool
+    let isTypewriterMode: Bool
+    let hasMultipleCursors: Bool
+    let isCodeFoldingVisible: Bool
+    let isMinimapVisible: Bool
+    let wordCount: Int
+    let pageCount: Int
+    let characterCount: Int
+    let toggleFocusMode: () -> Void
+    let toggleTypewriterMode: () -> Void
+    let toggleMultipleCursors: () -> Void
+    let toggleCodeFolding: () -> Void
+    let toggleMinimap: () -> Void
+}
+
 // MARK: - Animation Speed Enum
 enum AnimationSpeed: String, CaseIterable {
     case slow = "Slow"
@@ -88,6 +104,9 @@ struct EnhancedAppleToolbar: View {
     @Binding var showOutlineMode: Bool
     let outlineDatabase: OutlineDatabase
     
+    // Editor specific context
+    let editorContext: EditorToolbarContext?
+    
     var body: some View {
         VStack(alignment: .leading, spacing: ToolbarMetrics.rowSpacing) {
             // Top row
@@ -113,17 +132,22 @@ struct EnhancedAppleToolbar: View {
             HStack(alignment: .center, spacing: ToolbarMetrics.groupSpacing) {
                 viewControlsGroup
                 
-                AppleDivider()
+                if let context = editorContext {
+                    AppleDivider()
+                    editorFeaturesGroup(context)
+                    
+                    AppleDivider()
+                    editorStatsGroup(context)
+                }
                 
+                Spacer(minLength: 0)
+                
+                AppleDivider()
                 collaborationGroup
                 
                 AppleDivider()
-                
                 charactersButton
-                
                 outlineButton
-                
-                Spacer(minLength: 0)
             }
         }
         .padding(.horizontal, ToolbarMetrics.horizontalPadding)
@@ -267,6 +291,60 @@ struct EnhancedAppleToolbar: View {
             }
     }
     
+    private func editorFeaturesGroup(_ context: EditorToolbarContext) -> some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
+            ToolbarToggleButton(
+                isActive: context.isFocusMode,
+                activeIcon: "eye.slash.fill",
+                inactiveIcon: "eye.slash",
+                help: "Toggle Focus Mode",
+                action: context.toggleFocusMode
+            )
+            
+            ToolbarToggleButton(
+                isActive: context.isTypewriterMode,
+                activeIcon: "keyboard.fill",
+                inactiveIcon: "keyboard",
+                help: "Toggle Typewriter Mode",
+                action: context.toggleTypewriterMode
+            )
+            
+            ToolbarToggleButton(
+                isActive: context.hasMultipleCursors,
+                activeIcon: "cursorarrow.rays",
+                inactiveIcon: "cursorarrow.rays",
+                help: "Toggle Multiple Cursors",
+                action: context.toggleMultipleCursors
+            )
+            
+            ToolbarToggleButton(
+                isActive: context.isCodeFoldingVisible,
+                activeIcon: "chevron.up.chevron.down",
+                inactiveIcon: "chevron.up.chevron.down",
+                help: "Toggle Code Folding Controls",
+                action: context.toggleCodeFolding
+            )
+            
+            ToolbarToggleButton(
+                isActive: context.isMinimapVisible,
+                activeIcon: "map.fill",
+                inactiveIcon: "map",
+                help: "Toggle Minimap",
+                action: context.toggleMinimap
+            )
+        }
+    }
+    
+    private func editorStatsGroup(_ context: EditorToolbarContext) -> some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
+            Text("Words: \(context.wordCount)")
+            Text("Pages: \(context.pageCount)")
+            Text("Chars: \(context.characterCount)")
+        }
+        .font(.system(size: ToolbarMetrics.labelFontSize - 1, weight: .medium))
+        .foregroundColor(.secondary)
+    }
+    
     private var collaborationGroup: some View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
                 EnhancedAppleToolbarButton(
@@ -398,6 +476,29 @@ struct EnhancedAppleToolbarButton: View {
     }
 }
 
+private struct ToolbarToggleButton: View {
+    let isActive: Bool
+    let activeIcon: String
+    let inactiveIcon: String
+    let help: String?
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: isActive ? activeIcon : inactiveIcon)
+                .font(.system(size: ToolbarMetrics.iconSize))
+                .foregroundColor(isActive ? .accentColor : .primary)
+        }
+        .buttonStyle(EnhancedAppleButtonStyle())
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isActive ? Color.accentColor.opacity(0.12) : Color.clear)
+        )
+        .help(help ?? "")
+        .accessibilityLabel(help ?? (isActive ? activeIcon : inactiveIcon))
+    }
+}
+
 struct EnhancedAppleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -453,12 +554,28 @@ struct EnhancedAppleEditorHeader: View {
     let currentDailyWords: Int
     
     var body: some View {
-        HStack(spacing: 12) {
-            Text("Editor")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.primary)
-            
-            Spacer()
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Text("Editor")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                HStack(spacing: ToolbarMetrics.itemSpacing) {
+                    HeaderIconButton(
+                        systemImage: showAutoCompletion ? "textformat.abc" : "textformat.abc.dottedunderline",
+                        accessibilityLabel: showAutoCompletion ? "Disable Auto-completion" : "Enable Auto-completion",
+                        action: { showAutoCompletion.toggle() }
+                    )
+                    
+                    HeaderIconButton(
+                        systemImage: "target",
+                        accessibilityLabel: showWritingGoals ? "Hide Writing Goals" : "Show Writing Goals",
+                        action: { showWritingGoals.toggle() }
+                    )
+                }
+            }
             
             if showStatistics {
                 HStack(spacing: 12) {
@@ -466,32 +583,19 @@ struct EnhancedAppleEditorHeader: View {
                     EnhancedAppleStatisticView(label: "Pages", value: "\(pageCount)")
                     EnhancedAppleStatisticView(label: "Chars", value: "\(characterCount)")
                     
-                    // Writing goal progress
                     if showWritingGoals {
                         WritingGoalProgressView(
                             current: currentDailyWords,
                             goal: dailyWordGoal
                         )
                     }
+                    
+                    Spacer(minLength: 0)
                 }
             }
-            
-            Button(action: { showAutoCompletion.toggle() }) {
-                Image(systemName: showAutoCompletion ? "textformat.abc" : "textformat.abc.dottedunderline")
-                    .font(.system(size: 13))
-                    .foregroundColor(.primary)
-            }
-            .buttonStyle(EnhancedAppleButtonStyle())
-            
-            Button(action: { showWritingGoals.toggle() }) {
-                Image(systemName: "target")
-                    .font(.system(size: 13))
-                    .foregroundColor(.primary)
-            }
-            .buttonStyle(EnhancedAppleButtonStyle())
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+        .padding(.vertical, ToolbarMetrics.verticalPadding)
         .background(.ultraThinMaterial)
     }
 }
@@ -558,6 +662,24 @@ struct WritingGoalProgressView: View {
         } else {
             return .blue
         }
+    }
+}
+
+private struct HeaderIconButton: View {
+    let systemImage: String
+    let accessibilityLabel: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: ToolbarMetrics.iconSize))
+                .foregroundColor(.primary)
+                .frame(height: ToolbarMetrics.buttonHeight)
+                .padding(.horizontal, ToolbarMetrics.buttonHorizontalPadding)
+        }
+        .buttonStyle(EnhancedAppleButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 
