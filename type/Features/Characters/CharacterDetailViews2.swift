@@ -12,7 +12,7 @@ struct CharacterArcDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     VStack(spacing: 16) {
                         Circle()
                             .fill(Color.blue.opacity(0.2))
@@ -42,9 +42,8 @@ struct CharacterArcDetailView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(12)
+                    .frame(maxWidth: .infinity)
+                    .modalSectionStyle()
                     
                     VStack(alignment: .leading, spacing: 16) {
                         SectionHeader(title: "Arc Information", icon: "info.circle")
@@ -76,8 +75,9 @@ struct CharacterArcDetailView: View {
                             }
                         }
                     }
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(arc.name)
             
@@ -150,9 +150,8 @@ struct ArcHeaderView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(12)
+        .frame(maxWidth: .infinity)
+        .modalSectionStyle()
     }
 }
 
@@ -275,9 +274,7 @@ struct ArcMilestoneRowView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(8)
+        .modalSectionStyle(padding: 12)
     }
 }
 
@@ -292,7 +289,7 @@ struct CharacterRelationshipDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     VStack(spacing: 16) {
                         Circle()
                             .fill(Color.green.opacity(0.2))
@@ -327,9 +324,8 @@ struct CharacterRelationshipDetailView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(12)
+                    .frame(maxWidth: .infinity)
+                    .modalSectionStyle()
                     
                     VStack(alignment: .leading, spacing: 16) {
                         SectionHeader(title: "Relationship Information", icon: "info.circle")
@@ -351,8 +347,9 @@ struct CharacterRelationshipDetailView: View {
                             }
                         }
                     }
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Relationship")
             
@@ -392,7 +389,7 @@ struct CharacterNoteDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     VStack(spacing: 16) {
                         Circle()
                             .fill(Color.orange.opacity(0.2))
@@ -413,9 +410,8 @@ struct CharacterNoteDetailView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(12)
+                    .frame(maxWidth: .infinity)
+                    .modalSectionStyle()
                     
                     VStack(alignment: .leading, spacing: 16) {
                         SectionHeader(title: "Note Content", icon: "text.alignleft")
@@ -436,8 +432,9 @@ struct CharacterNoteDetailView: View {
                             InfoRow(title: "Created", value: note.createdAt.formatted(date: .abbreviated, time: .omitted))
                         }
                     }
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Note")
             
@@ -474,7 +471,7 @@ struct CharacterStatisticsView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 16) {
                         SectionHeader(title: "Overview", icon: "chart.bar.fill")
                         
@@ -485,6 +482,7 @@ struct CharacterStatisticsView: View {
                             CharacterStatCard(title: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "text.bubble.fill")
                         }
                     }
+                    .modalSectionStyle()
                     
                     VStack(alignment: .leading, spacing: 16) {
                         SectionHeader(title: "Gender Distribution", icon: "person.2.fill")
@@ -507,6 +505,7 @@ struct CharacterStatisticsView: View {
                             }
                         }
                     }
+                    .modalSectionStyle()
                     
                     if let mostActive = statistics.mostActiveCharacter {
                         VStack(alignment: .leading, spacing: 16) {
@@ -566,13 +565,12 @@ struct CharacterStatisticsView: View {
                                     }
                                 }
                             }
-                            .padding()
-                            .background(Color(NSColor.controlBackgroundColor))
-                            .cornerRadius(12)
+                            .modalSectionStyle()
                         }
+                        .modalSectionStyle()
                     }
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Character Statistics")
             
@@ -723,7 +721,7 @@ struct ArcMilestoneDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Milestone header
                     VStack(spacing: 16) {
                         Circle()
@@ -750,9 +748,8 @@ struct ArcMilestoneDetailView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(12)
+                    .frame(maxWidth: .infinity)
+                    .modalSectionStyle()
                     
                     // Milestone information
                     VStack(alignment: .leading, spacing: 16) {
@@ -781,8 +778,9 @@ struct ArcMilestoneDetailView: View {
                             }
                         }
                     }
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Milestone")
             

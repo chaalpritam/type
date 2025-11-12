@@ -373,7 +373,7 @@ struct CreateVersionSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 24) {
             Text("Create New Version")
                 .font(.title2)
                 .fontWeight(.semibold)
@@ -408,8 +408,7 @@ struct CreateVersionSheet: View {
                 .disabled(versionDescription.isEmpty)
             }
         }
-        .padding()
-        .frame(width: 400)
+        .modalContainer(maxWidth: 420, horizontalPadding: 28, verticalPadding: 24)
     }
 }
 
@@ -421,7 +420,7 @@ struct SharingDialog: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 24) {
             // Header with close button
             HStack {
                 Text("Share Document")
@@ -492,8 +491,7 @@ struct SharingDialog: View {
                 .disabled(emailAddresses.isEmpty)
             }
         }
-        .padding()
-        .frame(width: 400)
+        .modalContainer(maxWidth: 440, horizontalPadding: 28, verticalPadding: 24)
     }
 }
 
@@ -505,7 +503,7 @@ struct InviteCollaboratorSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 24) {
             // Header with close button
             HStack {
                 Text("Invite Collaborators")
@@ -576,8 +574,7 @@ struct InviteCollaboratorSheet: View {
                 .disabled(emailAddresses.isEmpty)
             }
         }
-        .padding()
-        .frame(width: 400)
+        .modalContainer(maxWidth: 440, horizontalPadding: 28, verticalPadding: 24)
     }
 }
 

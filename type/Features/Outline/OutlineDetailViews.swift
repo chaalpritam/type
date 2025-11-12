@@ -10,7 +10,7 @@ struct OutlineNodeDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
@@ -54,9 +54,7 @@ struct OutlineNodeDetailView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(12)
+                    .modalSectionStyle()
                     
                     // Content
                     if !node.content.isEmpty {
@@ -66,18 +64,14 @@ struct OutlineNodeDetailView: View {
                             
                             Text(node.content)
                                 .font(.body)
-                                .padding()
-                                .background(Color(NSColor.windowBackgroundColor))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color(NSColor.controlBackgroundColor), lineWidth: 1)
-                                )
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .modalSectionStyle()
                     }
                     
                     // Metadata
                     OutlineMetadataView(metadata: node.metadata)
+                        .modalSectionStyle()
                     
                     // Children
                     if !node.children.isEmpty {
@@ -92,12 +86,14 @@ struct OutlineNodeDetailView: View {
                                 )
                             }
                         }
+                        .modalSectionStyle()
                     }
                     
                     // Statistics
                     OutlineNodeStatisticsView(node: node)
+                        .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Node Details")
             
@@ -411,9 +407,7 @@ struct OutlineMetadataView: View {
                 }
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func formatDuration(_ duration: TimeInterval) -> String {
@@ -534,9 +528,7 @@ struct OutlineNodeStatisticsView: View {
                 )
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func formatDate(_ date: Date) -> String {

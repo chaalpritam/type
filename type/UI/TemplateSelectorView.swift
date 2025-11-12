@@ -25,7 +25,7 @@ struct TemplateSelectorView: View {
                 }
             
             // Template selector card
-            VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 24) {
                 // Header with close button
                 HStack {
                     Text("Choose Template")
@@ -88,10 +88,11 @@ struct TemplateSelectorView: View {
                 }
             }
             .padding(24)
+            .frame(maxWidth: 600)
             .background(Color.white)
             .cornerRadius(16)
             .shadow(radius: 20)
-            .frame(maxWidth: 600, maxHeight: 600)
+            .frame(maxWidth: 640, maxHeight: 600, alignment: .center)
         }
     }
 }

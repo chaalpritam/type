@@ -13,7 +13,7 @@ struct CharacterDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Character header
                     CharacterHeaderView(character: character)
                     
@@ -44,7 +44,7 @@ struct CharacterDetailView: View {
                     // Character statistics
                     CharacterStatsSection(character: character)
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(character.name)
             
@@ -161,9 +161,7 @@ struct CharacterHeaderView: View {
                 }
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(12)
+        .modalSectionStyle()
     }
 }
 
@@ -205,6 +203,7 @@ struct CharacterInfoSection: View {
                 }
             }
         }
+        .modalSectionStyle()
     }
 }
 
@@ -241,6 +240,7 @@ struct CharacterArcsSection: View {
                 }
             }
         }
+        .modalSectionStyle()
         .sheet(item: $selectedArc) { arc in
             CharacterArcDetailView(
                 arc: arc,
@@ -292,9 +292,7 @@ struct CharacterArcRowView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(8)
+        .modalSectionStyle(padding: 12)
     }
 }
 
@@ -331,6 +329,7 @@ struct CharacterRelationshipsSection: View {
                 }
             }
         }
+        .modalSectionStyle()
         .sheet(item: $selectedRelationship) { relationship in
             CharacterRelationshipDetailView(
                 relationship: relationship,
@@ -380,9 +379,7 @@ struct CharacterRelationshipRowView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(8)
+        .modalSectionStyle(padding: 12)
     }
 }
 
@@ -419,6 +416,7 @@ struct CharacterNotesSection: View {
                 }
             }
         }
+        .modalSectionStyle()
         .sheet(item: $selectedNote) { note in
             CharacterNoteDetailView(
                 note: note,
@@ -468,9 +466,7 @@ struct CharacterNoteRowView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color(NSColor.controlBackgroundColor))
-        .cornerRadius(8)
+        .modalSectionStyle(padding: 12)
     }
 }
 
@@ -489,6 +485,7 @@ struct CharacterStatsSection: View {
                 CharacterStatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
             }
         }
+        .modalSectionStyle()
     }
 }
 

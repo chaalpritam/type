@@ -10,7 +10,7 @@ struct SceneDetailView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Scene header
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
@@ -24,6 +24,7 @@ struct SceneDetailView: View {
                         Spacer()
                         SceneStatusBadge(status: scene.status)
                     }
+                    .modalSectionStyle()
                     
                     // Scene info
                     VStack(alignment: .leading, spacing: 8) {
@@ -42,12 +43,18 @@ struct SceneDetailView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     }
+                    .modalSectionStyle()
                     
                     // Scene content
                     if !scene.content.isEmpty {
-                        Text(scene.content)
-                            .font(.body)
-                            .padding(.vertical, 8)
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Content")
+                                .font(.headline)
+                            Text(scene.content)
+                                .font(.body)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .modalSectionStyle()
                     }
                     
                     // Scene notes
@@ -64,29 +71,34 @@ struct SceneDetailView: View {
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
-                                .padding(6)
-                                .background(Color(NSColor.controlBackgroundColor))
-                                .cornerRadius(6)
+                                .modalSectionStyle(cornerRadius: 8, padding: 12)
                             }
                         }
+                        .modalSectionStyle()
                     }
                     
                     // Scene tags
                     if !scene.tags.isEmpty {
-                        HStack {
-                            ForEach(scene.tags, id: \.self) { tag in
-                                Text(tag)
-                                    .font(.caption2)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(scene.color.color.opacity(0.2))
-                                    .foregroundColor(scene.color.color)
-                                    .cornerRadius(4)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Tags")
+                                .font(.headline)
+                            
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80), spacing: 8)], spacing: 8) {
+                                ForEach(scene.tags, id: \.self) { tag in
+                                    Text(tag)
+                                        .font(.caption2)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(scene.color.color.opacity(0.2))
+                                        .foregroundColor(scene.color.color)
+                                        .cornerRadius(4)
+                                }
                             }
                         }
+                        .modalSectionStyle()
                     }
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle("Scene Detail")
             .toolbar {

@@ -44,7 +44,7 @@ struct CharacterEditView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Basic Information
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Basic Information")
@@ -74,9 +74,7 @@ struct CharacterEditView: View {
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Character Details
                     VStack(alignment: .leading, spacing: 12) {
@@ -98,9 +96,7 @@ struct CharacterEditView: View {
                                 .lineLimit(3...6)
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Goals
                     VStack(alignment: .leading, spacing: 12) {
@@ -131,9 +127,7 @@ struct CharacterEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Conflicts
                     VStack(alignment: .leading, spacing: 12) {
@@ -164,9 +158,7 @@ struct CharacterEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Tags
                     VStack(alignment: .leading, spacing: 12) {
@@ -197,11 +189,9 @@ struct CharacterEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(isNewCharacter ? "New Character" : "Edit Character")
             
@@ -292,7 +282,7 @@ struct CharacterArcEditView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Arc Information
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Arc Information")
@@ -320,9 +310,7 @@ struct CharacterArcEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Scenes
                     VStack(alignment: .leading, spacing: 12) {
@@ -337,9 +325,7 @@ struct CharacterArcEditView: View {
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Notes
                     VStack(alignment: .leading, spacing: 12) {
@@ -351,11 +337,9 @@ struct CharacterArcEditView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .lineLimit(3...8)
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(isNewArc ? "New Arc" : "Edit Arc")
             
@@ -426,7 +410,7 @@ struct CharacterRelationshipEditView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Relationship Information
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Relationship Information")
@@ -454,9 +438,7 @@ struct CharacterRelationshipEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Notes
                     VStack(alignment: .leading, spacing: 12) {
@@ -468,11 +450,9 @@ struct CharacterRelationshipEditView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .lineLimit(3...8)
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(isNewRelationship ? "New Relationship" : "Edit Relationship")
             
@@ -541,7 +521,7 @@ struct CharacterNoteEditView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 24) {
                     // Note Information
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Note Information")
@@ -559,9 +539,7 @@ struct CharacterNoteEditView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Content
                     VStack(alignment: .leading, spacing: 12) {
@@ -573,9 +551,7 @@ struct CharacterNoteEditView: View {
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .lineLimit(5...15)
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                     
                     // Reference
                     VStack(alignment: .leading, spacing: 12) {
@@ -590,11 +566,9 @@ struct CharacterNoteEditView: View {
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                     }
-                    .padding()
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
+                    .modalSectionStyle()
                 }
-                .padding()
+                .modalContainer()
             }
             .navigationTitle(isNewNote ? "New Note" : "Edit Note")
             
