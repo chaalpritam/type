@@ -14,7 +14,7 @@ struct MultipleCursorsTextEditor: View {
             EnhancedFountainTextEditor(
                 text: $text,
                 placeholder: "Just write...",
-                showLineNumbers: true,
+                showLineNumbers: coordinator.showLineNumbers,
                 onTextChange: { newText in
                     coordinator.updateText(newText)
                 }

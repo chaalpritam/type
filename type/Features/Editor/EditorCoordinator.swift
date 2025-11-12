@@ -10,7 +10,8 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     
     // MARK: - Published Properties
     @Published var text: String = ""
-    @Published var showPreview: Bool = true
+    @Published var showPreview: Bool = false
+    @Published var showLineNumbers: Bool = false
     @Published var showHelp: Bool = false
     @Published var showTemplateSelector: Bool = false
     @Published var selectedTemplate: TemplateType = .default
@@ -288,7 +289,7 @@ struct EditorMainView: View {
                                 EnhancedFountainTextEditor(
                                     text: $coordinator.text,
                                     placeholder: "Start writing your screenplay...",
-                                    showLineNumbers: true,
+                                    showLineNumbers: coordinator.showLineNumbers,
                                     onTextChange: { newText in
                                         coordinator.updateText(newText)
                                     }

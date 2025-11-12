@@ -20,7 +20,10 @@ struct ModularAppView: View {
                             get: { appCoordinator.editorCoordinator.showPreview },
                             set: { appCoordinator.editorCoordinator.showPreview = $0 }
                         ),
-                        showLineNumbers: .constant(true),
+                        showLineNumbers: Binding(
+                            get: { appCoordinator.editorCoordinator.showLineNumbers },
+                            set: { appCoordinator.editorCoordinator.showLineNumbers = $0 }
+                        ),
                         showFindReplace: Binding(
                             get: { appCoordinator.editorCoordinator.showFindReplace },
                             set: { appCoordinator.editorCoordinator.showFindReplace = $0 }
