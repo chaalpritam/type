@@ -429,12 +429,12 @@ struct TimelineExportOptions {
     var includeConnections: Bool = true
     var includeNotes: Bool = true
     var includeStatistics: Bool = true
-    var format: ExportFormat = .json
+    var format: TimelineExportFormat = .json
     var imageFormat: ImageFormat = .png
     var resolution: CGSize = CGSize(width: 1920, height: 1080)
 }
 
-enum ExportFormat: String, CaseIterable, Codable {
+enum TimelineExportFormat: String, CaseIterable, Codable {
     case json = "JSON"
     case xml = "XML"
     case csv = "CSV"

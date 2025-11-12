@@ -1,17 +1,6 @@
 import SwiftUI
 import Combine
-import Features.Editor.FountainParser
-import Features.Editor.TextHistoryManager
-import Features.Editor.AutoCompletionManager
-import Features.Editor.SmartFormattingManager
-import Features.Editor.FountainTemplate
-import Features.Editor.AdvancedEditorFeatures
-import Features.Editor.CodeFoldingManager
-import Data.ScreenplayDocument
-import Services.DocumentService
-import Services.FileManagementService
-import Services.StatisticsService
-import Core.ModuleCoordinator
+import AppKit
 
 // MARK: - Editor Coordinator
 /// Coordinates all editor-related functionality
@@ -48,7 +37,9 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Initialization
     override init(documentService: DocumentService) {
         super.init(documentService: documentService)
-        setupEditorBindings()
+        Task { @MainActor in
+            setupEditorBindings()
+        }
     }
     
     // MARK: - ModuleCoordinator Implementation
@@ -60,14 +51,18 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     // MARK: - Public Methods
     
     override func updateDocument(_ document: ScreenplayDocument?) {
-        if let document = document {
-            text = document.content
-            updateStatistics(text: document.content)
-            fountainParser.parse(document.content)
-        } else {
-            text = ""
-            updateStatistics(text: "")
-            fountainParser.clear()
+        Task { @MainActor in
+            if let document = document {
+                text = document.content
+                updateStatistics(text: document.content)
+                fountainParser.parse(document.content)
+            } else {
+                text = ""
+                updateStatistics(text: "")
+                // Clear fountainParser elements
+                fountainParser.elements = []
+                fountainParser.titlePage = [:]
+            }
         }
     }
     
@@ -380,68 +375,7 @@ struct EditorToolbarView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
-    }
-}
-
-// MARK: - Template Selector View
-struct TemplateSelectorView: View {
-    @ObservedObject var coordinator: EditorCoordinator
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            List(TemplateType.allCases, id: \.self) { template in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(template.rawValue)
-                        .font(.headline)
-                    Text(template.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    coordinator.selectTemplate(template)
-                    dismiss()
-                }
-            }
-            .navigationTitle("Select Template")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-        .frame(width: 400, height: 300)
-    }
-}
-
-// MARK: - Template Type
-enum TemplateType: String, CaseIterable {
-    case `default` = "Default"
-    case screenplay = "Screenplay"
-    case stageplay = "Stageplay"
-    case audioDrama = "Audio Drama"
-    case comic = "Comic"
-    case novel = "Novel"
-    
-    var description: String {
-        switch self {
-        case .default:
-            return "Standard screenplay format"
-        case .screenplay:
-            return "Feature film screenplay"
-        case .stageplay:
-            return "Theater play format"
-        case .audioDrama:
-            return "Audio drama/podcast format"
-        case .comic:
-            return "Comic book script format"
-        case .novel:
-            return "Novel manuscript format"
-        }
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 } 

@@ -1,11 +1,6 @@
 import SwiftUI
 import Combine
-import Data.OutlineModels
-import Features.Outline.OutlineDatabase
-import Features.Editor.FountainParser
-import Data.ScreenplayDocument
-import Services.DocumentService
-import Core.ModuleCoordinator
+import UniformTypeIdentifiers
 
 // MARK: - Outline Coordinator
 /// Coordinates all outline-related functionality

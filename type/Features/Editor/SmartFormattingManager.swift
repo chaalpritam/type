@@ -1,5 +1,4 @@
 import Foundation
-import Data.CharacterModels
 
 class SmartFormattingManager: ObservableObject {
     @Published var autoCapitalizeCharacters: Bool = true

@@ -1,13 +1,5 @@
 import SwiftUI
 import Combine
-import Services.SettingsService
-import Services.FileManagementService
-import Services.StatisticsService
-import Features.Editor.EditorCoordinator
-import Features.Characters.CharacterCoordinator
-import Features.Outline.OutlineCoordinator
-import Features.Collaboration.CollaborationCoordinator
-import Features.File.FileCoordinator
 
 // MARK: - App Coordinator
 /// Central coordinator that manages app state and coordinates between modules

@@ -1,6 +1,9 @@
 import Foundation
 import SwiftUI
 
+// MARK: - Type Aliases
+typealias Outline = DocumentOutline
+
 // MARK: - Document Outline Model
 struct DocumentOutline: Identifiable, Codable, Hashable {
     let id = UUID()
@@ -299,9 +302,16 @@ struct OutlineExportOptions {
     var includeMetadata: Bool = true
     var includeChildren: Bool = true
     var maxDepth: Int = -1 // -1 for unlimited
-    var format: ExportFormat = .json
+    var format: OutlineExportFormat = .json
     var includeStatistics: Bool = true
     var includeTemplates: Bool = false
+}
+
+enum OutlineExportFormat: String, CaseIterable, Codable {
+    case json = "JSON"
+    case xml = "XML"
+    case markdown = "Markdown"
+    case plainText = "Plain Text"
 }
 
 // MARK: - Outline Navigation

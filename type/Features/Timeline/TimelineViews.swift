@@ -1,6 +1,4 @@
 import SwiftUI
-import Data.TimelineModels
-import Features.Timeline.TimelineDatabase
 
 // MARK: - Timeline Main View
 struct TimelineView: View {

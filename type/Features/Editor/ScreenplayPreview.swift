@@ -1,5 +1,4 @@
 import SwiftUI
-import Features.Editor.FountainParser
 
 struct ScreenplayPreview: View {
     let elements: [FountainElement]

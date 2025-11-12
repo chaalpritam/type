@@ -1,11 +1,6 @@
 import SwiftUI
 import Combine
-import Data.CharacterModels
-import Features.Characters.CharacterDatabase
-import Features.Editor.FountainParser
-import Data.ScreenplayDocument
-import Services.DocumentService
-import Core.ModuleCoordinator
+import UniformTypeIdentifiers
 
 // MARK: - Character Coordinator
 /// Coordinates all character-related functionality
@@ -21,7 +16,15 @@ class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var showCharacterDatabase: Bool = false
     @Published var searchText: String = ""
     @Published var selectedFilter: CharacterFilter = .all
-    @Published var statistics: CharacterStatistics = CharacterStatistics()
+    @Published var statistics: CharacterStatistics = CharacterStatistics(
+        totalCharacters: 0,
+        charactersWithArcs: 0,
+        charactersWithDialogue: 0,
+        averageDialogueCount: 0.0,
+        mostActiveCharacter: nil,
+        charactersByGender: [:],
+        charactersByArcStatus: [:]
+    )
     
     // MARK: - Services
     let characterDatabase = CharacterDatabase()

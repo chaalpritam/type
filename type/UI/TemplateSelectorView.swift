@@ -150,22 +150,4 @@ struct TemplateCard: View {
         }
         .buttonStyle(.plain)
     }
-}
-
-// MARK: - Template Category
-enum TemplateCategory: String, CaseIterable {
-    case basic = "Basic"
-    case advanced = "Advanced"
-    case specialized = "Specialized"
-    
-    var templates: [TemplateType] {
-        switch self {
-        case .basic:
-            return [.default, .screenplay, .stageplay]
-        case .advanced:
-            return [.audioDrama, .comic]
-        case .specialized:
-            return [.novel]
-        }
-    }
 } 

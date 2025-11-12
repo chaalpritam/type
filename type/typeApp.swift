@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UI.ModularAppView
 
 @main
 struct typeApp: App {

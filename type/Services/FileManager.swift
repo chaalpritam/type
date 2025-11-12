@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
-import Data.ScreenplayDocument
 
 @MainActor
 class FileManager: ObservableObject {
@@ -252,18 +251,6 @@ class FileManager: ObservableObject {
     
     func canSave() -> Bool {
         return currentDocument != nil && currentDocument?.url != nil
-    }
-}
-
-// MARK: - Models
-
-struct ScreenplayDocument {
-    var content: String
-    var url: URL?
-    
-    init(content: String, url: URL? = nil) {
-        self.content = content
-        self.url = url
     }
 }
 

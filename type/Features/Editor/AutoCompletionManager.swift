@@ -1,5 +1,4 @@
 import Foundation
-import Data.CharacterModels
 
 class AutoCompletionManager: ObservableObject {
     @Published var suggestions: [String] = []

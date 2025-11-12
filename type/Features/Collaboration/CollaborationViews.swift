@@ -1,5 +1,4 @@
 import SwiftUI
-import Features.Collaboration.CollaborationManager
 
 // MARK: - Comments Panel
 struct CommentsPanel: View {

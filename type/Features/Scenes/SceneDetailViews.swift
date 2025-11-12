@@ -1,5 +1,4 @@
 import SwiftUI
-import Data.SceneModels
 
 // MARK: - Scene Detail View
 struct SceneDetailView: View {

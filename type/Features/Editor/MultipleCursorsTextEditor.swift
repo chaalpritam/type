@@ -31,46 +31,6 @@ struct MultipleCursorsTextEditor: View {
                 )
             }
         }
-        .onKeyPress(.command, action: .keyDown) { press in
-            handleKeyPress(press)
-        }
-        .onKeyPress(.option, action: .keyDown) { press in
-            handleOptionKeyPress(press)
-        }
-    }
-    
-    private func handleKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        switch press.key {
-        case .keyC:
-            // Cmd+C: Add cursor at current position
-            addCursorAtCurrentPosition()
-            return .handled
-        case .keyD:
-            // Cmd+D: Select next occurrence
-            selectNextOccurrence()
-            return .handled
-        case .escape:
-            // Escape: Clear all cursors
-            cursorsManager.clearAllCursors()
-            return .handled
-        default:
-            return .ignored
-        }
-    }
-    
-    private func handleOptionKeyPress(_ press: KeyPress) -> KeyPress.Result {
-        switch press.key {
-        case .upArrow:
-            // Option+Up: Add cursor above
-            addCursorAbove()
-            return .handled
-        case .downArrow:
-            // Option+Down: Add cursor below
-            addCursorBelow()
-            return .handled
-        default:
-            return .ignored
-        }
     }
     
     private func addCursorAtCurrentPosition() {
@@ -258,10 +218,6 @@ extension MultipleCursorsManager {
         addCursor(at: estimatedPosition)
     }
     
-    func removeCursor(_ cursor: TextCursor) {
-        cursors.removeAll { $0.id == cursor.id }
-    }
-    
     func moveCursor(_ cursor: TextCursor, by offset: Int) {
         let newPosition = max(0, cursor.position + offset)
         updateCursorPosition(cursor, to: newPosition)
@@ -272,11 +228,11 @@ extension MultipleCursorsManager {
         let searchText = text.lowercased()
         let documentText = "" // This would be the actual document text
         
-        var searchRange = documentText.startIndex
+        var searchRange = documentText.startIndex..<documentText.endIndex
         while let range = documentText.range(of: searchText, range: searchRange) {
             let position = documentText.distance(from: documentText.startIndex, to: range.lowerBound)
             addCursor(at: position)
-            searchRange = range.upperBound
+            searchRange = range.upperBound..<documentText.endIndex
         }
     }
 }

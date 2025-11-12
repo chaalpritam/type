@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Minimap View
 struct MinimapView: View {
@@ -29,8 +30,8 @@ struct MinimapView: View {
             }
         }
         .frame(width: 200)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
     
     private func scrollToPosition(_ position: CGFloat) {
@@ -82,7 +83,7 @@ struct MinimapControlsView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(Color(.systemGray5))
+        .background(Color(nsColor: .systemGray))
     }
 }
 
@@ -273,7 +274,7 @@ struct MinimapNavigationView: View {
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(Color(.systemGray6))
+            .background(Color(nsColor: .systemGray))
             .cornerRadius(6)
             
             // Search results
@@ -367,7 +368,7 @@ struct SearchResultRow: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(Color(.systemGray6))
+        .background(Color(nsColor: .systemGray))
         .cornerRadius(4)
         .onTapGesture {
             onTap()

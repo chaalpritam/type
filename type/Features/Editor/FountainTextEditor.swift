@@ -1,5 +1,4 @@
 import SwiftUI
-import Features.Editor.FountainSyntaxHighlighter
 
 struct FountainTextEditor: View {
     @Binding var text: String

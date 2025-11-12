@@ -1,6 +1,4 @@
 import SwiftUI
-import Data.OutlineModels
-import Features.Outline.OutlineDatabase
 
 // MARK: - Outline Main View
 struct OutlineView: View {

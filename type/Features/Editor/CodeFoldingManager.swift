@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import AppKit
 
 // MARK: - Code Folding Manager
 @MainActor
@@ -213,8 +214,8 @@ struct FoldingControlsView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
-        .border(Color(.systemGray4), width: 0.5)
+        .background(Color(nsColor: .systemGray))
+        .border(Color(nsColor: .separatorColor), width: 0.5)
     }
 }
 
