@@ -105,6 +105,11 @@ struct EnhancedAppleToolbar: View {
     // Editor specific context
     let editorContext: EditorToolbarContext?
     
+    // Story Protocol
+    let storyProtocolService: StoryProtocolService
+    let onProtect: () -> Void
+    let onNetworkSelect: () -> Void
+    
     let onToggleFindReplace: () -> Void
     let onToggleHelp: () -> Void
     
@@ -172,6 +177,11 @@ struct EnhancedAppleToolbar: View {
             AppleDivider()
             charactersButton
             outlineButton
+            
+            AppleDivider()
+            storyProtocolGroup
+            
+            Spacer(minLength: 0)
         }
     }
     
@@ -487,6 +497,64 @@ struct EnhancedAppleToolbar: View {
                     }
                 }
         )
+    }
+    
+    private var storyProtocolGroup: some View {
+        HStack(spacing: ToolbarMetrics.itemSpacing) {
+            // Network selector
+            Menu {
+                ForEach(StoryProtocolNetwork.allCases, id: \.self) { network in
+                    Button(action: {
+                        Task {
+                            await storyProtocolService.switchNetwork(network)
+                        }
+                    }) {
+                        HStack {
+                            Text(network.rawValue)
+                            if storyProtocolService.selectedNetwork == network {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: storyProtocolService.connectionStatus.icon)
+                        .font(.system(size: ToolbarMetrics.iconSize))
+                        .foregroundColor(storyProtocolService.connectionStatus.color)
+                    
+                    Text(storyProtocolService.selectedNetwork.rawValue)
+                        .font(.system(size: ToolbarMetrics.labelFontSize, weight: .medium))
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+                .foregroundColor(.primary)
+            }
+            .buttonStyle(EnhancedAppleButtonStyle())
+            .help("Select Story Protocol Network")
+            
+            // Protect button
+            EnhancedAppleToolbarButton(
+                icon: "shield.lefthalf.filled",
+                label: "Protect",
+                isActive: storyProtocolService.protectionStatus.isProtected,
+                action: onProtect
+            )
+            .help("Protect screenplay as IP on Story Protocol")
+            .overlay(
+                Group {
+                    if storyProtocolService.protectionStatus.isProtected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .background(Circle().fill(Color.white))
+                            .offset(x: ToolbarMetrics.badgeHorizontalOffset, y: -ToolbarMetrics.buttonHeight / 2)
+                    }
+                }
+            )
+        }
     }
 }
 

@@ -16,12 +16,14 @@ class AppCoordinator: ObservableObject {
     let outlineCoordinator: OutlineCoordinator
     let collaborationCoordinator: CollaborationCoordinator
     let fileCoordinator: FileCoordinator
+    let storyProtocolCoordinator: StoryProtocolCoordinator
     
     // MARK: - Shared Services
     let documentService: DocumentService
     let settingsService: SettingsService
     let fileManagementService: FileManagementService
     let statisticsService: StatisticsService
+    let storyProtocolService: StoryProtocolService
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -33,6 +35,7 @@ class AppCoordinator: ObservableObject {
         self.settingsService = SettingsService()
         self.fileManagementService = FileManagementService()
         self.statisticsService = StatisticsService()
+        self.storyProtocolService = StoryProtocolService()
         
         // Initialize module coordinators
         self.editorCoordinator = EditorCoordinator(documentService: documentService)
@@ -40,6 +43,7 @@ class AppCoordinator: ObservableObject {
         self.outlineCoordinator = OutlineCoordinator(documentService: documentService)
         self.collaborationCoordinator = CollaborationCoordinator(documentService: documentService)
         self.fileCoordinator = FileCoordinator(documentService: documentService)
+        self.storyProtocolCoordinator = StoryProtocolCoordinator(storyProtocolService: storyProtocolService, documentService: documentService)
         
         setupBindings()
     }

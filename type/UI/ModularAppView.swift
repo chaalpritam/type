@@ -88,6 +88,9 @@ struct ModularAppView: View {
                             toggleMultipleCursors: { appCoordinator.editorCoordinator.toggleMultipleCursors() },
                             toggleMinimap: { appCoordinator.editorCoordinator.toggleMinimap() }
                         ) : nil,
+                        storyProtocolService: appCoordinator.storyProtocolService,
+                        onProtect: { appCoordinator.storyProtocolCoordinator.showProtect() },
+                        onNetworkSelect: { appCoordinator.storyProtocolCoordinator.showNetworkSelector = true },
                         onToggleFindReplace: { appCoordinator.editorCoordinator.toggleFindReplace() },
                         onToggleHelp: { appCoordinator.editorCoordinator.toggleHelp() }
                     )
@@ -116,6 +119,46 @@ struct ModularAppView: View {
                     )
                 }
             }
+            
+            // Story Protocol Dialogs
+            .overlay(
+                Group {
+                    if appCoordinator.storyProtocolCoordinator.showProtectionDialog {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                appCoordinator.storyProtocolCoordinator.showProtectionDialog = false
+                            }
+                        
+                        ProtectionDialog(
+                            coordinator: appCoordinator.storyProtocolCoordinator,
+                            isPresented: Binding(
+                                get: { appCoordinator.storyProtocolCoordinator.showProtectionDialog },
+                                set: { appCoordinator.storyProtocolCoordinator.showProtectionDialog = $0 }
+                            )
+                        )
+                    }
+                }
+            )
+            .overlay(
+                Group {
+                    if appCoordinator.storyProtocolCoordinator.showConnectionDialog {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                appCoordinator.storyProtocolCoordinator.showConnectionDialog = false
+                            }
+                        
+                        ConnectionDialog(
+                            coordinator: appCoordinator.storyProtocolCoordinator,
+                            isPresented: Binding(
+                                get: { appCoordinator.storyProtocolCoordinator.showConnectionDialog },
+                                set: { appCoordinator.storyProtocolCoordinator.showConnectionDialog = $0 }
+                            )
+                        )
+                    }
+                }
+            )
         }
         .preferredColorScheme(.light)
         .onAppear {
