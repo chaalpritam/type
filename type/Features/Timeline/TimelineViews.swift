@@ -51,23 +51,22 @@ struct TimelineView: View {
 struct TimelineHeaderView: View {
     let statistics: TimelineStatistics
     var body: some View {
-        HStack(spacing: 24) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Story Timeline")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Text("\(statistics.totalScenes) scenes • \(statistics.totalActs) acts • \(statistics.totalBeats) beats")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+        VStack(spacing: 12) {
+            EnhancedHeaderView(
+                title: "Story Timeline",
+                subtitle: "\(statistics.totalScenes) scenes • \(statistics.totalActs) acts • \(statistics.totalBeats) beats"
+            ) {
+                EmptyView()
             }
-            Spacer()
+            
             HStack(spacing: 16) {
-                TimelineStatCard(title: "Acts", value: "\(statistics.totalActs)", icon: "rectangle.split.3x1")
-                TimelineStatCard(title: "Beats", value: "\(statistics.totalBeats)", icon: "waveform.path.ecg")
-                TimelineStatCard(title: "Milestones", value: "\(statistics.totalMilestones)", icon: "flag")
+                EnhancedStatCard(title: "Acts", value: "\(statistics.totalActs)", icon: "rectangle.split.3x1")
+                EnhancedStatCard(title: "Beats", value: "\(statistics.totalBeats)", icon: "waveform.path.ecg")
+                EnhancedStatCard(title: "Milestones", value: "\(statistics.totalMilestones)", icon: "flag")
             }
+            .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+            .padding(.bottom, ToolbarMetrics.verticalPadding)
         }
-        .padding()
         .background(Color(NSColor.controlBackgroundColor))
     }
 }
@@ -233,23 +232,3 @@ struct TimelineControlsView: View {
         .background(Color(NSColor.controlBackgroundColor))
     }
 }
-
-// MARK: - Timeline Stat Card
-struct TimelineStatCard: View {
-    var title: String
-    var value: String
-    var icon: String
-    var body: some View {
-        VStack {
-            Image(systemName: icon)
-                .font(.title)
-            Text(title)
-                .font(.caption)
-            Text(value)
-                .font(.headline)
-        }
-        .padding(8)
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(8)
-    }
-} 

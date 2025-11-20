@@ -89,19 +89,10 @@ struct OutlineHeaderView: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Document Outline")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(statistics.totalNodes) nodes • \(statistics.completedNodes) completed • \(String(format: "%.1f", statistics.averageWordsPerNode)) avg words")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
+            EnhancedHeaderView(
+                title: "Document Outline",
+                subtitle: "\(statistics.totalNodes) nodes • \(statistics.completedNodes) completed • \(String(format: "%.1f", statistics.averageWordsPerNode)) avg words"
+            ) {
                 Button("View Stats") {
                     showStatistics.toggle()
                 }
@@ -110,36 +101,34 @@ struct OutlineHeaderView: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Nodes",
                     value: "\(statistics.totalNodes)",
-                    systemImage: "list.bullet",
-                    color: .accentColor
+                    icon: "list.bullet"
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Completed",
                     value: "\(statistics.completedNodes)",
-                    systemImage: "checkmark.circle",
-                    color: .accentColor
+                    icon: "checkmark.circle"
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Total Words",
                     value: "\(statistics.totalWords)",
-                    systemImage: "text.word.spacing",
-                    color: .accentColor
+                    icon: "text.word.spacing"
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Health",
                     value: String(format: "%.0f%%", statistics.outlineHealth.overallHealth * 100),
-                    systemImage: "heart",
-                    color: .accentColor
+                    icon: "heart",
+                    color: statistics.outlineHealth.overallHealth > 0.7 ? .green : .orange
                 )
             }
+            .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+            .padding(.bottom, ToolbarMetrics.verticalPadding)
         }
-        .padding()
         .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
@@ -154,39 +143,32 @@ struct OutlineSearchBar: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                
-                TextField("Search outline...", text: $searchFilters.searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .onSubmit {
-                        onSearch(searchFilters.searchText)
-                    }
-                
-                if !searchFilters.searchText.isEmpty {
-                    Button(action: { searchFilters.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
+            HStack(spacing: 8) {
+                EnhancedSearchField(
+                    text: $searchFilters.searchText,
+                    placeholder: "Search outline..."
+                )
+                .onSubmit {
+                    onSearch(searchFilters.searchText)
                 }
                 
                 Button(action: { showFilters.toggle() }) {
                     Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 20))
                         .foregroundColor(.accentColor)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
             
             if showFilters {
                 OutlineFilterView(searchFilters: $searchFilters)
                     .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.horizontal)
             }
         }
-        .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: showFilters)
     }
 }
@@ -682,25 +664,3 @@ struct OutlineStatisticsView: View {
         }
     }
 }
-
-// MARK: - Outline Stat Card
-struct OutlineStatCard: View {
-    var title: String
-    var value: String
-    var systemImage: String
-    var color: Color
-    var body: some View {
-        VStack {
-            Label(title, systemImage: systemImage)
-                .font(.caption)
-                .foregroundColor(color)
-            Text(value)
-                .font(.title2)
-                .bold()
-                .foregroundColor(color)
-        }
-        .padding(8)
-        .background(color.opacity(0.1))
-        .cornerRadius(8)
-    }
-} 

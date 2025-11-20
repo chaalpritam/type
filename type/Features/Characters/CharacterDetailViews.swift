@@ -479,10 +479,10 @@ struct CharacterStatsSection: View {
             SectionHeader(title: "Statistics", icon: "chart.bar.fill")
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                CharacterStatCard(title: "First Appearance", value: character.firstAppearance?.description ?? "N/A", icon: "play.fill")
-                CharacterStatCard(title: "Last Appearance", value: character.lastAppearance?.description ?? "N/A", icon: "stop.fill")
-                CharacterStatCard(title: "Total Dialogue", value: "\(character.dialogueCount)", icon: "message.fill")
-                CharacterStatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
+                EnhancedStatCard(title: "First Appearance", value: character.firstAppearance?.description ?? "N/A", icon: "play.fill")
+                EnhancedStatCard(title: "Last Appearance", value: character.lastAppearance?.description ?? "N/A", icon: "stop.fill")
+                EnhancedStatCard(title: "Total Dialogue", value: "\(character.dialogueCount)", icon: "message.fill")
+                EnhancedStatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
             }
         }
         .modalSectionStyle()

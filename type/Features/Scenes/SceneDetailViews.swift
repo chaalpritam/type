@@ -344,22 +344,3 @@ struct SceneBookmarksView: View {
     }
 }
 
-// MARK: - Scene Stat Card
-struct SceneStatCard: View {
-    var title: String
-    var value: String
-    var icon: String
-    var body: some View {
-        VStack {
-            Image(systemName: icon)
-                .font(.title)
-            Text(title)
-                .font(.caption)
-            Text(value)
-                .font(.headline)
-        }
-        .padding(8)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
-    }
-} 

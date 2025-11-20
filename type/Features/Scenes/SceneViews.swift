@@ -89,19 +89,10 @@ struct SceneManagementHeader: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Scene Management")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(statistics.totalScenes) scenes • \(statistics.completedScenes) completed • \(String(format: "%.1f", statistics.averageSceneLength)) avg words")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
+            EnhancedHeaderView(
+                title: "Scene Management",
+                subtitle: "\(statistics.totalScenes) scenes • \(statistics.completedScenes) completed • \(String(format: "%.1f", statistics.averageSceneLength)) avg words"
+            ) {
                 Button("View Stats") {
                     showStatistics.toggle()
                 }
@@ -110,32 +101,33 @@ struct SceneManagementHeader: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                SceneStatCard(
+                EnhancedStatCard(
                     title: "Total",
                     value: "\(statistics.totalScenes)",
                     icon: "film"
                 )
                 
-                SceneStatCard(
+                EnhancedStatCard(
                     title: "Completed",
                     value: "\(statistics.completedScenes)",
                     icon: "checkmark.circle"
                 )
                 
-                SceneStatCard(
+                EnhancedStatCard(
                     title: "Avg Length",
                     value: String(format: "%.0f", statistics.averageSceneLength),
                     icon: "text.alignleft"
                 )
                 
-                SceneStatCard(
+                EnhancedStatCard(
                     title: "Total Words",
                     value: "\(statistics.totalWordCount)",
                     icon: "text.word.spacing"
                 )
             }
+            .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+            .padding(.bottom, ToolbarMetrics.verticalPadding)
         }
-        .padding()
         .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
@@ -150,39 +142,32 @@ struct SceneSearchBar: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                
-                TextField("Search scenes...", text: $searchFilters.searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .onSubmit {
-                        onSearch(searchFilters.searchText)
-                    }
-                
-                if !searchFilters.searchText.isEmpty {
-                    Button(action: { searchFilters.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
+            HStack(spacing: 8) {
+                EnhancedSearchField(
+                    text: $searchFilters.searchText,
+                    placeholder: "Search scenes..."
+                )
+                .onSubmit {
+                    onSearch(searchFilters.searchText)
                 }
                 
                 Button(action: { showFilters.toggle() }) {
                     Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 20))
                         .foregroundColor(.accentColor)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
             
             if showFilters {
                 SceneFilterView(searchFilters: $searchFilters)
                     .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.horizontal)
             }
         }
-        .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: showFilters)
     }
 }
@@ -867,4 +852,4 @@ struct SceneStatusBadge: View {
             .foregroundColor(statusColor)
             .cornerRadius(4)
     }
-} 
+}

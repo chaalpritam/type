@@ -476,10 +476,10 @@ struct CharacterStatisticsView: View {
                         SectionHeader(title: "Overview", icon: "chart.bar.fill")
                         
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                            CharacterStatCard(title: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3.fill")
-                            CharacterStatCard(title: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "message.fill")
-                            CharacterStatCard(title: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis")
-                            CharacterStatCard(title: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "text.bubble.fill")
+                            EnhancedStatCard(title: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3.fill")
+                            EnhancedStatCard(title: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "message.fill")
+                            EnhancedStatCard(title: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis")
+                            EnhancedStatCard(title: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "text.bubble.fill")
                         }
                     }
                     .modalSectionStyle()

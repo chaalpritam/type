@@ -499,31 +499,31 @@ struct OutlineNodeStatisticsView: View {
                 .font(.headline)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Children",
                     value: "\(node.children.count)",
-                    systemImage: "list.bullet",
+                    icon: "list.bullet",
                     color: .blue
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Level",
                     value: "\(node.level)",
-                    systemImage: "arrow.down.right",
+                    icon: "arrow.down.right",
                     color: .green
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Order",
                     value: "\(node.order)",
-                    systemImage: "number",
+                    icon: "number",
                     color: .orange
                 )
                 
-                OutlineStatCard(
+                EnhancedStatCard(
                     title: "Created",
                     value: formatDate(node.createdAt),
-                    systemImage: "calendar",
+                    icon: "calendar",
                     color: .purple
                 )
             }

@@ -74,19 +74,10 @@ struct CharacterDatabaseHeader: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Character Database")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("\(statistics.totalCharacters) characters • \(statistics.charactersWithDialogue) with dialogue • \(statistics.charactersWithArcs) with arcs")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
+            EnhancedHeaderView(
+                title: "Character Database",
+                subtitle: "\(statistics.totalCharacters) characters • \(statistics.charactersWithDialogue) with dialogue • \(statistics.charactersWithArcs) with arcs"
+            ) {
                 Button("View Stats") {
                     showStatistics.toggle()
                 }
@@ -95,55 +86,35 @@ struct CharacterDatabaseHeader: View {
             
             // Quick stats cards
             HStack(spacing: 12) {
-                CharacterStatCard(
+                EnhancedStatCard(
                     title: "Total",
                     value: "\(statistics.totalCharacters)",
                     icon: "person.3"
                 )
                 
-                CharacterStatCard(
+                EnhancedStatCard(
                     title: "With Dialogue",
                     value: "\(statistics.charactersWithDialogue)",
                     icon: "message"
                 )
                 
-                CharacterStatCard(
+                EnhancedStatCard(
                     title: "With Arcs",
                     value: "\(statistics.charactersWithArcs)",
                     icon: "chart.line.uptrend.xyaxis"
                 )
                 
-                CharacterStatCard(
+                EnhancedStatCard(
                     title: "Avg Dialogue",
                     value: String(format: "%.1f", statistics.averageDialogueCount),
                     icon: "text.bubble"
                 )
             }
+            .padding(.horizontal, ToolbarMetrics.horizontalPadding)
+            .padding(.bottom, ToolbarMetrics.verticalPadding)
         }
-        .padding()
         .background(Color(NSColor.windowBackgroundColor))
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-    }
-}
-
-// MARK: - Character Stat Card
-struct CharacterStatCard: View {
-    var title: String
-    var value: String
-    var icon: String
-    
-    var body: some View {
-        VStack {
-            Image(systemName: icon)
-                .font(.title)
-            Text(title)
-                .font(.caption)
-            Text(value)
-                .font(.headline)
-        }
-        .padding(8)
-        .background(Color.green.opacity(0.1))
-        .cornerRadius(8)
     }
 }
 
@@ -154,36 +125,29 @@ struct CharacterSearchBar: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                
-                TextField("Search characters...", text: $searchFilters.searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                
-                if !searchFilters.searchText.isEmpty {
-                    Button(action: { searchFilters.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                }
+            HStack(spacing: 8) {
+                EnhancedSearchField(
+                    text: $searchFilters.searchText,
+                    placeholder: "Search characters..."
+                )
                 
                 Button(action: { showFilters.toggle() }) {
                     Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 20))
                         .foregroundColor(.accentColor)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
             
             if showFilters {
                 CharacterFilterView(searchFilters: $searchFilters)
                     .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(.horizontal)
             }
         }
-        .padding(.horizontal)
         .animation(.easeInOut(duration: 0.3), value: showFilters)
     }
 }
@@ -381,4 +345,4 @@ struct CharacterRowView: View {
         }
         .padding(.vertical, 4)
     }
-} 
+}

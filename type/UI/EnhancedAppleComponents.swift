@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-private enum ToolbarMetrics {
+enum ToolbarMetrics {
     static let rowSpacing: CGFloat = 6
     static let buttonHeight: CGFloat = 28
     static let iconSize: CGFloat = 13
@@ -1157,3 +1157,114 @@ struct AppleToggleStyle: ToggleStyle {
         .buttonStyle(.plain)
     }
 } 
+// MARK: - Enhanced General Components
+
+struct EnhancedStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    var color: Color = .accentColor
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(color)
+                Spacer()
+            }
+            
+            HStack(alignment: .bottom) {
+                Text(value)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 4)
+                
+                Spacer()
+            }
+        }
+        .padding(12)
+        .background(Color(.controlBackgroundColor))
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color(.separatorColor), lineWidth: 0.5)
+        )
+    }
+}
+
+struct EnhancedHeaderView<Content: View>: View {
+    let title: String
+    let subtitle: String
+    let content: Content
+    
+    init(title: String, subtitle: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.subtitle = subtitle
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 24, weight: .bold))
+                    
+                    Text(subtitle)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                content
+            }
+        }
+        .padding(ToolbarMetrics.horizontalPadding)
+        .background(Color(.windowBackgroundColor))
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(Color(.separatorColor)),
+            alignment: .bottom
+        )
+    }
+}
+
+struct EnhancedSearchField: View {
+    @Binding var text: String
+    var placeholder: String
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+            
+            TextField(placeholder, text: $text)
+                .textFieldStyle(PlainTextFieldStyle())
+                .font(.system(size: 13))
+            
+            if !text.isEmpty {
+                Button(action: { text = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(8)
+        .background(Color(.controlBackgroundColor))
+        .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color(.separatorColor), lineWidth: 0.5)
+        )
+    }
+}
