@@ -2,62 +2,62 @@ import SwiftUI
 
 // MARK: - Character Detail View
 struct CharacterDetailView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     @State private var showEditView = false
     @State private var showAddArc = false
     @State private var showAddRelationship = false
     @State private var showAddNote = false
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(spacing: TypeSpacing.lg) {
                     // Character header
-                    CharacterHeaderView(character: character)
+                    TypeCharacterDetailHeader(character: character)
                     
                     // Character information
-                    CharacterInfoSection(character: character)
+                    TypeCharacterInfoSection(character: character)
                     
                     // Character arcs
-                    CharacterArcsSection(
+                    TypeCharacterArcsSection(
                         character: character,
                         characterDatabase: characterDatabase,
                         showAddArc: $showAddArc
                     )
                     
                     // Character relationships
-                    CharacterRelationshipsSection(
+                    TypeCharacterRelationshipsSection(
                         character: character,
                         characterDatabase: characterDatabase,
                         showAddRelationship: $showAddRelationship
                     )
                     
                     // Character notes
-                    CharacterNotesSection(
+                    TypeCharacterNotesSection(
                         character: character,
                         characterDatabase: characterDatabase,
                         showAddNote: $showAddNote
                     )
-                    
-                    // Character statistics
-                    CharacterStatsSection(character: character)
                 }
-                .modalContainer()
+                .padding(TypeSpacing.lg)
             }
+            .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
             .navigationTitle(character.name)
-            
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
                 
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Edit") {
-                        showEditView.toggle()
+                    Button(action: { showEditView = true }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "pencil")
+                            Text("Edit")
+                        }
+                        .font(TypeTypography.caption)
                     }
                 }
             }
@@ -93,154 +93,283 @@ struct CharacterDetailView: View {
                 )
             }
         }
+        .frame(minWidth: 500, minHeight: 600)
     }
 }
 
-// MARK: - Character Header View
-struct CharacterHeaderView: View {
+// MARK: - Type Character Detail Header
+struct TypeCharacterDetailHeader: View {
+    @Environment(\.colorScheme) var colorScheme
     let character: Character
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Character avatar
-            Circle()
-                .fill(Color.accentColor.opacity(0.2))
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Text(String(character.name.prefix(1)).uppercased())
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.accentColor)
-                )
+        VStack(spacing: TypeSpacing.lg) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .fill(avatarColor.opacity(0.15))
+                    .frame(width: 80, height: 80)
+                
+                Text(String(character.name.prefix(1)).uppercased())
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(avatarColor)
+            }
             
-            VStack(spacing: 8) {
+            // Name and basic info
+            VStack(spacing: TypeSpacing.xs) {
                 Text(character.name)
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
                 
                 if let occupation = character.occupation {
                     Text(occupation)
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                        .font(TypeTypography.subheadline)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
                 }
                 
-                if let age = character.age {
-                    Text("Age: \(age)")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                HStack(spacing: TypeSpacing.md) {
+                    if let age = character.age {
+                        TypeInfoBadge(text: "Age \(age)", color: TypeColors.sceneBlue)
+                    }
+                    if let gender = character.gender {
+                        TypeInfoBadge(text: gender.rawValue, color: TypeColors.scenePurple)
+                    }
                 }
             }
             
             // Quick stats
-            HStack(spacing: 20) {
-                VStack {
-                    Text("\(character.dialogueCount)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("Dialogue")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                VStack {
-                    Text("\(character.sceneCount)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("Scenes")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                VStack {
-                    Text("\(character.arcs.count)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Text("Arcs")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+            HStack(spacing: TypeSpacing.xl) {
+                TypeQuickStat(value: "\(character.dialogueCount)", label: "Lines", icon: "text.bubble", color: TypeColors.sceneGreen)
+                TypeQuickStat(value: "\(character.sceneCount)", label: "Scenes", icon: "film", color: TypeColors.sceneOrange)
+                TypeQuickStat(value: "\(character.arcs.count)", label: "Arcs", icon: "chart.line.uptrend.xyaxis", color: TypeColors.scenePurple)
+                TypeQuickStat(value: "\(character.relationships.count)", label: "Relations", icon: "person.2", color: TypeColors.sceneCyan)
             }
         }
-        .modalSectionStyle()
+        .padding(TypeSpacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: TypeRadius.lg)
+                .fill(colorScheme == .dark ? TypeColors.sidebarBackgroundDark : TypeColors.sidebarBackgroundLight)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: TypeRadius.lg)
+                .stroke(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight, lineWidth: 0.5)
+        )
+    }
+    
+    private var avatarColor: Color {
+        let colors = [TypeColors.sceneRed, TypeColors.sceneOrange, TypeColors.sceneGreen,
+                      TypeColors.sceneCyan, TypeColors.sceneBlue, TypeColors.scenePurple, TypeColors.scenePink]
+        let index = abs(character.name.hashValue) % colors.count
+        return colors[index]
     }
 }
 
-// MARK: - Character Info Section
-struct CharacterInfoSection: View {
+// MARK: - Type Info Badge
+struct TypeInfoBadge: View {
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        Text(text)
+            .font(TypeTypography.caption)
+            .foregroundColor(color)
+            .padding(.horizontal, TypeSpacing.sm)
+            .padding(.vertical, TypeSpacing.xxs)
+            .background(color.opacity(0.12))
+            .cornerRadius(TypeRadius.full)
+    }
+}
+
+// MARK: - Type Quick Stat
+struct TypeQuickStat: View {
+    @Environment(\.colorScheme) var colorScheme
+    let value: String
+    let label: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: TypeSpacing.xs) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+            
+            Text(label)
+                .font(TypeTypography.caption2)
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+        }
+    }
+}
+
+// MARK: - Type Character Info Section
+struct TypeCharacterInfoSection: View {
+    @Environment(\.colorScheme) var colorScheme
     let character: Character
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "Character Information", icon: "person.fill")
-            
-            VStack(spacing: 12) {
+        TypeDetailSection(title: "Character Information", icon: "person.fill") {
+            VStack(spacing: TypeSpacing.md) {
                 if !character.description.isEmpty {
-                    InfoRow(title: "Description", value: character.description)
+                    TypeInfoRow(title: "Description", value: character.description)
                 }
                 
                 if let appearance = character.appearance {
-                    InfoRow(title: "Appearance", value: appearance)
+                    TypeInfoRow(title: "Appearance", value: appearance)
                 }
                 
                 if let personality = character.personality {
-                    InfoRow(title: "Personality", value: personality)
+                    TypeInfoRow(title: "Personality", value: personality)
                 }
                 
                 if let background = character.background {
-                    InfoRow(title: "Background", value: background)
+                    TypeInfoRow(title: "Background", value: background)
                 }
                 
                 if !character.goals.isEmpty {
-                    InfoRow(title: "Goals", value: character.goals.joined(separator: ", "))
+                    TypeInfoRow(title: "Goals", value: character.goals.joined(separator: ", "))
                 }
                 
                 if !character.conflicts.isEmpty {
-                    InfoRow(title: "Conflicts", value: character.conflicts.joined(separator: ", "))
+                    TypeInfoRow(title: "Conflicts", value: character.conflicts.joined(separator: ", "))
                 }
                 
                 if !character.tags.isEmpty {
-                    InfoRow(title: "Tags", value: character.tags.joined(separator: ", "))
+                    TypeTagsRow(title: "Tags", tags: character.tags)
                 }
             }
         }
-        .modalSectionStyle()
     }
 }
 
-// MARK: - Character Arcs Section
-struct CharacterArcsSection: View {
+// MARK: - Type Detail Section
+struct TypeDetailSection<Content: View>: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    let icon: String
+    var action: (() -> Void)? = nil
+    var actionLabel: String = "Add"
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.md) {
+            // Header
+            HStack {
+                HStack(spacing: TypeSpacing.sm) {
+                    Image(systemName: icon)
+                        .font(.system(size: 14))
+                        .foregroundColor(TypeColors.accent)
+                    
+                    Text(title)
+                        .font(TypeTypography.subheadline)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                }
+                
+                Spacer()
+                
+                if let action = action {
+                    Button(action: action) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 10))
+                            Text(actionLabel)
+                                .font(TypeTypography.caption)
+                        }
+                        .foregroundColor(TypeColors.accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            
+            // Content
+            content
+        }
+        .padding(TypeSpacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: TypeRadius.md)
+                .fill(colorScheme == .dark ? TypeColors.sidebarBackgroundDark : TypeColors.sidebarBackgroundLight)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: TypeRadius.md)
+                .stroke(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight, lineWidth: 0.5)
+        )
+    }
+}
+
+// MARK: - Type Info Row
+struct TypeInfoRow: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    let value: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+            Text(title.uppercased())
+                .font(TypeTypography.caption2)
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                .tracking(0.5)
+            
+            Text(value)
+                .font(TypeTypography.body)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - Type Tags Row
+struct TypeTagsRow: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    let tags: [String]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xs) {
+            Text(title.uppercased())
+                .font(TypeTypography.caption2)
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                .tracking(0.5)
+            
+            FlowLayout(spacing: TypeSpacing.xs) {
+                ForEach(tags, id: \.self) { tag in
+                    Text(tag)
+                        .font(TypeTypography.caption)
+                        .foregroundColor(TypeColors.accent)
+                        .padding(.horizontal, TypeSpacing.sm)
+                        .padding(.vertical, TypeSpacing.xxs)
+                        .background(TypeColors.accent.opacity(0.12))
+                        .cornerRadius(TypeRadius.full)
+                }
+            }
+        }
+    }
+}
+
+
+// MARK: - Type Character Arcs Section
+struct TypeCharacterArcsSection: View {
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     @Binding var showAddArc: Bool
     @State private var selectedArc: CharacterArc?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                SectionHeader(title: "Character Arcs", icon: "chart.line.uptrend.xyaxis")
-                Spacer()
-                Button("Add Arc") {
-                    showAddArc.toggle()
-                }
-                .buttonStyle(.bordered)
-            }
-            
+        TypeDetailSection(title: "Character Arcs", icon: "chart.line.uptrend.xyaxis", action: { showAddArc = true }) {
             if character.arcs.isEmpty {
-                Text("No character arcs defined yet.")
-                    .foregroundColor(.secondary)
-                    .italic()
+                TypeEmptyPlaceholder(message: "No character arcs defined yet")
             } else {
-                LazyVStack(spacing: 12) {
+                VStack(spacing: TypeSpacing.sm) {
                     ForEach(character.arcs) { arc in
-                        CharacterArcRowView(arc: arc)
-                            .onTapGesture {
-                                selectedArc = arc
-                            }
+                        TypeArcRow(arc: arc)
+                            .onTapGesture { selectedArc = arc }
                     }
                 }
             }
         }
-        .modalSectionStyle()
         .sheet(item: $selectedArc) { arc in
             CharacterArcDetailView(
                 arc: arc,
@@ -251,85 +380,110 @@ struct CharacterArcsSection: View {
     }
 }
 
-// MARK: - Character Arc Row View
-struct CharacterArcRowView: View {
+// MARK: - Type Arc Row
+struct TypeArcRow: View {
+    @Environment(\.colorScheme) var colorScheme
     let arc: CharacterArc
+    @State private var isHovered = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(arc.name)
-                    .font(.headline)
+        HStack(spacing: TypeSpacing.md) {
+            // Status indicator
+            Circle()
+                .fill(statusColor)
+                .frame(width: 8, height: 8)
+            
+            VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+                HStack {
+                    Text(arc.name)
+                        .font(TypeTypography.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                    
+                    TypeStatusBadge(status: arc.status)
+                }
                 
-                Spacer()
-                
-                StatusBadge(status: arc.status)
+                HStack(spacing: TypeSpacing.md) {
+                    Text(arc.arcType.rawValue)
+                        .font(TypeTypography.caption)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                    
+                    Text("\(arc.milestones.count) milestones")
+                        .font(TypeTypography.caption)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                }
             }
             
-            if !arc.description.isEmpty {
-                Text(arc.description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            }
+            Spacer()
             
-            HStack {
-                Text(arc.arcType.rawValue)
-                    .font(.caption)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.blue.opacity(0.2))
-                    .cornerRadius(4)
-                
-                Text("\(arc.milestones.count) milestones")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text(arc.updatedAt, style: .date)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11))
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
         }
-        .modalSectionStyle(padding: 12)
+        .padding(TypeSpacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: TypeRadius.sm)
+                .fill(isHovered ?
+                      (colorScheme == .dark ? Color.white.opacity(0.05) : Color.black.opacity(0.03)) :
+                      .clear)
+        )
+        .onHover { hovering in isHovered = hovering }
+    }
+    
+    private var statusColor: Color {
+        switch arc.status {
+        case .planned: return TypeColors.sceneBlue
+        case .inProgress: return TypeColors.sceneOrange
+        case .completed: return TypeColors.sceneGreen
+        case .abandoned: return TypeColors.error
+        }
     }
 }
 
-// MARK: - Character Relationships Section
-struct CharacterRelationshipsSection: View {
+// MARK: - Type Status Badge
+struct TypeStatusBadge: View {
+    let status: ArcStatus
+    
+    var body: some View {
+        Text(status.rawValue)
+            .font(TypeTypography.caption2)
+            .foregroundColor(statusColor)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(statusColor.opacity(0.12))
+            .cornerRadius(TypeRadius.full)
+    }
+    
+    private var statusColor: Color {
+        switch status {
+        case .planned: return TypeColors.sceneBlue
+        case .inProgress: return TypeColors.sceneOrange
+        case .completed: return TypeColors.sceneGreen
+        case .abandoned: return TypeColors.error
+        }
+    }
+}
+
+// MARK: - Type Character Relationships Section
+struct TypeCharacterRelationshipsSection: View {
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     @Binding var showAddRelationship: Bool
     @State private var selectedRelationship: CharacterRelationship?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                SectionHeader(title: "Relationships", icon: "person.2.fill")
-                Spacer()
-                Button("Add Relationship") {
-                    showAddRelationship.toggle()
-                }
-                .buttonStyle(.bordered)
-            }
-            
+        TypeDetailSection(title: "Relationships", icon: "person.2.fill", action: { showAddRelationship = true }) {
             if character.relationships.isEmpty {
-                Text("No relationships defined yet.")
-                    .foregroundColor(.secondary)
-                    .italic()
+                TypeEmptyPlaceholder(message: "No relationships defined yet")
             } else {
-                LazyVStack(spacing: 12) {
+                VStack(spacing: TypeSpacing.sm) {
                     ForEach(character.relationships) { relationship in
-                        CharacterRelationshipRowView(relationship: relationship)
-                            .onTapGesture {
-                                selectedRelationship = relationship
-                            }
+                        TypeRelationshipRow(relationship: relationship)
+                            .onTapGesture { selectedRelationship = relationship }
                     }
                 }
             }
         }
-        .modalSectionStyle()
         .sheet(item: $selectedRelationship) { relationship in
             CharacterRelationshipDetailView(
                 relationship: relationship,
@@ -340,83 +494,82 @@ struct CharacterRelationshipsSection: View {
     }
 }
 
-// MARK: - Character Relationship Row View
-struct CharacterRelationshipRowView: View {
+// MARK: - Type Relationship Row
+struct TypeRelationshipRow: View {
+    @Environment(\.colorScheme) var colorScheme
     let relationship: CharacterRelationship
+    @State private var isHovered = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        HStack(spacing: TypeSpacing.md) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .fill(TypeColors.sceneCyan.opacity(0.15))
+                    .frame(width: 32, height: 32)
+                
+                Text(String(relationship.targetCharacter.prefix(1)).uppercased())
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(TypeColors.sceneCyan)
+            }
+            
+            VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
                 Text(relationship.targetCharacter)
-                    .font(.headline)
+                    .font(TypeTypography.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
                 
-                Spacer()
-                
-                Text(relationship.relationshipType.rawValue)
-                    .font(.caption)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.green.opacity(0.2))
-                    .cornerRadius(4)
+                HStack(spacing: TypeSpacing.sm) {
+                    Text(relationship.relationshipType.rawValue)
+                        .font(TypeTypography.caption)
+                        .foregroundColor(TypeColors.sceneCyan)
+                    
+                    Text("•")
+                        .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                    
+                    Text(relationship.strength.rawValue)
+                        .font(TypeTypography.caption)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                }
             }
             
-            if !relationship.description.isEmpty {
-                Text(relationship.description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            }
+            Spacer()
             
-            HStack {
-                Text(relationship.strength.rawValue)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                Text(relationship.createdAt, style: .date)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 11))
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
         }
-        .modalSectionStyle(padding: 12)
+        .padding(TypeSpacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: TypeRadius.sm)
+                .fill(isHovered ?
+                      (colorScheme == .dark ? Color.white.opacity(0.05) : Color.black.opacity(0.03)) :
+                      .clear)
+        )
+        .onHover { hovering in isHovered = hovering }
     }
 }
 
-// MARK: - Character Notes Section
-struct CharacterNotesSection: View {
+// MARK: - Type Character Notes Section
+struct TypeCharacterNotesSection: View {
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     @Binding var showAddNote: Bool
     @State private var selectedNote: CharacterNote?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                SectionHeader(title: "Notes", icon: "note.text")
-                Spacer()
-                Button("Add Note") {
-                    showAddNote.toggle()
-                }
-                .buttonStyle(.bordered)
-            }
-            
+        TypeDetailSection(title: "Notes", icon: "note.text", action: { showAddNote = true }) {
             if character.notes.isEmpty {
-                Text("No notes yet.")
-                    .foregroundColor(.secondary)
-                    .italic()
+                TypeEmptyPlaceholder(message: "No notes yet")
             } else {
-                LazyVStack(spacing: 12) {
+                VStack(spacing: TypeSpacing.sm) {
                     ForEach(character.notes) { note in
-                        CharacterNoteRowView(note: note)
-                            .onTapGesture {
-                                selectedNote = note
-                            }
+                        TypeNoteRow(note: note)
+                            .onTapGesture { selectedNote = note }
                     }
                 }
             }
         }
-        .modalSectionStyle()
         .sheet(item: $selectedNote) { note in
             CharacterNoteDetailView(
                 note: note,
@@ -427,120 +580,106 @@ struct CharacterNotesSection: View {
     }
 }
 
-// MARK: - Character Note Row View
-struct CharacterNoteRowView: View {
+// MARK: - Type Note Row
+struct TypeNoteRow: View {
+    @Environment(\.colorScheme) var colorScheme
     let note: CharacterNote
+    @State private var isHovered = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: TypeSpacing.xs) {
             HStack {
                 Text(note.title)
-                    .font(.headline)
+                    .font(TypeTypography.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
                 
                 Spacer()
                 
                 Text(note.type.rawValue)
-                    .font(.caption)
+                    .font(TypeTypography.caption2)
+                    .foregroundColor(TypeColors.sceneOrange)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.orange.opacity(0.2))
-                    .cornerRadius(4)
+                    .background(TypeColors.sceneOrange.opacity(0.12))
+                    .cornerRadius(TypeRadius.full)
             }
             
             Text(note.content)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .lineLimit(3)
+                .font(TypeTypography.caption)
+                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                .lineLimit(2)
             
             HStack {
                 if let scene = note.scene {
                     Text("Scene: \(scene)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(TypeTypography.caption2)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
                 }
                 
                 Spacer()
                 
                 Text(note.createdAt, style: .date)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .font(TypeTypography.caption2)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
             }
         }
-        .modalSectionStyle(padding: 12)
+        .padding(TypeSpacing.sm)
+        .background(
+            RoundedRectangle(cornerRadius: TypeRadius.sm)
+                .fill(isHovered ?
+                      (colorScheme == .dark ? Color.white.opacity(0.05) : Color.black.opacity(0.03)) :
+                      .clear)
+        )
+        .onHover { hovering in isHovered = hovering }
     }
 }
 
-// MARK: - Character Stats Section
-struct CharacterStatsSection: View {
-    let character: Character
+// MARK: - Type Empty Placeholder
+struct TypeEmptyPlaceholder: View {
+    @Environment(\.colorScheme) var colorScheme
+    let message: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "Statistics", icon: "chart.bar.fill")
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                EnhancedStatCard(title: "First Appearance", value: character.firstAppearance?.description ?? "N/A", icon: "play.fill")
-                EnhancedStatCard(title: "Last Appearance", value: character.lastAppearance?.description ?? "N/A", icon: "stop.fill")
-                EnhancedStatCard(title: "Total Dialogue", value: "\(character.dialogueCount)", icon: "message.fill")
-                EnhancedStatCard(title: "Total Scenes", value: "\(character.sceneCount)", icon: "film.fill")
-            }
-        }
-        .modalSectionStyle()
+        Text(message)
+            .font(TypeTypography.caption)
+            .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+            .italic()
+            .padding(.vertical, TypeSpacing.md)
     }
 }
 
-// MARK: - Helper Views
+// MARK: - Helper Views (keeping existing ones for compatibility)
 struct SectionHeader: View {
+    @Environment(\.colorScheme) var colorScheme
     let title: String
     let icon: String
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: TypeSpacing.sm) {
             Image(systemName: icon)
-                .foregroundColor(.accentColor)
+                .foregroundColor(TypeColors.accent)
             Text(title)
-                .font(.headline)
+                .font(TypeTypography.subheadline)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
         }
     }
 }
 
 struct InfoRow: View {
+    @Environment(\.colorScheme) var colorScheme
     let title: String
     let value: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .textCase(.uppercase)
-            
-            Text(value)
-                .font(.body)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        TypeInfoRow(title: title, value: value)
     }
 }
 
 struct StatusBadge: View {
     let status: ArcStatus
     
-    var statusColor: Color {
-        switch status {
-        case .planned: return .blue
-        case .inProgress: return .orange
-        case .completed: return .green
-        case .abandoned: return .red
-        }
-    }
-    
     var body: some View {
-        Text(status.rawValue)
-            .font(.caption)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(statusColor.opacity(0.2))
-            .foregroundColor(statusColor)
-            .cornerRadius(4)
+        TypeStatusBadge(status: status)
     }
-} 
+}

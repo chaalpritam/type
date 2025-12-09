@@ -199,102 +199,15 @@ class CharacterCoordinator: BaseModuleCoordinator, ModuleCoordinator {
 
 // MARK: - Character Main View
 struct CharacterMainView: View {
+    @Environment(\.colorScheme) var colorScheme
     @ObservedObject var coordinator: CharacterCoordinator
     
     var body: some View {
-        HStack(spacing: 0) {
-            // Main character list
-            VStack(spacing: 0) {
-                // Character toolbar
-                CharacterToolbarView(coordinator: coordinator)
-                
-                // Character content
-                CharacterDatabaseView(
-                    characterDatabase: coordinator.characterDatabase,
-                    isVisible: .constant(true)
-                )
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Detail panel
-            if coordinator.showCharacterDetail, let character = coordinator.selectedCharacter {
-                CharacterDetailView(
-                    character: character,
-                    characterDatabase: coordinator.characterDatabase
-                )
-                .frame(width: 350)
-                .transition(.move(edge: .trailing))
-            }
-        }
-        .sheet(isPresented: $coordinator.showCharacterEdit) {
-            if let character = coordinator.selectedCharacter {
-                CharacterEditView(
-                    character: character,
-                    characterDatabase: coordinator.characterDatabase,
-                    isNewCharacter: false
-                )
-            }
-        }
-    }
-}
-
-// MARK: - Character Toolbar View
-struct CharacterToolbarView: View {
-    @ObservedObject var coordinator: CharacterCoordinator
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Character operations
-            HStack(spacing: 8) {
-                Button("New Character") {
-                    coordinator.createNewCharacter()
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Import") {
-                    Task {
-                        try? await coordinator.importCharacters()
-                    }
-                }
-                .buttonStyle(.bordered)
-                
-                Button("Export") {
-                    Task {
-                        try? await coordinator.exportCharacters()
-                    }
-                }
-                .buttonStyle(.bordered)
-            }
-            
-            Divider()
-            
-            // Filter controls
-            HStack(spacing: 8) {
-                Picker("Filter", selection: $coordinator.selectedFilter) {
-                    ForEach(CharacterFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            
-            Spacer()
-            
-            // Statistics
-            HStack(spacing: 16) {
-                Text("Total: \(coordinator.statistics.totalCharacters)")
-                    .font(.caption)
-                Text("With Dialogue: \(coordinator.statistics.charactersWithDialogue)")
-                    .font(.caption)
-                Text("With Arcs: \(coordinator.statistics.charactersWithArcs)")
-                    .font(.caption)
-            }
-            .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color(nsColor: .systemGray))
-        .border(Color(nsColor: .separatorColor), width: 0.5)
+        CharacterDatabaseView(
+            characterDatabase: coordinator.characterDatabase,
+            isVisible: .constant(true)
+        )
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
 }
 
