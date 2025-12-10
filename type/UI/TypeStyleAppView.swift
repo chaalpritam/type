@@ -11,8 +11,13 @@ import AppKit
 
 // MARK: - Type Style App View
 struct TypeStyleAppView: View {
-    @StateObject private var appCoordinator = AppCoordinator()
+    @ObservedObject var appCoordinator: AppCoordinator
     @StateObject private var themeManager = ThemeManager.shared
+    
+    // MARK: - Initialization
+    init(appCoordinator: AppCoordinator? = nil) {
+        self.appCoordinator = appCoordinator ?? AppCoordinator()
+    }
     
     @State private var isSidebarCollapsed = false
     @State private var showFindReplace = false

@@ -57,6 +57,7 @@ A modern, professional screenplay writing application for macOS with real-time F
 - **Activity tracking** for team awareness
 
 ### 💾 File Management
+- **Multi-window support** - Open multiple documents simultaneously in separate windows
 - **Native macOS file operations** with proper permissions
 - **Auto-save** every 30 seconds with recovery
 - **Recent files** quick access
@@ -79,6 +80,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [`docs/MODULAR_IMPLEMENTATION_SUMMARY.md`](docs/MODULAR_IMPLEMENTATION_SUMMARY.md) – Implementation details
 - [`docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md`](docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md) – Editor feature documentation
 - [`docs/CHARACTER_DATABASE_README.md`](docs/CHARACTER_DATABASE_README.md) – Character system guide
+- [`docs/MULTI_WINDOW_SUPPORT.md`](docs/MULTI_WINDOW_SUPPORT.md) – Multi-window functionality guide
 - [`docs/STORY_PROTOCOL_INTEGRATION.md`](docs/STORY_PROTOCOL_INTEGRATION.md) – Blockchain integration details
 - [`docs/IMPROVEMENT_TODO.md`](docs/IMPROVEMENT_TODO.md) – Development roadmap
 - [`STORY_PROTOCOL_README.md`](STORY_PROTOCOL_README.md) – Quick start guide for IP protection
