@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AppKit
+
 
 @main
 struct typeApp: App {
@@ -13,11 +15,15 @@ struct typeApp: App {
     @StateObject private var windowManager = WindowManager.shared
     
     var body: some SwiftUI.Scene {
-        // Main document window group - supports multiple windows
+        // Main document window group - supports multiple windows and tabs
         WindowGroup(id: "document") {
             DocumentWindowView(windowId: UUID())
                 .frame(minWidth: 1000, minHeight: 700)
                 .handlesExternalEvents(preferring: Set(arrayLiteral: "document"), allowing: Set(arrayLiteral: "*"))
+                .onAppear {
+                    // Enable automatic window tabbing
+                    NSWindow.allowsAutomaticWindowTabbing = true
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
@@ -25,15 +31,22 @@ struct typeApp: App {
         .commands {
             // File Menu
             CommandGroup(replacing: .newItem) {
+                Button("New Tab") {
+                    openNewTab()
+                }
+                .keyboardShortcut("t", modifiers: .command)
+                
                 Button("New Document") {
-                    openNewWindow()
+                    openNewTab()
                 }
                 .keyboardShortcut("n", modifiers: .command)
                 
                 Button("New Window") {
-                    openNewWindow()
+                    openNewWindowSeparate()
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
+                
+                Divider()
                 
                 Button("New from Template...") {
                     NotificationCenter.default.post(name: .showTemplates, object: nil)
@@ -166,14 +179,39 @@ struct typeApp: App {
     
     // MARK: - Helper Functions
     
-    /// Open a new window with a blank document
-    private func openNewWindow() {
-        // Use NSWorkspace to open a new window
-        if let url = URL(string: "type://new") {
-            NSWorkspace.shared.open(url)
+    /// Open a new tab in the current window (⌘N or ⌘T)
+    private func openNewTab() {
+        DispatchQueue.main.async {
+            // Get the current key window
+            if let currentWindow = NSApp.keyWindow {
+                // Create a new tab in the existing window
+                let newWindow = NSWindow(
+                    contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
+                    styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                    backing: .buffered,
+                    defer: false
+                )
+                
+                let windowId = UUID()
+                newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+                newWindow.contentView = NSHostingView(
+                    rootView: DocumentWindowView(windowId: windowId)
+                        .frame(minWidth: 1000, minHeight: 700)
+                )
+                newWindow.title = "Untitled"
+                
+                // Add as tab to current window
+                currentWindow.addTabbedWindow(newWindow, ordered: .above)
+                newWindow.makeKeyAndOrderFront(nil)
+            } else {
+                // No window exists, create a new one
+                self.openNewWindowSeparate()
+            }
         }
-        
-        // Alternative: Create new window programmatically
+    }
+    
+    /// Open a new separate window (⌘⇧N)
+    private func openNewWindowSeparate() {
         DispatchQueue.main.async {
             let newWindow = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
@@ -193,8 +231,9 @@ struct typeApp: App {
             newWindow.makeKeyAndOrderFront(nil)
         }
     }
+
     
-    /// Open a document in a new window
+    /// Open a document in a tab (or new window if none exists)
     private func openDocument() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.plainText]
@@ -205,11 +244,45 @@ struct typeApp: App {
         
         panel.begin { response in
             if response == .OK, let url = panel.url {
-                // Open in new window
-                self.openDocumentInNewWindow(url: url)
+                // Check if there's a current window to add tab to
+                if NSApp.keyWindow != nil {
+                    self.openDocumentInTab(url: url)
+                } else {
+                    self.openDocumentInNewWindow(url: url)
+                }
             }
         }
     }
+    
+    /// Open a document in a new tab of the current window
+    private func openDocumentInTab(url: URL) {
+        DispatchQueue.main.async {
+            guard let currentWindow = NSApp.keyWindow else {
+                self.openDocumentInNewWindow(url: url)
+                return
+            }
+            
+            let newWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            
+            let windowId = UUID()
+            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+            newWindow.contentView = NSHostingView(
+                rootView: DocumentWindowView(windowId: windowId, documentURL: url)
+                    .frame(minWidth: 1000, minHeight: 700)
+            )
+            newWindow.title = url.lastPathComponent
+            
+            // Add as tab to current window
+            currentWindow.addTabbedWindow(newWindow, ordered: .above)
+            newWindow.makeKeyAndOrderFront(nil)
+        }
+    }
+
     
     /// Open a specific document URL in a new window
     private func openDocumentInNewWindow(url: URL) {

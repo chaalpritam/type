@@ -92,19 +92,25 @@ Main app structure with multi-window support:
 
 ## Usage
 
-### Opening New Windows
+### Opening New Windows & Tabs
 
 #### From Menu Bar
-- **File → New Document** (⌘N): Creates a new blank document in a new window
-- **File → New Window** (⌘⇧N): Opens another new window
-- **File → Open Document...** (⌘O): Opens a document in a new window
+- **File → New Tab** (⌘T): Creates a new tab in the current window
+- **File → New Document** (⌘N): Creates a new document in a new tab (or window if none exists)
+- **File → New Window** (⌘⇧N): Creates a completely separate window
+- **File → Open Document...** (⌘O): Opens a document in a new tab (or window if none exists)
 
 #### From Keyboard
-- `⌘N` - New document in new window
-- `⌘⇧N` - New window
+- `⌘T` or `⌘N` - New tab
+- `⌘⇧N` - New separate window
 - `⌘O` - Open document dialog
 
-### Managing Windows
+### Managing Windows & Tabs
+
+#### Tabs
+- **Switch Tabs**: Click the tab bar or use standard macOS shortcuts (`⌃Tab`, `⌃⇧Tab`)
+- **Move Tabs**: Drag and drop tabs between windows
+- **Merge Windows**: Use **Window → Merge All Windows** to combine separate windows into tabs
 
 #### Window Menu
 The Window menu shows:
@@ -121,7 +127,7 @@ The Window menu shows:
 
 ### Window Behavior
 
-- **Independent State**: Each window maintains its own:
+- **Independent State**: Each window and tab maintains its own:
   - Document content
   - Undo/redo history
   - Editor state (cursor position, selection, etc.)
