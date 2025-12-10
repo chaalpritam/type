@@ -28,9 +28,7 @@ struct CharacterDatabaseView: View {
                 TypeEmptyState(
                     icon: "person.2",
                     title: "No Characters",
-                    message: "Characters will appear here as you write, or you can add them manually.",
-                    buttonTitle: "Add Character",
-                    buttonAction: { showAddCharacter = true }
+                    message: "Characters will appear here as you write, or you can add them manually."
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {

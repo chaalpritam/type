@@ -2,10 +2,11 @@ import SwiftUI
 
 // MARK: - Character Edit View
 struct CharacterEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State var character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     let isNewCharacter: Bool
-    @Environment(\.dismiss) private var dismiss
     
     @State private var name: String
     @State private var description: String
@@ -27,7 +28,6 @@ struct CharacterEditView: View {
         self.characterDatabase = characterDatabase
         self.isNewCharacter = isNewCharacter
         
-        // Initialize state variables
         self._name = State(initialValue: character.name)
         self._description = State(initialValue: character.description)
         self._age = State(initialValue: character.age?.description ?? "")
@@ -42,174 +42,62 @@ struct CharacterEditView: View {
     }
     
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            // Header
+            ModalHeader(
+                title: isNewCharacter ? "New Character" : "Edit Character",
+                onCancel: { dismiss() },
+                onSave: saveCharacter,
+                canSave: !name.isEmpty
+            )
+            
+            // Content
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Basic Information
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Basic Information")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Character Name", text: $name)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                VStack(spacing: TypeSpacing.xl) {
+                    // Basic Info
+                    ModalSection(title: "Basic Information") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Name", placeholder: "Character name", text: $name)
+                            ModalTextArea(label: "Description", placeholder: "Brief character description", text: $description)
                             
-                            TextField("Description", text: $description, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(3...6)
-                            
-                            HStack {
-                                TextField("Age", text: $age)
-                                
-                                Picker("Gender", selection: $gender) {
-                                    Text("Unspecified").tag(nil as Gender?)
-                                    ForEach(Gender.allCases, id: \.self) { gender in
-                                        Text(gender.rawValue).tag(gender as Gender?)
-                                    }
-                                }
+                            HStack(spacing: TypeSpacing.md) {
+                                ModalTextField(label: "Age", placeholder: "Age", text: $age)
+                                    .frame(width: 80)
+                                ModalTextField(label: "Occupation", placeholder: "Job or role", text: $occupation)
+                                ModalDropdown(label: "Gender", selection: $gender, options: Gender.allCases)
                             }
-                            
-                            TextField("Occupation", text: $occupation)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
                         }
                     }
-                    .modalSectionStyle()
                     
                     // Character Details
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Character Details")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Appearance", text: $appearance, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(2...4)
-                            
-                            TextField("Personality", text: $personality, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(2...4)
-                            
-                            TextField("Background", text: $background, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(3...6)
+                    ModalSection(title: "Details") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextArea(label: "Appearance", placeholder: "Physical description", text: $appearance)
+                            ModalTextArea(label: "Personality", placeholder: "Personality traits", text: $personality)
+                            ModalTextArea(label: "Background", placeholder: "Character history", text: $background)
                         }
                     }
-                    .modalSectionStyle()
                     
                     // Goals
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Goals")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            ForEach(goals, id: \.self) { goal in
-                                Text(goal)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(4)
-                            }
-                            .onDelete(perform: deleteGoal)
-                            
-                            HStack {
-                                TextField("Add goal", text: $newGoal)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                Button("Add") {
-                                    if !newGoal.isEmpty {
-                                        goals.append(newGoal)
-                                        newGoal = ""
-                                    }
-                                }
-                                .disabled(newGoal.isEmpty)
-                            }
-                        }
+                    ModalSection(title: "Goals") {
+                        ModalTagList(items: $goals, newItem: $newGoal, placeholder: "Add a goal", color: TypeColors.sceneGreen)
                     }
-                    .modalSectionStyle()
                     
                     // Conflicts
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Conflicts")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            ForEach(conflicts, id: \.self) { conflict in
-                                Text(conflict)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.red.opacity(0.1))
-                                    .cornerRadius(4)
-                            }
-                            .onDelete(perform: deleteConflict)
-                            
-                            HStack {
-                                TextField("Add conflict", text: $newConflict)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                Button("Add") {
-                                    if !newConflict.isEmpty {
-                                        conflicts.append(newConflict)
-                                        newConflict = ""
-                                    }
-                                }
-                                .disabled(newConflict.isEmpty)
-                            }
-                        }
+                    ModalSection(title: "Conflicts") {
+                        ModalTagList(items: $conflicts, newItem: $newConflict, placeholder: "Add a conflict", color: TypeColors.sceneRed)
                     }
-                    .modalSectionStyle()
                     
                     // Tags
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Tags")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            ForEach(tags, id: \.self) { tag in
-                                Text(tag)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.green.opacity(0.1))
-                                    .cornerRadius(4)
-                            }
-                            .onDelete(perform: deleteTag)
-                            
-                            HStack {
-                                TextField("Add tag", text: $newTag)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                Button("Add") {
-                                    if !newTag.isEmpty {
-                                        tags.append(newTag)
-                                        newTag = ""
-                                    }
-                                }
-                                .disabled(newTag.isEmpty)
-                            }
-                        }
-                    }
-                    .modalSectionStyle()
-                }
-                .modalContainer()
-            }
-            .navigationTitle(isNewCharacter ? "New Character" : "Edit Character")
-            
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                    ModalSection(title: "Tags") {
+                        ModalTagList(items: $tags, newItem: $newTag, placeholder: "Add a tag", color: TypeColors.accent)
                     }
                 }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        saveCharacter()
-                    }
-                    .disabled(name.isEmpty)
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 520, idealWidth: 580, minHeight: 600, idealHeight: 700)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
     
     private func saveCharacter() {
@@ -234,27 +122,285 @@ struct CharacterEditView: View {
         
         dismiss()
     }
+}
+
+// MARK: - Modal Header
+struct ModalHeader: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    let onCancel: () -> Void
+    let onSave: () -> Void
+    var canSave: Bool = true
     
-    private func deleteGoal(offsets: IndexSet) {
-        goals.remove(atOffsets: offsets)
+    var body: some View {
+        HStack {
+            Button("Cancel") { onCancel() }
+                .font(TypeTypography.body)
+                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                .buttonStyle(.plain)
+            
+            Spacer()
+            
+            Text(title)
+                .font(TypeTypography.headline)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+            
+            Spacer()
+            
+            Button("Save") { onSave() }
+                .font(TypeTypography.body)
+                .fontWeight(.medium)
+                .foregroundColor(canSave ? TypeColors.accent : (colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight))
+                .buttonStyle(.plain)
+                .disabled(!canSave)
+        }
+        .padding(.horizontal, TypeSpacing.lg)
+        .frame(height: 48)
+        .background(colorScheme == .dark ? TypeColors.sidebarBackgroundDark : TypeColors.sidebarBackgroundLight)
+        .overlay(
+            Rectangle()
+                .frame(height: 0.5)
+                .foregroundColor(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight),
+            alignment: .bottom
+        )
+    }
+}
+
+// MARK: - Modal Section
+struct ModalSection<Content: View>: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.md) {
+            Text(title.uppercased())
+                .font(TypeTypography.caption)
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                .tracking(0.8)
+            
+            content
+        }
+    }
+}
+
+// MARK: - Modal Text Field
+struct ModalTextField: View {
+    @Environment(\.colorScheme) var colorScheme
+    let label: String
+    let placeholder: String
+    @Binding var text: String
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+            if !label.isEmpty {
+                Text(label)
+                    .font(TypeTypography.caption)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+            }
+            
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.plain)
+                .font(TypeTypography.body)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                .padding(.horizontal, TypeSpacing.sm)
+                .padding(.vertical, TypeSpacing.sm)
+                .focused($isFocused)
+                .background(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .stroke(isFocused ? TypeColors.accent.opacity(0.5) : (colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight), lineWidth: isFocused ? 1.5 : 0.5)
+                )
+                .animation(TypeAnimation.quick, value: isFocused)
+        }
+    }
+}
+
+// MARK: - Modal Text Area
+struct ModalTextArea: View {
+    @Environment(\.colorScheme) var colorScheme
+    let label: String
+    let placeholder: String
+    @Binding var text: String
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+            if !label.isEmpty {
+                Text(label)
+                    .font(TypeTypography.caption)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+            }
+            
+            TextEditor(text: $text)
+                .font(TypeTypography.body)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                .scrollContentBackground(.hidden)
+                .padding(TypeSpacing.sm)
+                .frame(minHeight: 60, maxHeight: 100)
+                .focused($isFocused)
+                .background(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .stroke(isFocused ? TypeColors.accent.opacity(0.5) : (colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight), lineWidth: isFocused ? 1.5 : 0.5)
+                )
+                .overlay(
+                    Group {
+                        if text.isEmpty {
+                            Text(placeholder)
+                                .font(TypeTypography.body)
+                                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                                .padding(.horizontal, TypeSpacing.sm)
+                                .padding(.vertical, TypeSpacing.sm + 4)
+                                .allowsHitTesting(false)
+                        }
+                    },
+                    alignment: .topLeading
+                )
+                .animation(TypeAnimation.quick, value: isFocused)
+        }
+    }
+}
+
+// MARK: - Modal Dropdown
+struct ModalDropdown<T: CaseIterable & Hashable & RawRepresentable>: View where T.RawValue == String {
+    @Environment(\.colorScheme) var colorScheme
+    let label: String
+    @Binding var selection: T?
+    let options: [T]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+            Text(label)
+                .font(TypeTypography.caption)
+                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+            
+            Menu {
+                Button("None") { selection = nil }
+                Divider()
+                ForEach(options, id: \.self) { option in
+                    Button(option.rawValue) { selection = option }
+                }
+            } label: {
+                HStack {
+                    Text(selection?.rawValue ?? "Select")
+                        .font(TypeTypography.body)
+                        .foregroundColor(selection == nil ?
+                                         (colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight) :
+                                         (colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight))
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                }
+                .padding(.horizontal, TypeSpacing.sm)
+                .padding(.vertical, TypeSpacing.sm)
+                .background(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .stroke(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight, lineWidth: 0.5)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+// MARK: - Modal Tag List
+struct ModalTagList: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Binding var items: [String]
+    @Binding var newItem: String
+    let placeholder: String
+    let color: Color
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.sm) {
+            // Tags
+            if !items.isEmpty {
+                FlowLayout(spacing: TypeSpacing.xs) {
+                    ForEach(items, id: \.self) { item in
+                        HStack(spacing: 4) {
+                            Text(item)
+                                .font(TypeTypography.caption)
+                            
+                            Button(action: { removeItem(item) }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 8, weight: .bold))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .foregroundColor(color)
+                        .padding(.horizontal, TypeSpacing.sm)
+                        .padding(.vertical, TypeSpacing.xs)
+                        .background(color.opacity(0.1))
+                        .cornerRadius(TypeRadius.full)
+                    }
+                }
+            }
+            
+            // Add new
+            HStack(spacing: TypeSpacing.sm) {
+                TextField(placeholder, text: $newItem)
+                    .textFieldStyle(.plain)
+                    .font(TypeTypography.body)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                    .focused($isFocused)
+                    .onSubmit { addItem() }
+                
+                Button(action: addItem) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(newItem.isEmpty ? (colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight) : color)
+                }
+                .buttonStyle(.plain)
+                .disabled(newItem.isEmpty)
+            }
+            .padding(.horizontal, TypeSpacing.sm)
+            .padding(.vertical, TypeSpacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: TypeRadius.sm)
+                    .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: TypeRadius.sm)
+                    .stroke(isFocused ? color.opacity(0.5) : (colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight), lineWidth: isFocused ? 1.5 : 0.5)
+            )
+        }
     }
     
-    private func deleteConflict(offsets: IndexSet) {
-        conflicts.remove(atOffsets: offsets)
+    private func addItem() {
+        guard !newItem.isEmpty else { return }
+        items.append(newItem)
+        newItem = ""
     }
     
-    private func deleteTag(offsets: IndexSet) {
-        tags.remove(atOffsets: offsets)
+    private func removeItem(_ item: String) {
+        items.removeAll { $0 == item }
     }
 }
 
 // MARK: - Character Arc Edit View
 struct CharacterArcEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State var arc: CharacterArc
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     let isNewArc: Bool
-    @Environment(\.dismiss) private var dismiss
     
     @State private var name: String
     @State private var description: String
@@ -280,84 +426,44 @@ struct CharacterArcEditView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Arc Information
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Arc Information")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Arc Name", text: $name)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            TextField("Description", text: $description, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(3...6)
-                            
-                            Picker("Arc Type", selection: $arcType) {
-                                ForEach(ArcType.allCases, id: \.self) { type in
-                                    Text(type.rawValue).tag(type)
-                                }
-                            }
-                            
-                            Picker("Status", selection: $status) {
-                                ForEach(ArcStatus.allCases, id: \.self) { status in
-                                    Text(status.rawValue).tag(status)
-                                }
-                            }
-                        }
-                    }
-                    .modalSectionStyle()
-                    
-                    // Scenes
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Scenes")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Start Scene", text: $startScene)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            TextField("End Scene", text: $endScene)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                    }
-                    .modalSectionStyle()
-                    
-                    // Notes
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Notes")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        TextField("Notes", text: $notes, axis: .vertical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .lineLimit(3...8)
-                    }
-                    .modalSectionStyle()
-                }
-                .modalContainer()
-            }
-            .navigationTitle(isNewArc ? "New Arc" : "Edit Arc")
+        VStack(spacing: 0) {
+            ModalHeader(
+                title: isNewArc ? "New Arc" : "Edit Arc",
+                onCancel: { dismiss() },
+                onSave: saveArc,
+                canSave: !name.isEmpty
+            )
             
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+            ScrollView {
+                VStack(spacing: TypeSpacing.xl) {
+                    ModalSection(title: "Arc Information") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Name", placeholder: "Arc name", text: $name)
+                            ModalTextArea(label: "Description", placeholder: "What happens in this arc", text: $description)
+                            
+                            HStack(spacing: TypeSpacing.md) {
+                                ModalEnumDropdown(label: "Type", selection: $arcType)
+                                ModalEnumDropdown(label: "Status", selection: $status)
+                            }
+                        }
+                    }
+                    
+                    ModalSection(title: "Scene References") {
+                        HStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Start Scene", placeholder: "Scene name", text: $startScene)
+                            ModalTextField(label: "End Scene", placeholder: "Scene name", text: $endScene)
+                        }
+                    }
+                    
+                    ModalSection(title: "Notes") {
+                        ModalTextArea(label: "", placeholder: "Additional notes", text: $notes)
                     }
                 }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        saveArc()
-                    }
-                    .disabled(name.isEmpty)
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 480, idealWidth: 520, minHeight: 500, idealHeight: 550)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
     
     private func saveArc() {
@@ -380,13 +486,58 @@ struct CharacterArcEditView: View {
     }
 }
 
+// MARK: - Modal Enum Dropdown
+struct ModalEnumDropdown<T: CaseIterable & Hashable & RawRepresentable>: View where T.RawValue == String {
+    @Environment(\.colorScheme) var colorScheme
+    let label: String
+    @Binding var selection: T
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: TypeSpacing.xxs) {
+            Text(label)
+                .font(TypeTypography.caption)
+                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+            
+            Menu {
+                ForEach(Array(T.allCases), id: \.self) { option in
+                    Button(option.rawValue) { selection = option }
+                }
+            } label: {
+                HStack {
+                    Text(selection.rawValue)
+                        .font(TypeTypography.body)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                }
+                .padding(.horizontal, TypeSpacing.sm)
+                .padding(.vertical, TypeSpacing.sm)
+                .background(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: TypeRadius.sm)
+                        .stroke(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight, lineWidth: 0.5)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
 // MARK: - Character Relationship Edit View
 struct CharacterRelationshipEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State var relationship: CharacterRelationship
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     let isNewRelationship: Bool
-    @Environment(\.dismiss) private var dismiss
     
     @State private var targetCharacter: String
     @State private var relationshipType: RelationshipType
@@ -408,69 +559,38 @@ struct CharacterRelationshipEditView: View {
     }
     
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            ModalHeader(
+                title: isNewRelationship ? "New Relationship" : "Edit Relationship",
+                onCancel: { dismiss() },
+                onSave: saveRelationship,
+                canSave: !targetCharacter.isEmpty
+            )
+            
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Relationship Information
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Relationship Information")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Target Character", text: $targetCharacter)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                VStack(spacing: TypeSpacing.xl) {
+                    ModalSection(title: "Relationship") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Character", placeholder: "Related character name", text: $targetCharacter)
                             
-                            Picker("Relationship Type", selection: $relationshipType) {
-                                ForEach(RelationshipType.allCases, id: \.self) { type in
-                                    Text(type.rawValue).tag(type)
-                                }
+                            HStack(spacing: TypeSpacing.md) {
+                                ModalEnumDropdown(label: "Type", selection: $relationshipType)
+                                ModalEnumDropdown(label: "Strength", selection: $strength)
                             }
                             
-                            TextField("Description", text: $description, axis: .vertical)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .lineLimit(3...6)
-                            
-                            Picker("Strength", selection: $strength) {
-                                ForEach(RelationshipStrength.allCases, id: \.self) { strength in
-                                    Text(strength.rawValue).tag(strength)
-                                }
-                            }
+                            ModalTextArea(label: "Description", placeholder: "Describe the relationship", text: $description)
                         }
                     }
-                    .modalSectionStyle()
                     
-                    // Notes
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Notes")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        TextField("Notes", text: $notes, axis: .vertical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .lineLimit(3...8)
-                    }
-                    .modalSectionStyle()
-                }
-                .modalContainer()
-            }
-            .navigationTitle(isNewRelationship ? "New Relationship" : "Edit Relationship")
-            
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                    ModalSection(title: "Notes") {
+                        ModalTextArea(label: "", placeholder: "Additional notes", text: $notes)
                     }
                 }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        saveRelationship()
-                    }
-                    .disabled(targetCharacter.isEmpty)
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 450, idealWidth: 500, minHeight: 450, idealHeight: 500)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
     
     private func saveRelationship() {
@@ -493,11 +613,12 @@ struct CharacterRelationshipEditView: View {
 
 // MARK: - Character Note Edit View
 struct CharacterNoteEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State var note: CharacterNote
     let character: Character
     @ObservedObject var characterDatabase: CharacterDatabase
     let isNewNote: Bool
-    @Environment(\.dismiss) private var dismiss
     
     @State private var title: String
     @State private var content: String
@@ -519,74 +640,43 @@ struct CharacterNoteEditView: View {
     }
     
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            ModalHeader(
+                title: isNewNote ? "New Note" : "Edit Note",
+                onCancel: { dismiss() },
+                onSave: saveNote,
+                canSave: !title.isEmpty && !content.isEmpty
+            )
+            
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Note Information
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Note Information")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Title", text: $title)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            Picker("Type", selection: $type) {
-                                ForEach(NoteType.allCases, id: \.self) { type in
-                                    Text(type.rawValue).tag(type)
-                                }
+                VStack(spacing: TypeSpacing.xl) {
+                    ModalSection(title: "Note") {
+                        VStack(spacing: TypeSpacing.md) {
+                            HStack(spacing: TypeSpacing.md) {
+                                ModalTextField(label: "Title", placeholder: "Note title", text: $title)
+                                ModalEnumDropdown(label: "Type", selection: $type)
+                                    .frame(width: 140)
                             }
                         }
                     }
-                    .modalSectionStyle()
                     
-                    // Content
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Content")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        TextField("Note content", text: $content, axis: .vertical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .lineLimit(5...15)
+                    ModalSection(title: "Content") {
+                        ModalTextArea(label: "", placeholder: "Write your note here...", text: $content)
                     }
-                    .modalSectionStyle()
                     
-                    // Reference
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Reference")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        VStack(spacing: 8) {
-                            TextField("Scene", text: $scene)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            TextField("Line Number", text: $lineNumber)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                    ModalSection(title: "Reference (Optional)") {
+                        HStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Scene", placeholder: "Related scene", text: $scene)
+                            ModalTextField(label: "Line", placeholder: "Line #", text: $lineNumber)
+                                .frame(width: 80)
                         }
                     }
-                    .modalSectionStyle()
                 }
-                .modalContainer()
-            }
-            .navigationTitle(isNewNote ? "New Note" : "Edit Note")
-            
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        saveNote()
-                    }
-                    .disabled(title.isEmpty || content.isEmpty)
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 450, idealWidth: 500, minHeight: 450, idealHeight: 500)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
     
     private func saveNote() {
@@ -605,4 +695,4 @@ struct CharacterNoteEditView: View {
         
         dismiss()
     }
-} 
+}
