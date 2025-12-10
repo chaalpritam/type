@@ -19,6 +19,7 @@ struct TypeStyleAppView: View {
     @State private var searchText = ""
     @State private var replaceText = ""
     @State private var isFocusMode = false
+    @State private var showPreviewPanel = false
     @State private var showOutlinePanel = false
     @State private var showCharactersPanel = false
     @State private var showWelcomeScreen = false
@@ -47,10 +48,7 @@ struct TypeStyleAppView: View {
                             canRedo: appCoordinator.editorCoordinator.canRedo,
                             onUndo: { appCoordinator.editorCoordinator.performUndo() },
                             onRedo: { appCoordinator.editorCoordinator.performRedo() },
-                            showPreview: Binding(
-                                get: { appCoordinator.editorCoordinator.showPreview },
-                                set: { appCoordinator.editorCoordinator.showPreview = $0 }
-                            ),
+                            showPreview: $showPreviewPanel,
                             showOutline: $showOutlinePanel,
                             showCharacters: $showCharactersPanel,
                             isFocusMode: $isFocusMode,
@@ -142,7 +140,7 @@ struct TypeStyleAppView: View {
                         // Side panels
                         if !isFocusMode {
                             // Preview panel
-                            if appCoordinator.editorCoordinator.showPreview {
+                            if showPreviewPanel {
                                 TypePreviewPanel(
                                     elements: appCoordinator.editorCoordinator.fountainParser.elements,
                                     titlePage: appCoordinator.editorCoordinator.fountainParser.titlePage
@@ -238,6 +236,7 @@ struct TypeStyleAppView: View {
             }
             .animation(TypeAnimation.standard, value: isFocusMode)
             .animation(TypeAnimation.standard, value: showFindReplace)
+            .animation(TypeAnimation.standard, value: showPreviewPanel)
             .animation(TypeAnimation.standard, value: showOutlinePanel)
             .animation(TypeAnimation.standard, value: showCharactersPanel)
             .animation(TypeAnimation.standard, value: showWelcomeScreen)
