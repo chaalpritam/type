@@ -109,7 +109,7 @@ class FileManager: ObservableObject {
         }
     }
     
-    private func stopAutoSaveTimer() {
+    func stopAutoSaveTimer() {
         autoSaveTimer?.invalidate()
         autoSaveTimer = nil
     }

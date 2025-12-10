@@ -7,9 +7,17 @@ class KeyboardShortcutsManager: ObservableObject {
     private var fileManager: FileManager
     private var textEditor: FountainTextEditor?
     
+    private var startMonitor: Any?
+    
     init(fileManager: FileManager) {
         self.fileManager = fileManager
         setupKeyboardShortcuts()
+    }
+    
+    deinit {
+        if let monitor = startMonitor {
+            NSEvent.removeMonitor(monitor)
+        }
     }
     
     func setTextEditor(_ editor: FountainTextEditor) {
@@ -18,7 +26,7 @@ class KeyboardShortcutsManager: ObservableObject {
     
     private func setupKeyboardShortcuts() {
         // File Operations
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+        startMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             return self?.handleKeyEvent(event) ?? event
         }
     }

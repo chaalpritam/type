@@ -65,6 +65,10 @@ class AppCoordinator: ObservableObject {
         outlineCoordinator.updateDocument(document)
         collaborationCoordinator.updateDocument(document)
     }
+    func cleanup() {
+        fileManagementService.cleanup()
+        cancellables.removeAll()
+    }
 }
 
 // MARK: - App View Enum

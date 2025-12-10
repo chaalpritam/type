@@ -266,10 +266,11 @@ struct TypeStyleAppView: View {
                     }
                 }
             }
-        }
-        // Keyboard shortcuts
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            // Setup keyboard shortcuts
             setupKeyboardShortcuts()
+        }
+        .onDisappear {
+            keyboardMonitor.stopMonitoring()
         }
         // Handle notification center messages
         .onReceive(NotificationCenter.default.publisher(for: .showWelcome)) { _ in
@@ -288,25 +289,37 @@ struct TypeStyleAppView: View {
         isDarkMode ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight
     }
     
+    @StateObject private var keyboardMonitor = KeyboardShortcutMonitor()
+    
+    // ...
+    
     private func setupKeyboardShortcuts() {
-        // Escape to exit focus mode or close modals
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+        keyboardMonitor.startMonitoring { event in
+            // Handle Escape key
             if event.keyCode == 53 { // Escape key
                 if showWelcomeScreen {
-                    withAnimation(TypeAnimation.smooth) {
-                        showWelcomeScreen = false
+                    Task { @MainActor in
+                        withAnimation(TypeAnimation.smooth) {
+                            showWelcomeScreen = false
+                        }
                     }
                     return nil
                 }
+                
                 if showTemplateSelector {
-                    withAnimation(TypeAnimation.smooth) {
-                        showTemplateSelector = false
+                    Task { @MainActor in
+                        withAnimation(TypeAnimation.smooth) {
+                            showTemplateSelector = false
+                        }
                     }
                     return nil
                 }
+                
                 if isFocusMode {
-                    withAnimation(TypeAnimation.smooth) {
-                        isFocusMode = false
+                    Task { @MainActor in
+                        withAnimation(TypeAnimation.smooth) {
+                            isFocusMode = false
+                        }
                     }
                     return nil
                 }

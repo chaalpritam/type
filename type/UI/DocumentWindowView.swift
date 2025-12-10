@@ -75,6 +75,9 @@ struct DocumentWindowView: View {
     private func cleanupWindow() {
         // Unregister window when it closes
         windowManager.unregisterWindow(id: windowId)
+        
+        // Cleanup services (timers, monitors)
+        appCoordinator.cleanup()
     }
     
     private func updateWindowTitle(_ title: String) {

@@ -20,6 +20,10 @@ class FileManagementService: ObservableObject {
         self.keyboardShortcutsManager = KeyboardShortcutsManager(fileManager: fileManager)
     }
     
+    func cleanup() {
+        fileManager.stopAutoSaveTimer()
+    }
+    
     // MARK: - File Management Functions
     
     func newDocument() {
