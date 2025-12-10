@@ -708,6 +708,162 @@ struct FountainTemplate {
     FADE OUT.
     """
     
+    // MARK: - Stage & Audio Templates
+    
+    static let stagePlay = """
+    Title: "THE DINNER PARTY"
+    Credit: Written by
+    Author: Your Name
+    Format: Stage Play
+    Draft date: \(DateFormatter.templateDateFormatter.string(from: Date()))
+    
+    ===
+    
+    ACT ONE
+    
+    SCENE 1
+    
+    SETTING:
+        A tastefully decorated dining room. A long mahogany table takes up the center. A chandelier hangs above.
+    
+    AT RISE:
+        MARTHA (50s) is arranging flowers on the table. She is nervous, fluttering about.
+    
+    MARTHA
+    (Calling offstage)
+    Arthur! They'll be here any minute!
+    
+    ARTHUR (60s) enters, adjusting his tie. He looks bored.
+    
+    ARTHUR
+    Relax, Martha. It's just dinner.
+    
+    MARTHA
+    Just dinner? The Governor is coming, Arthur!
+    
+    ARTHUR
+    He eats potatoes just like the rest of us.
+    
+    (Doorbell rings)
+    
+    MARTHA
+    (Panicked)
+    Oh god.
+    
+    ===
+    
+    SCENE 2
+    
+    SETTING:
+        The same room, an hour later. The table is now full of food.
+    
+    AT RISE:
+        Martha, Arthur, and the GOVERNOR (50s) are eating. The atmosphere is tense.
+    
+    GOVERNOR
+    (Wiping mouth)
+    Excellent roast, Martha. Truly excellent.
+    
+    MARTHA
+    (Beaming)
+    Thank you, Governor.
+    
+    ARTHUR
+    It's store-bought.
+    
+    Martha kicks Arthur under the table.
+    
+    ARTHUR
+    (Wincing)
+    Ouch! I mean... store-bought... spices.
+    
+    BLACKOUT.
+    """
+    
+    static let podcast = """
+    Title: "MIDNIGHT STATIC"
+    Credit: Written by
+    Author: Your Name
+    Format: Audio Drama
+    Draft date: \(DateFormatter.templateDateFormatter.string(from: Date()))
+    
+    ===
+    
+    SFX:
+        STATIC NOISE fades into RAIN against a window.
+    
+    NARRATOR
+    (Low, mysterious)
+    Some frequencies shouldn't be tuned into.
+    
+    SFX:
+        RADIO DIAL TURNING. SQUEALS of feedback.
+    
+    HOST
+    Testing. Is this thing on?
+    
+    SFX:
+        THUMP against a microphone.
+    
+    HOST
+    If you can hear this... don't go outside tonight.
+    
+    SFX:
+        DISTANT SIREN wails.
+    
+    CALLER (FILTERED)
+    (Panicked)
+    They're in the yard! I can see their eyes!
+    
+    HOST
+    Stay away from the windows!
+    
+    SFX:
+        GLASS BREAKING.
+    
+    FADE OUT.
+    """
+    
+    static let documentary = """
+    Title: "HIDDEN WORLDS"
+    Credit: Written by
+    Author: Your Name
+    Format: Documentary
+    Draft date: \(DateFormatter.templateDateFormatter.string(from: Date()))
+    
+    ===
+    
+    FADE IN:
+    
+    EXT. RAINFOREST - DAY
+    
+    VIDEO: Aerial sweeping shot of the Amazon canopy. Mist rises from the trees.
+    
+    NARRATOR (V.O.)
+    Deep within the Amazon basin, life thrives in ways we are only beginning to understand.
+    
+    VIDEO: Cut to CLOSE UP of a rare frog.
+    
+    NARRATOR (V.O.)
+    This is the Glass Frog. Its skin is translucent.
+    
+    VIDEO: Cut to INTERVIEW with DR. ALAN GRANT.
+    
+    GRAPHIC: DR. ALAN GRANT, HERPETOLOGIST
+    
+    DR. GRANT
+    We've found more species here in the last month than in the previous decade. It's a gold rush for biology.
+    
+    VIDEO: Montage of scientists working in the field. Collecting samples, setting up cameras.
+    
+    NARRATOR (V.O.)
+    But time is running out.
+    
+    VIDEO: Wide shot of smoke rising in the distance.
+    
+    FADE OUT.
+    """
+    
     // MARK: - Original Templates (Updated)
     
     static let defaultTemplate = """
@@ -818,6 +974,12 @@ struct FountainTemplate {
             return horrorFeature
         case .mysteryFeature:
             return mysteryFeature
+        case .stagePlay:
+            return stagePlay
+        case .podcast:
+            return podcast
+        case .documentary:
+            return documentary
         }
     }
 }
@@ -834,6 +996,9 @@ enum TemplateType: String, CaseIterable {
     case shortComedy = "Short Comedy"
     case horrorFeature = "Horror Feature"
     case mysteryFeature = "Mystery Feature"
+    case stagePlay = "Stage Play"
+    case podcast = "Podcast / Audio Drama"
+    case documentary = "Documentary"
     
     var description: String {
         switch self {
@@ -859,6 +1024,12 @@ enum TemplateType: String, CaseIterable {
             return "Horror thriller with supernatural elements"
         case .mysteryFeature:
             return "Mystery thriller with detective investigation"
+        case .stagePlay:
+            return "Standard stage play format with acts and scenes"
+        case .podcast:
+            return "Audio drama script with sound effects cues"
+        case .documentary:
+            return "Documentary script with video/audio split formatting"
         }
     }
     
@@ -872,6 +1043,10 @@ enum TemplateType: String, CaseIterable {
             return .featureFilms
         case .shortDrama, .shortComedy:
             return .shortFilms
+        case .stagePlay:
+            return .stage
+        case .podcast, .documentary:
+            return .other
         }
     }
 }
@@ -881,6 +1056,8 @@ enum TemplateCategory: String, CaseIterable {
     case tvPilots = "TV Pilots"
     case featureFilms = "Feature Films"
     case shortFilms = "Short Films"
+    case stage = "Stage Plays"
+    case other = "Other Formats"
     
     var templates: [TemplateType] {
         TemplateType.allCases.filter { $0.category == self }

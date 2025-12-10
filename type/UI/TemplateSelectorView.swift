@@ -204,6 +204,8 @@ struct TemplateCategoryRow: View {
         case .tvPilots: return "tv"
         case .featureFilms: return "film"
         case .shortFilms: return "film.stack"
+        case .stage: return "curtains.closed"
+        case .other: return "doc.richtext"
         }
     }
 }
@@ -273,6 +275,9 @@ struct TemplateListRow: View {
         case .shortComedy: return "face.smiling"
         case .horrorFeature: return "moon.fill"
         case .mysteryFeature: return "magnifyingglass"
+        case .stagePlay: return "curtains.closed"
+        case .podcast: return "mic.fill"
+        case .documentary: return "video.fill"
         }
     }
     
@@ -288,6 +293,9 @@ struct TemplateListRow: View {
         case .shortComedy: return TypeColors.sceneGreen
         case .horrorFeature: return TypeColors.scenePurple
         case .mysteryFeature: return TypeColors.sceneCyan
+        case .stagePlay: return TypeColors.sceneRed
+        case .podcast: return TypeColors.sceneYellow
+        case .documentary: return TypeColors.sceneBlue
         }
     }
 }
@@ -352,6 +360,9 @@ struct TemplatePreviewPanel: View {
         case .shortComedy: return "face.smiling"
         case .horrorFeature: return "moon.fill"
         case .mysteryFeature: return "magnifyingglass"
+        case .stagePlay: return "curtains.closed"
+        case .podcast: return "mic.fill"
+        case .documentary: return "video.fill"
         }
     }
     
@@ -367,6 +378,9 @@ struct TemplatePreviewPanel: View {
         case .shortComedy: return TypeColors.sceneGreen
         case .horrorFeature: return TypeColors.scenePurple
         case .mysteryFeature: return TypeColors.sceneCyan
+        case .stagePlay: return TypeColors.sceneRed
+        case .podcast: return TypeColors.sceneYellow
+        case .documentary: return TypeColors.sceneBlue
         }
     }
     
