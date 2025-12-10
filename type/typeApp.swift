@@ -10,17 +10,11 @@ import SwiftUI
 @main
 struct typeApp: App {
     @AppStorage("isDarkMode") private var isDarkMode = false
-    @AppStorage("useModernUI") private var useModernUI = true
     
     var body: some SwiftUI.Scene {
         WindowGroup {
-            if useModernUI {
-                TypeStyleAppView()
-                    .preferredColorScheme(isDarkMode ? .dark : .light)
-            } else {
-                ModularAppView()
-                    .preferredColorScheme(isDarkMode ? .dark : .light)
-            }
+            TypeStyleAppView()
+                .preferredColorScheme(isDarkMode ? .dark : .light)
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
@@ -29,18 +23,6 @@ struct typeApp: App {
                     isDarkMode.toggle()
                 }
                 .keyboardShortcut("d", modifiers: [.command, .shift])
-                
-                Divider()
-                
-                Button("Use Modern UI") {
-                    useModernUI = true
-                }
-                .disabled(useModernUI)
-                
-                Button("Use Classic UI") {
-                    useModernUI = false
-                }
-                .disabled(!useModernUI)
             }
             
             CommandGroup(replacing: .newItem) {
