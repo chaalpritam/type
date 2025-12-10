@@ -3,7 +3,12 @@ import Combine
 
 // MARK: - App Coordinator
 /// Central coordinator that manages app state and coordinates between modules
-/// Implements comprehensive cleanup inspired by Beat's Document.m close method
+/// Implements Document-Based MVC Architecture inspired by Beat's approach
+///
+/// The architecture follows Beat's pattern where:
+/// - DocumentViewController is the central controller (like BeatDocumentViewController)
+/// - Module coordinators act as helpers that work with the document delegate
+/// - Views register with the document controller for updates (registered views pattern)
 @MainActor
 class AppCoordinator: ObservableObject {
     // MARK: - Published Properties
@@ -12,7 +17,12 @@ class AppCoordinator: ObservableObject {
     @Published var showSettings: Bool = false
     @Published private(set) var isCleaningUp: Bool = false
     
-    // MARK: - Module Coordinators
+    // MARK: - Document Controller (Central Hub - Beat Pattern)
+    /// The main document controller - like Beat's BeatDocumentViewController
+    /// This is the central hub that manages document state and coordinates updates
+    let documentController: DocumentViewController
+    
+    // MARK: - Module Coordinators (Work with DocumentController)
     let editorCoordinator: EditorCoordinator
     let characterCoordinator: CharacterCoordinator
     let outlineCoordinator: OutlineCoordinator
@@ -34,7 +44,11 @@ class AppCoordinator: ObservableObject {
     
     // MARK: - Initialization
     init() {
-        Logger.app.info("AppCoordinator init")
+        Logger.app.info("AppCoordinator init - Document-Based MVC Architecture")
+        
+        // Initialize the central document controller (like Beat)
+        self.documentController = DocumentViewController()
+        
         // Initialize shared services
         self.documentService = DocumentService()
         self.settingsService = SettingsService()
@@ -42,7 +56,7 @@ class AppCoordinator: ObservableObject {
         self.statisticsService = StatisticsService()
         self.storyProtocolService = StoryProtocolService()
         
-        // Initialize module coordinators
+        // Initialize module coordinators - they work with the document controller
         self.editorCoordinator = EditorCoordinator(documentService: documentService)
         self.characterCoordinator = CharacterCoordinator(documentService: documentService)
         self.outlineCoordinator = OutlineCoordinator(documentService: documentService)
@@ -51,6 +65,7 @@ class AppCoordinator: ObservableObject {
         self.storyProtocolCoordinator = StoryProtocolCoordinator(storyProtocolService: storyProtocolService, documentService: documentService)
         
         setupBindings()
+        setupDocumentControllerBindings()
     }
     
     deinit {
@@ -59,10 +74,62 @@ class AppCoordinator: ObservableObject {
     
     // MARK: - Private Methods
     private func setupBindings() {
-        // Listen for document changes and update all coordinators
+        // Listen for document changes from DocumentService and update coordinators
         documentService.$currentDocument
             .sink { [weak self] document in
                 self?.handleDocumentChange(document)
+            }
+            .store(in: &cancellables)
+    }
+    
+    /// Setup bindings between DocumentController and coordinators
+    /// This implements Beat's pattern where the document controller is the central hub
+    private func setupDocumentControllerBindings() {
+        // Sync DocumentController text with DocumentService
+        documentController.$text
+            .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] newText in
+                guard let self = self, !self.isCleaningUp else { return }
+                self.documentService.updateDocumentContent(newText)
+            }
+            .store(in: &cancellables)
+        
+        // Sync DocumentController statistics with editor coordinator
+        documentController.$wordCount
+            .sink { [weak self] count in
+                self?.editorCoordinator.wordCount = count
+            }
+            .store(in: &cancellables)
+        
+        documentController.$pageCount
+            .sink { [weak self] count in
+                self?.editorCoordinator.pageCount = count
+            }
+            .store(in: &cancellables)
+        
+        documentController.$characterCount
+            .sink { [weak self] count in
+                self?.editorCoordinator.characterCount = count
+            }
+            .store(in: &cancellables)
+        
+        // Sync preview state
+        documentController.$showPreview
+            .sink { [weak self] show in
+                self?.editorCoordinator.showPreview = show
+            }
+            .store(in: &cancellables)
+        
+        // Sync undo/redo state
+        documentController.$canUndo
+            .sink { [weak self] canUndo in
+                self?.editorCoordinator.canUndo = canUndo
+            }
+            .store(in: &cancellables)
+        
+        documentController.$canRedo
+            .sink { [weak self] canRedo in
+                self?.editorCoordinator.canRedo = canRedo
             }
             .store(in: &cancellables)
     }
@@ -71,11 +138,73 @@ class AppCoordinator: ObservableObject {
         // Don't process during cleanup
         guard !isCleaningUp else { return }
         
+        // Update DocumentController when document changes
+        if let document = document {
+            documentController.loadDocumentString(document.content)
+            if let url = document.url {
+                documentController.fileURL = url
+            }
+        }
+        
         // Update all coordinators when document changes
         editorCoordinator.updateDocument(document)
         characterCoordinator.updateDocument(document)
         outlineCoordinator.updateDocument(document)
         collaborationCoordinator.updateDocument(document)
+    }
+    
+    // MARK: - Document Operations (Delegate to DocumentController)
+    
+    /// Update document text - goes through DocumentController
+    func updateText(_ newText: String) {
+        documentController.updateText(newText)
+    }
+    
+    /// Get current text from DocumentController
+    var currentText: String {
+        documentController.text
+    }
+    
+    /// Get outline from DocumentController
+    var outline: [OutlineScene] {
+        documentController.outline
+    }
+    
+    /// Load document from URL
+    func loadDocument(from url: URL) throws {
+        try documentController.loadDocument(from: url)
+    }
+    
+    /// Save document to URL
+    func saveDocument(to url: URL) throws {
+        try documentController.saveDocument(to: url)
+    }
+    
+    // MARK: - View Registration (Beat Pattern)
+    
+    /// Register a view for updates - delegated to DocumentController
+    func registerEditorView(_ view: EditorView) {
+        documentController.registerEditorView(view)
+    }
+    
+    func unregisterEditorView(_ view: EditorView) {
+        documentController.unregisterEditorView(view)
+    }
+    
+    func registerOutlineView(_ view: SceneOutlineView) {
+        documentController.registerOutlineView(view)
+    }
+    
+    func unregisterOutlineView(_ view: SceneOutlineView) {
+        documentController.unregisterOutlineView(view)
+    }
+    
+    func registerSelectionObserver(_ observer: SelectionObserver) {
+        documentController.registerSelectionObserver(observer)
+    }
+    
+    func unregisterSelectionObserver(_ observer: SelectionObserver) {
+        documentController.unregisterSelectionObserver(observer)
     }
     
     /// Comprehensive cleanup method inspired by Beat's Document.m close method
@@ -98,15 +227,19 @@ class AppCoordinator: ObservableObject {
         cancellables.removeAll()
         Logger.app.debug("Cancelled all subscriptions")
         
-        // 2. Cleanup file management service (invalidates timers)
+        // 2. Cleanup the central document controller (like Beat's unloadViews)
+        documentController.cleanup()
+        Logger.app.debug("DocumentController cleaned up")
+        
+        // 3. Cleanup file management service (invalidates timers)
         fileManagementService.cleanup()
         Logger.app.debug("FileManagementService cleaned up")
         
-        // 3. Cleanup document service (invalidates auto-save timer)
+        // 4. Cleanup document service (invalidates auto-save timer)
         documentService.cleanup()
         Logger.app.debug("DocumentService cleaned up")
         
-        // 4. Cleanup all module coordinators
+        // 5. Cleanup all module coordinators
         editorCoordinator.cleanup()
         characterCoordinator.cleanup()
         outlineCoordinator.cleanup()
@@ -115,13 +248,13 @@ class AppCoordinator: ObservableObject {
         storyProtocolCoordinator.cleanup()
         Logger.app.debug("All coordinators cleaned up")
         
-        // 5. Cleanup settings and statistics services
+        // 6. Cleanup settings and statistics services
         settingsService.cleanup()
         statisticsService.cleanup()
         storyProtocolService.cleanup()
         Logger.app.debug("All services cleaned up")
         
-        // 6. Remove any remaining notification observers
+        // 7. Remove any remaining notification observers
         NotificationCenter.default.removeObserver(self)
         Logger.app.debug("Removed notification observers")
         

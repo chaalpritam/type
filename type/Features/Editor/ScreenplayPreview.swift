@@ -107,6 +107,10 @@ struct ScreenplayElementView: View {
             EmptyView()
         case .forceSceneHeading, .forceAction, .emphasis, .dualDialogue:
             EmptyView() // These are handled by other cases
+        case .boneyard:
+            EmptyView() // Boneyard (commented out) content is not displayed
+        case .unknown:
+            ActionView(text: element.text) // Unknown elements treated as action
         }
     }
 }

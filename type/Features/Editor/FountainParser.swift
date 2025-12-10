@@ -1,6 +1,8 @@
 import Foundation
 
 // MARK: - Fountain Element Types
+/// Element types in a Fountain screenplay document
+/// Based on the Fountain markup syntax specification
 enum FountainElementType {
     case titlePage
     case sceneHeading
@@ -19,17 +21,81 @@ enum FountainElementType {
     case lyrics
     case emphasis
     case dualDialogue
+    case boneyard       // Commented out content /* */
+    case unknown        // Unknown or unparsed content
+    
+    /// Display name for the element type
+    var displayName: String {
+        switch self {
+        case .titlePage: return "Title Page"
+        case .sceneHeading: return "Scene Heading"
+        case .action: return "Action"
+        case .character: return "Character"
+        case .dialogue: return "Dialogue"
+        case .parenthetical: return "Parenthetical"
+        case .transition: return "Transition"
+        case .section: return "Section"
+        case .synopsis: return "Synopsis"
+        case .note: return "Note"
+        case .centered: return "Centered"
+        case .pageBreak: return "Page Break"
+        case .forceSceneHeading: return "Scene Heading"
+        case .forceAction: return "Action"
+        case .lyrics: return "Lyrics"
+        case .emphasis: return "Emphasis"
+        case .dualDialogue: return "Dual Dialogue"
+        case .boneyard: return "Boneyard"
+        case .unknown: return "Unknown"
+        }
+    }
 }
 
 // MARK: - Fountain Element
+/// Represents a single element in a Fountain screenplay
 struct FountainElement: Identifiable {
-    let id = UUID()
+    let id: UUID
     let type: FountainElementType
     let text: String
     let originalText: String
     let lineNumber: Int
     let emphasis: EmphasisType?
     let isDualDialogue: Bool
+    
+    /// The range of this element in the source text
+    /// Used by DocumentController for navigation and editing
+    var range: NSRange?
+    
+    /// Position in the document (start of range)
+    var position: Int {
+        return range?.location ?? 0
+    }
+    
+    /// Length of the element in characters
+    var length: Int {
+        return range?.length ?? text.count
+    }
+    
+    /// Text range as NSRange
+    var textRange: NSRange {
+        return range ?? NSRange(location: 0, length: text.count)
+    }
+    
+    /// Whether this element is empty
+    var isEmpty: Bool {
+        return text.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+    
+    /// Standard initializer
+    init(type: FountainElementType, text: String, originalText: String, lineNumber: Int, emphasis: EmphasisType?, isDualDialogue: Bool, range: NSRange? = nil) {
+        self.id = UUID()
+        self.type = type
+        self.text = text
+        self.originalText = originalText
+        self.lineNumber = lineNumber
+        self.emphasis = emphasis
+        self.isDualDialogue = isDualDialogue
+        self.range = range
+    }
 }
 
 // MARK: - Emphasis Types
@@ -68,13 +134,16 @@ class FountainParser: ObservableObject {
         var isInTitlePage = true
         var lineNumber = 0
         var previousCharacter: String? = nil
+        var currentPosition = 0  // Track position in the document
         
         for line in lines {
             lineNumber += 1
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            let lineLength = line.count + 1  // +1 for newline
             
-            // Skip empty lines
+            // Skip empty lines but track position
             if trimmedLine.isEmpty {
+                currentPosition += lineLength
                 continue
             }
             
@@ -82,17 +151,23 @@ class FountainParser: ObservableObject {
             if isInTitlePage {
                 if let titlePageElement = parseTitlePageLine(trimmedLine) {
                     newTitlePage[titlePageElement.key] = titlePageElement.value
+                    currentPosition += lineLength
                     continue
                 } else if trimmedLine.hasPrefix(":") {
                     isInTitlePage = false
+                    currentPosition += lineLength
                     continue
                 }
             }
             
-            // Parse screenplay elements
-            if let element = parseScreenplayLine(trimmedLine, lineNumber: lineNumber, previousCharacter: &previousCharacter) {
+            // Parse screenplay elements with range information
+            if var element = parseScreenplayLine(trimmedLine, lineNumber: lineNumber, previousCharacter: &previousCharacter) {
+                // Add range information
+                element.range = NSRange(location: currentPosition, length: line.count)
                 newElements.append(element)
             }
+            
+            currentPosition += lineLength
         }
         
         DispatchQueue.main.async {

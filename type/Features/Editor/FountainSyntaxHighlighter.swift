@@ -1,5 +1,8 @@
 import SwiftUI
+import AppKit
 
+// MARK: - Fountain Syntax Highlighter View
+/// SwiftUI view for displaying syntax-highlighted Fountain text
 struct FountainSyntaxHighlighter: View {
     let text: String
     let font: Font
@@ -210,6 +213,131 @@ struct FountainSyntaxHighlighter: View {
                     fontToApply = fontToApply.italic()
                 }
                 attributed[start..<end].font = fontToApply
+            }
+        }
+    }
+}
+
+// MARK: - NSAttributedString Highlighting
+/// Extension for highlighting NSMutableAttributedString
+/// Used by DocumentController for editor highlighting
+extension FountainSyntaxHighlighter {
+    
+    /// Highlight an NSMutableAttributedString with parsed Fountain elements
+    /// This method is used by DocumentController for real-time syntax highlighting
+    func highlight(_ attributedString: NSMutableAttributedString, elements: [FountainElement]) {
+        // Define colors for element types
+        let colors: [FountainElementType: NSColor] = [
+            .sceneHeading: NSColor.systemBlue,
+            .forceSceneHeading: NSColor.systemBlue,
+            .character: NSColor.systemPurple,
+            .dialogue: NSColor.labelColor,
+            .parenthetical: NSColor.systemOrange,
+            .transition: NSColor.systemRed,
+            .section: NSColor.systemGreen,
+            .synopsis: NSColor.systemGray,
+            .note: NSColor.systemGray,
+            .centered: NSColor.systemBlue,
+            .lyrics: NSColor.systemPink,
+            .action: NSColor.labelColor,
+            .titlePage: NSColor.systemBrown,
+            .boneyard: NSColor.systemGray,
+            .pageBreak: NSColor.systemGray
+        ]
+        
+        // Apply highlighting for each element
+        for element in elements {
+            guard let range = element.range,
+                  range.location + range.length <= attributedString.length else { continue }
+            
+            // Set foreground color
+            if let color = colors[element.type] {
+                attributedString.addAttribute(.foregroundColor, value: color, range: range)
+            }
+            
+            // Apply bold for scene headings and characters
+            if element.type == .sceneHeading || element.type == .forceSceneHeading || element.type == .character {
+                if let font = NSFont(name: "Courier Prime Bold", size: 12) ?? NSFont.boldSystemFont(ofSize: 12) as NSFont? {
+                    attributedString.addAttribute(.font, value: font, range: range)
+                }
+            }
+            
+            // Apply italic for lyrics and synopsis
+            if element.type == .lyrics || element.type == .synopsis {
+                if let font = NSFont(name: "Courier Prime Italic", size: 12) ?? NSFont.systemFont(ofSize: 12) as NSFont? {
+                    attributedString.addAttribute(.font, value: font, range: range)
+                }
+            }
+        }
+        
+        // Highlight inline emphasis markers
+        highlightInlineEmphasis(attributedString)
+    }
+    
+    /// Highlight inline emphasis (bold, italic, underline)
+    private func highlightInlineEmphasis(_ attributedString: NSMutableAttributedString) {
+        let text = attributedString.string
+        
+        // Bold italic: ***text*** or ___text___
+        highlightPattern(
+            in: attributedString,
+            text: text,
+            pattern: #"\*\*\*([^*]+)\*\*\*|___([^_]+)___"#,
+            traits: [.bold, .italic]
+        )
+        
+        // Bold: **text**
+        highlightPattern(
+            in: attributedString,
+            text: text,
+            pattern: #"\*\*([^*]+)\*\*"#,
+            traits: [.bold]
+        )
+        
+        // Italic: *text*
+        highlightPattern(
+            in: attributedString,
+            text: text,
+            pattern: #"\*([^*]+)\*"#,
+            traits: [.italic]
+        )
+        
+        // Underline: _text_
+        highlightPattern(
+            in: attributedString,
+            text: text,
+            pattern: #"_([^_]+)_"#,
+            underline: true
+        )
+    }
+    
+    private func highlightPattern(
+        in attributedString: NSMutableAttributedString,
+        text: String,
+        pattern: String,
+        traits: NSFontDescriptor.SymbolicTraits = [],
+        underline: Bool = false
+    ) {
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
+        let nsString = text as NSString
+        let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length))
+        
+        for match in matches {
+            let fullRange = match.range
+            
+            // Apply font traits
+            if !traits.isEmpty {
+                if let existingFont = attributedString.attribute(.font, at: fullRange.location, effectiveRange: nil) as? NSFont {
+                    let descriptor = existingFont.fontDescriptor.withSymbolicTraits(traits)
+                    if let newFont = NSFont(descriptor: descriptor, size: existingFont.pointSize) {
+                        attributedString.addAttribute(.font, value: newFont, range: fullRange)
+                    }
+                }
+            }
+            
+            // Apply underline
+            if underline {
+                attributedString.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: fullRange)
             }
         }
     }
