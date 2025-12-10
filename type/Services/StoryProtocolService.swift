@@ -333,6 +333,15 @@ class StoryProtocolService: ObservableObject {
     private func generateMockTxHash() -> String {
         return "0x" + (0..<64).map { _ in String(format: "%x", Int.random(in: 0...15)) }.joined()
     }
+    
+    // MARK: - Cleanup
+    
+    /// Cleanup method for proper resource release
+    func cleanup() {
+        Logger.app.debug("StoryProtocolService cleanup")
+        cancellables.removeAll()
+        disconnect()
+    }
 }
 
 // MARK: - Story Protocol Error

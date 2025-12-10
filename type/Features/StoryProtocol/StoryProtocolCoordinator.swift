@@ -120,5 +120,13 @@ class StoryProtocolCoordinator: ObservableObject {
         let hash = content.data(using: .utf8)?.base64EncodedString() ?? ""
         return "0x" + String(hash.prefix(64).map { String(format: "%02x", $0.asciiValue ?? 0) }.joined())
     }
+    
+    // MARK: - Cleanup
+    
+    /// Cleanup method for proper resource release
+    func cleanup() {
+        Logger.app.debug("StoryProtocolCoordinator cleanup")
+        cancellables.removeAll()
+    }
 }
 

@@ -53,6 +53,19 @@ class StatisticsService: ObservableObject {
     }
 }
 
+// MARK: - Cleanup Extension
+extension StatisticsService {
+    /// Cleanup method for proper resource release
+    func cleanup() {
+        Logger.app.debug("StatisticsService cleanup")
+        // Reset statistics
+        wordCount = 0
+        pageCount = 0
+        characterCount = 0
+        currentDailyWords = 0
+    }
+}
+
 // MARK: - Writing Goal Status
 enum WritingGoalStatus {
     case behind

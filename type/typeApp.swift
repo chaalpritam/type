@@ -12,7 +12,9 @@ import AppKit
 @main
 struct typeApp: App {
     @AppStorage("isDarkMode") private var isDarkMode = false
-    @StateObject private var windowManager = WindowManager.shared
+    
+    // App delegate for handling app-level events
+    @NSApplicationDelegateAdaptor(TypeAppDelegate.self) var appDelegate
     
     var body: some SwiftUI.Scene {
         // Main document window group - supports multiple windows and tabs
@@ -116,8 +118,8 @@ struct typeApp: App {
                 Divider()
                 
                 // Show list of open windows
-                if !windowManager.openWindows.isEmpty {
-                    ForEach(windowManager.openWindows) { windowInfo in
+                if !WindowManager.shared.openWindows.isEmpty {
+                    ForEach(WindowManager.shared.openWindows) { windowInfo in
                         Button(windowInfo.title) {
                             focusWindow(windowInfo.id)
                         }
@@ -347,4 +349,173 @@ extension Notification.Name {
     static let showTemplates = Notification.Name("showTemplates")
     static let showTutorials = Notification.Name("showTutorials")
     static let loadDocumentInActiveWindow = Notification.Name("loadDocumentInActiveWindow")
+}
+
+// MARK: - App Delegate
+/// App delegate for handling application-level lifecycle events
+/// Inspired by Beat's BeatAppDelegate approach
+class TypeAppDelegate: NSObject, NSApplicationDelegate {
+    
+    // MARK: - Application Lifecycle
+    
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        Logger.app.info("Application did finish launching")
+        
+        // Setup document open/close listeners (like Beat)
+        setupDocumentListeners()
+        
+        // Enable automatic window tabbing
+        NSWindow.allowsAutomaticWindowTabbing = true
+    }
+    
+    func applicationWillTerminate(_ notification: Notification) {
+        Logger.app.info("Application will terminate")
+        
+        // Cleanup is handled by individual windows/coordinators
+    }
+    
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // Don't terminate - show welcome screen instead (like Beat)
+        Logger.app.info("Last window closed, but keeping app running")
+        
+        // Show welcome screen when all windows are closed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if WindowManager.shared.windowCount == 0 {
+                NotificationCenter.default.post(name: .showWelcome, object: nil)
+            }
+        }
+        
+        return false
+    }
+    
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            // No visible windows - show welcome or create new document
+            Logger.app.info("App reopened with no visible windows")
+            NotificationCenter.default.post(name: .showWelcome, object: nil)
+        }
+        return true
+    }
+    
+    // MARK: - Document Handling
+    
+    func application(_ sender: NSApplication, openFile filename: String) -> Bool {
+        Logger.app.info("Open file requested: \(filename)")
+        
+        let url = URL(fileURLWithPath: filename)
+        openDocumentFile(url: url)
+        return true
+    }
+    
+    func application(_ sender: NSApplication, openFiles filenames: [String]) {
+        Logger.app.info("Open files requested: \(filenames.count) files")
+        
+        for filename in filenames {
+            let url = URL(fileURLWithPath: filename)
+            openDocumentFile(url: url)
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupDocumentListeners() {
+        // Listen for document open events - hide welcome
+        NotificationCenter.default.addObserver(
+            forName: .documentDidOpen,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleDocumentOpened()
+        }
+        
+        // Listen for all documents closed - show welcome
+        NotificationCenter.default.addObserver(
+            forName: .allDocumentsClosed,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handleAllDocumentsClosed()
+        }
+    }
+    
+    private func handleDocumentOpened() {
+        Logger.app.info("Document opened - hiding welcome screen")
+        // Welcome screen will be hidden by WindowManager
+    }
+    
+    private func handleAllDocumentsClosed() {
+        Logger.app.info("All documents closed - showing welcome screen")
+        
+        // Create a new window with welcome screen if needed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            if NSApp.windows.filter({ $0.isVisible }).isEmpty {
+                self.createWelcomeWindow()
+            }
+        }
+    }
+    
+    private func openDocumentFile(url: URL) {
+        // Check if there's a current window to use as tab
+        if let currentWindow = NSApp.keyWindow {
+            // Open as new tab
+            let newWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            
+            let windowId = UUID()
+            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+            newWindow.contentView = NSHostingView(
+                rootView: DocumentWindowView(windowId: windowId, documentURL: url)
+                    .frame(minWidth: 1000, minHeight: 700)
+            )
+            newWindow.title = url.lastPathComponent
+            
+            currentWindow.addTabbedWindow(newWindow, ordered: .above)
+            newWindow.makeKeyAndOrderFront(nil)
+        } else {
+            // Open as new window
+            createDocumentWindow(url: url)
+        }
+    }
+    
+    private func createDocumentWindow(url: URL? = nil) {
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        let windowId = UUID()
+        newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+        newWindow.contentView = NSHostingView(
+            rootView: DocumentWindowView(windowId: windowId, documentURL: url)
+                .frame(minWidth: 1000, minHeight: 700)
+        )
+        newWindow.title = url?.lastPathComponent ?? "Untitled"
+        newWindow.center()
+        newWindow.makeKeyAndOrderFront(nil)
+    }
+    
+    private func createWelcomeWindow() {
+        let windowId = UUID()
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        
+        newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+        newWindow.contentView = NSHostingView(
+            rootView: DocumentWindowView(windowId: windowId, showWelcome: true)
+                .frame(minWidth: 1000, minHeight: 700)
+        )
+        newWindow.title = "Type"
+        newWindow.center()
+        newWindow.makeKeyAndOrderFront(nil)
+    }
 }

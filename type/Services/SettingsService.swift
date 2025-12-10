@@ -94,6 +94,14 @@ class SettingsService: ObservableObject {
         }
         return settings
     }
+    
+    // MARK: - Cleanup
+    
+    /// Cleanup method for proper resource release
+    func cleanup() {
+        Logger.app.debug("SettingsService cleanup")
+        cancellables.removeAll()
+    }
 }
 
 // MARK: - Editor Settings

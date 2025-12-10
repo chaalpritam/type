@@ -3,12 +3,14 @@ import Combine
 
 // MARK: - App Coordinator
 /// Central coordinator that manages app state and coordinates between modules
+/// Implements comprehensive cleanup inspired by Beat's Document.m close method
 @MainActor
 class AppCoordinator: ObservableObject {
     // MARK: - Published Properties
     @Published var currentView: AppView = .editor
     @Published var isFullScreen: Bool = false
     @Published var showSettings: Bool = false
+    @Published private(set) var isCleaningUp: Bool = false
     
     // MARK: - Module Coordinators
     let editorCoordinator: EditorCoordinator
@@ -27,6 +29,8 @@ class AppCoordinator: ObservableObject {
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
+    private var hasBeenCleanedUp = false
+    private let cleanupLock = NSLock()
     
     // MARK: - Initialization
     init() {
@@ -49,6 +53,10 @@ class AppCoordinator: ObservableObject {
         setupBindings()
     }
     
+    deinit {
+        Logger.app.info("AppCoordinator deinit")
+    }
+    
     // MARK: - Private Methods
     private func setupBindings() {
         // Listen for document changes and update all coordinators
@@ -60,21 +68,64 @@ class AppCoordinator: ObservableObject {
     }
     
     private func handleDocumentChange(_ document: ScreenplayDocument?) {
+        // Don't process during cleanup
+        guard !isCleaningUp else { return }
+        
         // Update all coordinators when document changes
         editorCoordinator.updateDocument(document)
         characterCoordinator.updateDocument(document)
         outlineCoordinator.updateDocument(document)
         collaborationCoordinator.updateDocument(document)
     }
+    
+    /// Comprehensive cleanup method inspired by Beat's Document.m close method
+    /// This method ensures all resources are properly released to prevent crashes
     func cleanup() {
+        // Thread-safe check to prevent double cleanup
+        cleanupLock.lock()
+        if hasBeenCleanedUp {
+            cleanupLock.unlock()
+            Logger.app.info("AppCoordinator cleanup already performed, skipping")
+            return
+        }
+        hasBeenCleanedUp = true
+        isCleaningUp = true
+        cleanupLock.unlock()
+        
         Logger.app.info("AppCoordinator cleanup started")
         
-        // Cancel all subscriptions first
+        // 1. Cancel all Combine subscriptions FIRST (like Beat's observer removal)
         cancellables.removeAll()
+        Logger.app.debug("Cancelled all subscriptions")
         
-        // Then cleanup services
+        // 2. Cleanup file management service (invalidates timers)
         fileManagementService.cleanup()
+        Logger.app.debug("FileManagementService cleaned up")
         
+        // 3. Cleanup document service (invalidates auto-save timer)
+        documentService.cleanup()
+        Logger.app.debug("DocumentService cleaned up")
+        
+        // 4. Cleanup all module coordinators
+        editorCoordinator.cleanup()
+        characterCoordinator.cleanup()
+        outlineCoordinator.cleanup()
+        collaborationCoordinator.cleanup()
+        fileCoordinator.cleanup()
+        storyProtocolCoordinator.cleanup()
+        Logger.app.debug("All coordinators cleaned up")
+        
+        // 5. Cleanup settings and statistics services
+        settingsService.cleanup()
+        statisticsService.cleanup()
+        storyProtocolService.cleanup()
+        Logger.app.debug("All services cleaned up")
+        
+        // 6. Remove any remaining notification observers
+        NotificationCenter.default.removeObserver(self)
+        Logger.app.debug("Removed notification observers")
+        
+        isCleaningUp = false
         Logger.app.info("AppCoordinator cleanup completed")
     }
 }
