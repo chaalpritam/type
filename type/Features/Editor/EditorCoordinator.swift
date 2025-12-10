@@ -285,7 +285,14 @@ struct EditorMainView: View {
                     // Main editor
                     VStack(spacing: 0) {
                         // Editor content
-                        HStack(spacing: 0) {
+                        if coordinator.showPreview {
+                            ScreenplayPreview(
+                                elements: coordinator.fountainParser.elements,
+                                titlePage: coordinator.fountainParser.titlePage
+                            )
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .transition(.move(edge: .trailing))
+                        } else {
                             // Text editor
                             if !coordinator.multipleCursorsManager.cursors.isEmpty {
                                 MultipleCursorsTextEditor(
@@ -304,16 +311,6 @@ struct EditorMainView: View {
                                     }
                                 )
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            }
-                            
-                            // Preview panel
-                            if coordinator.showPreview {
-                                ScreenplayPreview(
-                                    elements: coordinator.fountainParser.elements,
-                                    titlePage: coordinator.fountainParser.titlePage
-                                )
-                                .frame(width: 300)
-                                .transition(.move(edge: .trailing))
                             }
                         }
                     }

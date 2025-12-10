@@ -95,11 +95,20 @@ struct TypeStyleAppView: View {
                         
                         // Main editor area
                         ZStack {
-                            // Editor content
-                            TypeContentView(
-                                appCoordinator: appCoordinator,
-                                isFocusMode: isFocusMode
-                            )
+                            if showPreviewPanel {
+                                TypePreviewPanel(
+                                    elements: appCoordinator.editorCoordinator.fountainParser.elements,
+                                    titlePage: appCoordinator.editorCoordinator.fountainParser.titlePage
+                                )
+                                .transition(.opacity)
+                                .zIndex(1)
+                            } else {
+                                // Editor content
+                                TypeContentView(
+                                    appCoordinator: appCoordinator,
+                                    isFocusMode: isFocusMode
+                                )
+                            }
                             
                             // Focus mode exit hint
                             if isFocusMode {
@@ -139,15 +148,9 @@ struct TypeStyleAppView: View {
                         
                         // Side panels
                         if !isFocusMode {
-                            // Preview panel
-                            if showPreviewPanel {
-                                TypePreviewPanel(
-                                    elements: appCoordinator.editorCoordinator.fountainParser.elements,
-                                    titlePage: appCoordinator.editorCoordinator.fountainParser.titlePage
-                                )
-                                .frame(width: 320)
-                                .transition(.move(edge: .trailing))
-                            }
+                            // Preview panel removed from here to main area
+                            
+                            // Outline panel
                             
                             // Outline panel
                             if showOutlinePanel {
