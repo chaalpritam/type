@@ -14,9 +14,12 @@ struct TypeStyleAppView: View {
     @ObservedObject var appCoordinator: AppCoordinator
     @StateObject private var themeManager = ThemeManager.shared
     
+    private let shouldShowWelcomeOnLoad: Bool
+    
     // MARK: - Initialization
-    init(appCoordinator: AppCoordinator? = nil) {
+    init(appCoordinator: AppCoordinator? = nil, shouldShowWelcome: Bool = true) {
         self.appCoordinator = appCoordinator ?? AppCoordinator()
+        self.shouldShowWelcomeOnLoad = shouldShowWelcome
     }
     
     @State private var isSidebarCollapsed = false
@@ -256,7 +259,7 @@ struct TypeStyleAppView: View {
                 appCoordinator.documentService.newDocument()
             }
             // Show welcome screen on first launch
-            if showWelcomeOnLaunch {
+            if showWelcomeOnLaunch && shouldShowWelcomeOnLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation(TypeAnimation.standard) {
                         showWelcomeScreen = true

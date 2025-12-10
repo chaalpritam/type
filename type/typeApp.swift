@@ -17,7 +17,7 @@ struct typeApp: App {
     var body: some SwiftUI.Scene {
         // Main document window group - supports multiple windows and tabs
         WindowGroup(id: "document") {
-            DocumentWindowView(windowId: UUID())
+            DocumentWindowView(windowId: UUID(), showWelcome: true)
                 .frame(minWidth: 1000, minHeight: 700)
                 .handlesExternalEvents(preferring: Set(arrayLiteral: "document"), allowing: Set(arrayLiteral: "*"))
                 .onAppear {

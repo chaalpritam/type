@@ -6,15 +6,17 @@ struct DocumentWindowView: View {
     // MARK: - Properties
     let windowId: UUID
     let documentURL: URL?
+    let showWelcome: Bool
     
     @StateObject private var appCoordinator: AppCoordinator
     @StateObject private var windowManager = WindowManager.shared
     @AppStorage("isDarkMode") private var isDarkMode = false
     
     // MARK: - Initialization
-    init(windowId: UUID, documentURL: URL? = nil) {
+    init(windowId: UUID, documentURL: URL? = nil, showWelcome: Bool = false) {
         self.windowId = windowId
         self.documentURL = documentURL
+        self.showWelcome = showWelcome
         
         // Create a new coordinator for this window
         let coordinator = AppCoordinator()
@@ -23,7 +25,7 @@ struct DocumentWindowView: View {
     
     // MARK: - Body
     var body: some View {
-        TypeStyleAppView(appCoordinator: appCoordinator)
+        TypeStyleAppView(appCoordinator: appCoordinator, shouldShowWelcome: showWelcome)
             .preferredColorScheme(isDarkMode ? .dark : .light)
             .onAppear {
                 setupWindow()

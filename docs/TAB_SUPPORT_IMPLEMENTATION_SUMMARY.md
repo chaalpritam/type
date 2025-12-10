@@ -1,49 +1,56 @@
-# Multi-Window & Tab Support Update
+# Multi-Window & Tab Support Implementation
 
-## 🎉 Tabbed Interface Implemented
+## 🎉 Tabbed Interface Complete
 
-Type now supports native macOS tabs, allowing for a cleaner and more efficient workflow when managing multiple documents.
+Type now supports native macOS tabs with improved welcome screen behavior.
 
-## ✨ What's New
+## ✨ Latest Updates
 
-### 1. **Native Tab Support**
-- **Existing Windows**: When a window is already open, new documents (⌘N) now open as **tabs** within that window by default.
-- **New Feature**: Added a "New Tab" command (⌘T) specifically for this purpose.
-- **Separate Windows**: User can still choose to open a completely separate window using "New Window" (⌘⇧N).
+### 1. **Smart Welcome Screen** (Fixed!)
+- **Issue**: Previously, the "Welcome to Type" screen would appear every time a new tab or window was opened.
+- **Fix**: The welcome screen now **only appears on initial app launch** (first window).
+- **New Behavior**:
+  - **Launch App**: Shows Welcome Screen (if enabled).
+  - **⌘N / ⌘T (New Tab)**: Opens directly to a blank document. NO welcome screen.
+  - **⌘⇧N (New Window)**: Opens directly to a blank document. NO welcome screen.
 
-### 2. **Enhanced Document Opening**
-- **Open Document (⌘O)**: Improvements to `openDocument`. If a window is currently active, opening a file will now add it as a new **tab** to that window. If no window is open, it creates a new window.
+### 2. **Native Tab Support**
+- **Existing Windows**: When a window is already open, new documents (⌘N) open as **tabs** within that window.
+- **New Tab (⌘T)**: Distinct command for creating tabs.
+- **New Window (⌘⇧N)**: Explicit command for separate windows.
 
-### 3. **Menu Updates**
-- **File Menu**: Reorganized to support the new workflow.
-  - **New Tab (⌘T)**: Distinct action to add a tab.
-  - **New Document (⌘N)**: Defaults to New Tab behavior for better UX.
-  - **New Window (⌘⇧N)**: Explicit action for a separate window.
+### 3. **Enhanced Document Opening**
+- **Open Document (⌘O)**: Existing files open as tabs in the current window if one exists.
 
 ## 🛠️ Technical Details
 
+### Welcome Screen Logic
+- **`TypeStyleAppView`**: Added `shouldShowWelcomeOnLoad` property.
+  - Controls whether the welcome screen shows on creation.
+  - Initializer accepts `shouldShowWelcome` boolean.
+- **`DocumentWindowView`**: Accepts `showWelcome` parameter in init.
+  - Defaults to `false` for programmatic creation (tabs/windows).
 - **`typeApp.swift`**:
-  - Enabled `NSWindow.allowsAutomaticWindowTabbing = true` in `WindowGroup.onAppear`.
-  - Updated `openNewWindow` to `openNewTab` logic which checks for `NSApp.keyWindow`.
-  - Implemented `openNewWindowSeparate` for forcing a new window instance.
-  - Uses `currentWindow.addTabbedWindow(newWindow, ordered: .above)` to attach new document windows as tabs.
+  - `WindowGroup` initializes with `showWelcome: true` (First launch only).
+  - `openNewTab` / `openNewWindowSeparate` initialize with default `false`.
 
-- **`DocumentWindowView`**:
-  - Continues to serve as the root view for each tab/window, maintaining isolated state (Coordinators, Services) per tab.
+### Tab Implementation
+- Enabled `NSWindow.allowsAutomaticWindowTabbing`.
+- Uses `NSApp.keyWindow?.addTabbedWindow` to attach new windows as tabs.
 
 ## 🚀 Usage Guide
 
-- **⌘N / ⌘T**: Open a new document in a tab.
-- **⌘⇧N**: Open a new document in a separate window.
-- **⌘O**: Open a file (opens in a tab if a window exists).
-- **Drag & Drop**: You can drag tabs out of a window to create a new window, or drag a window into another's tab bar to merge them.
+- **⌘N / ⌘T**: New blank document tab (Instant editing, no welcome screen).
+- **⌘⇧N**: New separate document window.
+- **⌘O**: Open file in new tab.
 
 ## ✅ Implementation Status
 
 - [x] Enable automatic window tabbing
+- [x] Fix Welcome Screen appearing on every tab
 - [x] Update File Menu commands
 - [x] Implement logic to attach new windows as tabs
 - [x] Update documentation
 - [x] Build and Validate
 
-**Status: COMPLETE**
+**Status: COMPLETE & POLISHED**
