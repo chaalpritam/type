@@ -21,7 +21,11 @@ struct TypeStyleAppView: View {
     @State private var isFocusMode = false
     @State private var showOutlinePanel = false
     @State private var showCharactersPanel = false
+    @State private var showWelcomeScreen = false
+    @State private var showTemplateSelector = false
+    @State private var selectedTemplate: TemplateType = .default
     @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("showWelcomeOnLaunch") private var showWelcomeOnLaunch = true
     
     var body: some View {
         GeometryReader { geometry in
@@ -182,21 +186,91 @@ struct TypeStyleAppView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
+                
+                // Welcome screen overlay
+                if showWelcomeScreen {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(TypeAnimation.standard) {
+                                showWelcomeScreen = false
+                            }
+                        }
+                    
+                    WelcomeView(
+                        isVisible: $showWelcomeScreen,
+                        onNewDocument: {
+                            showWelcomeScreen = false
+                            appCoordinator.fileManagementService.newDocument()
+                        },
+                        onOpenDocument: {
+                            showWelcomeScreen = false
+                            appCoordinator.fileManagementService.openDocumentSync()
+                        },
+                        onSelectTemplate: { template in
+                            showWelcomeScreen = false
+                            applyTemplate(template)
+                        }
+                    )
+                    .transition(.scale(scale: 0.95).combined(with: .opacity))
+                }
+                
+                // Template selector overlay
+                if showTemplateSelector {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation(TypeAnimation.standard) {
+                                showTemplateSelector = false
+                            }
+                        }
+                    
+                    TemplateSelectorView(
+                        selectedTemplate: $selectedTemplate,
+                        isVisible: $showTemplateSelector,
+                        onTemplateSelected: { template in
+                            applyTemplate(template)
+                            showTemplateSelector = false
+                        }
+                    )
+                    .transition(.scale(scale: 0.95).combined(with: .opacity))
+                }
             }
             .animation(TypeAnimation.standard, value: isFocusMode)
             .animation(TypeAnimation.standard, value: showFindReplace)
             .animation(TypeAnimation.standard, value: showOutlinePanel)
             .animation(TypeAnimation.standard, value: showCharactersPanel)
+            .animation(TypeAnimation.standard, value: showWelcomeScreen)
+            .animation(TypeAnimation.standard, value: showTemplateSelector)
         }
         .preferredColorScheme(isDarkMode ? .dark : .light)
         .onAppear {
             if appCoordinator.documentService.currentDocument == nil {
                 appCoordinator.documentService.newDocument()
             }
+            // Show welcome screen on first launch
+            if showWelcomeOnLaunch {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(TypeAnimation.standard) {
+                        showWelcomeScreen = true
+                    }
+                }
+            }
         }
         // Keyboard shortcuts
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             setupKeyboardShortcuts()
+        }
+        // Handle notification center messages
+        .onReceive(NotificationCenter.default.publisher(for: .showWelcome)) { _ in
+            withAnimation(TypeAnimation.standard) {
+                showWelcomeScreen = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .showTemplates)) { _ in
+            withAnimation(TypeAnimation.standard) {
+                showTemplateSelector = true
+            }
         }
     }
     
@@ -205,16 +279,36 @@ struct TypeStyleAppView: View {
     }
     
     private func setupKeyboardShortcuts() {
-        // Escape to exit focus mode
+        // Escape to exit focus mode or close modals
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if event.keyCode == 53 && isFocusMode { // Escape key
-                withAnimation(TypeAnimation.smooth) {
-                    isFocusMode = false
+            if event.keyCode == 53 { // Escape key
+                if showWelcomeScreen {
+                    withAnimation(TypeAnimation.smooth) {
+                        showWelcomeScreen = false
+                    }
+                    return nil
                 }
-                return nil
+                if showTemplateSelector {
+                    withAnimation(TypeAnimation.smooth) {
+                        showTemplateSelector = false
+                    }
+                    return nil
+                }
+                if isFocusMode {
+                    withAnimation(TypeAnimation.smooth) {
+                        isFocusMode = false
+                    }
+                    return nil
+                }
             }
             return event
         }
+    }
+    
+    private func applyTemplate(_ template: TemplateType) {
+        let content = FountainTemplate.getTemplate(for: template)
+        appCoordinator.editorCoordinator.text = content
+        appCoordinator.editorCoordinator.updateText(content)
     }
 }
 

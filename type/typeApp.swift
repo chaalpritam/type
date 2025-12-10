@@ -49,6 +49,13 @@ struct typeApp: App {
                 }
                 .keyboardShortcut("n", modifiers: .command)
                 
+                Button("New from Template...") {
+                    NotificationCenter.default.post(name: .showTemplates, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                
+                Divider()
+                
                 Button("Open Document...") {
                     NotificationCenter.default.post(name: .openDocument, object: nil)
                 }
@@ -97,6 +104,55 @@ struct typeApp: App {
                 }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
             }
+            
+            CommandGroup(replacing: .help) {
+                Button("Welcome to Type") {
+                    NotificationCenter.default.post(name: .showWelcome, object: nil)
+                }
+                
+                Divider()
+                
+                Button("Templates...") {
+                    NotificationCenter.default.post(name: .showTemplates, object: nil)
+                }
+                .keyboardShortcut("t", modifiers: [.command, .shift])
+                
+                Divider()
+                
+                Menu("Tutorials") {
+                    Button("Getting Started") {
+                        NotificationCenter.default.post(name: .showWelcome, object: nil)
+                    }
+                    
+                    Divider()
+                    
+                    Menu("Fountain Syntax") {
+                        Button("Scene Headings") {}
+                        Button("Characters & Dialogue") {}
+                        Button("Action Lines") {}
+                        Button("Transitions") {}
+                    }
+                    
+                    Menu("Advanced Features") {
+                        Button("Character Database") {}
+                        Button("Outline Mode") {}
+                        Button("Live Preview") {}
+                        Button("Keyboard Shortcuts") {}
+                    }
+                }
+                
+                Divider()
+                
+                Button("Fountain Syntax Reference") {
+                    if let url = URL(string: "https://fountain.io/syntax") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                
+                Button("Type Documentation") {
+                    // Open local documentation or online docs
+                }
+            }
         }
     }
 }
@@ -112,4 +168,7 @@ extension Notification.Name {
     static let toggleSidebar = Notification.Name("toggleSidebar")
     static let togglePreview = Notification.Name("togglePreview")
     static let toggleOutline = Notification.Name("toggleOutline")
+    static let showWelcome = Notification.Name("showWelcome")
+    static let showTemplates = Notification.Name("showTemplates")
+    static let showTutorials = Notification.Name("showTutorials")
 }
