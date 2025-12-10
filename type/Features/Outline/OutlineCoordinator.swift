@@ -159,7 +159,13 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         panel.title = "Export Outline"
         panel.message = "Choose a location to save the outline data"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             let data = try JSONEncoder().encode(outline)
@@ -177,7 +183,13 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         panel.title = "Import Outline"
         panel.message = "Choose an outline data file to import"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             let data = try Data(contentsOf: url)

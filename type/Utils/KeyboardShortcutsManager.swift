@@ -8,16 +8,23 @@ class KeyboardShortcutsManager: ObservableObject {
     private var textEditor: FountainTextEditor?
     
     private var startMonitor: Any?
+    private var isCleanedUp = false
     
     init(fileManager: FileManager) {
         self.fileManager = fileManager
-        setupKeyboardShortcuts()
+        // Don't set up global keyboard shortcuts per-window anymore
+        // These should be handled by the menu commands in typeApp.swift
     }
     
-    deinit {
+    func cleanup() {
+        guard !isCleanedUp else { return }
+        isCleanedUp = true
+        
         if let monitor = startMonitor {
             NSEvent.removeMonitor(monitor)
+            startMonitor = nil
         }
+        Logger.general.info("KeyboardShortcutsManager cleaned up")
     }
     
     func setTextEditor(_ editor: FountainTextEditor) {
@@ -70,11 +77,9 @@ class KeyboardShortcutsManager: ObservableObject {
             return nil
             
         case "w":
-            // Cmd+W: Close Document (or window)
-            Task {
-                await self.closeDocument()
-            }
-            return nil
+            // Cmd+W: Close Document - handled by menu command in typeApp.swift
+            // Return the event so the system handles it
+            return event
             
         case "f":
             // Cmd+F: Find
@@ -302,7 +307,13 @@ class KeyboardShortcutsManager: ObservableObject {
             alert.addButton(withTitle: "Cancel")
             alert.alertStyle = .warning
             
-            let response = await alert.beginSheetModal(for: NSApp.keyWindow!)
+            let response: NSApplication.ModalResponse
+            if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+                response = await alert.beginSheetModal(for: window)
+            } else {
+                // Fallback when there is no active window (e.g. during app shutdown)
+                response = alert.runModal()
+            }
             
             switch response {
             case .alertFirstButtonReturn: // Save
@@ -436,7 +447,13 @@ class KeyboardShortcutsManager: ObservableObject {
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .informational
         
-        let response = await alert.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await alert.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = alert.runModal()
+        }
         
         switch response {
         case .alertFirstButtonReturn: // PDF
@@ -474,7 +491,12 @@ class KeyboardShortcutsManager: ObservableObject {
         alert.alertStyle = .critical
         alert.addButton(withTitle: "OK")
         
-        await alert.beginSheetModal(for: NSApp.keyWindow!)
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            _ = await alert.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            _ = alert.runModal()
+        }
     }
 }
 

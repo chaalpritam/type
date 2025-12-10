@@ -64,7 +64,13 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
             panel.title = "Open Screenplay"
             panel.message = "Choose a screenplay file to open"
             
-            let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+            let response: NSApplication.ModalResponse
+            if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+                response = await panel.beginSheetModal(for: window)
+            } else {
+                // Fallback when there is no active window (e.g. during app shutdown)
+                response = panel.runModal()
+            }
             
             if response == .OK, let url = panel.url {
                 try await documentService.loadDocument(from: url)
@@ -150,7 +156,13 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         panel.title = "Export to \(exportFormat.displayName)"
         panel.message = "Choose a location to save the exported file"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             switch exportFormat {

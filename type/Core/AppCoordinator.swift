@@ -30,6 +30,7 @@ class AppCoordinator: ObservableObject {
     
     // MARK: - Initialization
     init() {
+        Logger.app.info("AppCoordinator init")
         // Initialize shared services
         self.documentService = DocumentService()
         self.settingsService = SettingsService()
@@ -66,8 +67,15 @@ class AppCoordinator: ObservableObject {
         collaborationCoordinator.updateDocument(document)
     }
     func cleanup() {
-        fileManagementService.cleanup()
+        Logger.app.info("AppCoordinator cleanup started")
+        
+        // Cancel all subscriptions first
         cancellables.removeAll()
+        
+        // Then cleanup services
+        fileManagementService.cleanup()
+        
+        Logger.app.info("AppCoordinator cleanup completed")
     }
 }
 

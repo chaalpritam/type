@@ -34,12 +34,14 @@ class DocumentService: ObservableObject {
     
     /// Create a new document
     func newDocument() {
+        Logger.document.info("Creating new document")
         currentDocument = ScreenplayDocument(content: "")
         isDocumentModified = false
     }
     
     /// Load document from URL
     func loadDocument(from url: URL) async throws {
+        Logger.document.info("Loading document from URL: \(url.path)")
         let content = try String(contentsOf: url, encoding: .utf8)
         currentDocument = ScreenplayDocument(content: content, url: url)
         isDocumentModified = false
@@ -49,12 +51,14 @@ class DocumentService: ObservableObject {
     /// Save current document
     func saveDocument() async throws {
         guard let document = currentDocument else {
+            Logger.document.logError("Attempted to save with no current document", error: DocumentError.noDocument)
             throw DocumentError.noDocument
         }
         
         if let url = document.url {
             try await saveDocument(to: url)
         } else {
+            Logger.document.logError("Attempted to save without a URL", error: DocumentError.noSaveLocation)
             throw DocumentError.noSaveLocation
         }
     }
@@ -71,7 +75,13 @@ class DocumentService: ObservableObject {
         panel.title = "Save Screenplay"
         panel.message = "Choose a location to save your screenplay"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             try await saveDocument(to: url)
@@ -167,6 +177,7 @@ class DocumentService: ObservableObject {
     
     private func saveDocument(to url: URL) async throws {
         guard let document = currentDocument else {
+            Logger.document.logError("Attempted to save to URL with no current document", error: DocumentError.noDocument)
             throw DocumentError.noDocument
         }
         

@@ -71,6 +71,13 @@ struct typeApp: App {
                     NotificationCenter.default.post(name: .saveDocumentAs, object: nil)
                 }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
+                
+                Divider()
+                
+                Button("Close Tab") {
+                    closeCurrentTab()
+                }
+                .keyboardShortcut("w", modifiers: .command)
             }
             
             CommandGroup(after: .textEditing) {
@@ -314,6 +321,14 @@ struct typeApp: App {
             window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
         }
+    }
+    
+    /// Close the current tab/window
+    private func closeCurrentTab() {
+        guard let keyWindow = NSApp.keyWindow else { return }
+        
+        // Simply use performClose which handles tab switching automatically
+        keyWindow.performClose(nil)
     }
 }
 

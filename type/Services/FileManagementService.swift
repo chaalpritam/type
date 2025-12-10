@@ -21,7 +21,10 @@ class FileManagementService: ObservableObject {
     }
     
     func cleanup() {
+        Logger.file.info("FileManagementService cleanup started")
+        keyboardShortcutsManager.cleanup()
         fileManager.stopAutoSaveTimer()
+        Logger.file.info("FileManagementService cleanup completed")
     }
     
     // MARK: - File Management Functions
@@ -71,7 +74,13 @@ class FileManagementService: ObservableObject {
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .informational
         
-        let response = await alert.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await alert.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = alert.runModal()
+        }
         
         switch response {
         case .alertFirstButtonReturn: // PDF
@@ -98,7 +107,12 @@ class FileManagementService: ObservableObject {
         alert.alertStyle = .critical
         alert.addButton(withTitle: "OK")
         
-        await alert.beginSheetModal(for: NSApp.keyWindow!)
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            _ = await alert.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            _ = alert.runModal()
+        }
     }
     
     // MARK: - Synchronous Wrappers for Async File Actions

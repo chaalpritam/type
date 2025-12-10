@@ -1,5 +1,9 @@
 import SwiftUI
 
+// Track which windows have been cleaned up (outside of SwiftUI state)
+private var cleanedUpWindows = Set<UUID>()
+private let cleanupLock = NSLock()
+
 // MARK: - Document Window View
 /// Wrapper view for each document window with its own coordinator
 struct DocumentWindowView: View {
@@ -28,10 +32,20 @@ struct DocumentWindowView: View {
         TypeStyleAppView(appCoordinator: appCoordinator, shouldShowWelcome: showWelcome)
             .preferredColorScheme(isDarkMode ? .dark : .light)
             .onAppear {
+                Logger.window.info("Window appeared: \(windowId.uuidString)")
                 setupWindow()
             }
             .onDisappear {
-                cleanupWindow()
+                Logger.window.info("Window disappeared: \(windowId.uuidString)")
+                // Capture references before view is torn down
+                let coordinator = appCoordinator
+                let winManager = windowManager
+                let winId = windowId
+                
+                // Defer cleanup to next run loop to avoid threading issues during teardown
+                DispatchQueue.main.async {
+                    Self.performCleanup(windowId: winId, coordinator: coordinator, windowManager: winManager)
+                }
             }
             .onChange(of: appCoordinator.fileManagementService.currentDocumentName) { _, newName in
                 updateWindowTitle(newName)
@@ -65,19 +79,31 @@ struct DocumentWindowView: View {
             // Create new document if no URL
             appCoordinator.documentService.newDocument()
         }
-        
-        // Set window identifier for tracking
-        if let window = NSApp.keyWindow {
-            window.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-        }
     }
     
-    private func cleanupWindow() {
-        // Unregister window when it closes
+    private static func performCleanup(windowId: UUID, coordinator: AppCoordinator, windowManager: WindowManager) {
+        // Thread-safe check if already cleaned up
+        cleanupLock.lock()
+        let alreadyCleaned = cleanedUpWindows.contains(windowId)
+        if !alreadyCleaned {
+            cleanedUpWindows.insert(windowId)
+        }
+        cleanupLock.unlock()
+        
+        guard !alreadyCleaned else {
+            Logger.window.info("Cleanup already performed for: \(windowId.uuidString)")
+            return
+        }
+        
+        Logger.window.info("Cleanup started for: \(windowId.uuidString)")
+        
+        // Unregister window
         windowManager.unregisterWindow(id: windowId)
         
-        // Cleanup services (timers, monitors)
-        appCoordinator.cleanup()
+        // Cleanup coordinator
+        coordinator.cleanup()
+        
+        Logger.window.info("Cleanup completed for: \(windowId.uuidString)")
     }
     
     private func updateWindowTitle(_ title: String) {

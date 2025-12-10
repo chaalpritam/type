@@ -14,6 +14,7 @@ class FileManager: ObservableObject {
     private let maxRecentFiles = 10
     
     init() {
+        Logger.file.info("FileManager init")
         loadRecentFiles()
         startAutoSaveTimer()
     }
@@ -25,11 +26,13 @@ class FileManager: ObservableObject {
     // MARK: - Document Management
     
     func newDocument() {
+        Logger.file.info("Creating new document")
         currentDocument = ScreenplayDocument(content: "")
         isDocumentModified = false
     }
     
     func loadDocument(from url: URL) async throws {
+        Logger.file.info("Loading document from URL: \(url.path)")
         let content = try String(contentsOf: url, encoding: .utf8)
         currentDocument = ScreenplayDocument(content: content, url: url)
         isDocumentModified = false
@@ -59,7 +62,13 @@ class FileManager: ObservableObject {
         panel.title = "Save Screenplay"
         panel.message = "Choose a location to save your screenplay"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             try await saveDocument(to: url)
@@ -87,7 +96,13 @@ class FileManager: ObservableObject {
         panel.title = "Open Screenplay"
         panel.message = "Choose a screenplay file to open"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             try await loadDocument(from: url)
@@ -110,6 +125,7 @@ class FileManager: ObservableObject {
     }
     
     func stopAutoSaveTimer() {
+        Logger.file.info("Stopping auto-save timer")
         autoSaveTimer?.invalidate()
         autoSaveTimer = nil
     }
@@ -150,7 +166,13 @@ class FileManager: ObservableObject {
         panel.title = "Export to PDF"
         panel.message = "Choose a location to save the PDF"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             let pdfData = try await generatePDF(from: document.content)
@@ -172,7 +194,13 @@ class FileManager: ObservableObject {
         panel.title = "Export to Final Draft"
         panel.message = "Choose a location to save the Final Draft file"
         
-        let response = await panel.beginSheetModal(for: NSApp.keyWindow!)
+        let response: NSApplication.ModalResponse
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            response = await panel.beginSheetModal(for: window)
+        } else {
+            // Fallback when there is no active window (e.g. during app shutdown)
+            response = panel.runModal()
+        }
         
         if response == .OK, let url = panel.url {
             let fdxData = try await generateFinalDraftXML(from: document.content)

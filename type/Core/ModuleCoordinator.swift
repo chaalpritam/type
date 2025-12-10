@@ -4,6 +4,7 @@ import Combine
 
 // MARK: - Module Coordinator Protocol
 /// Base protocol for all module coordinators
+@MainActor
 protocol ModuleCoordinator: ObservableObject {
     associatedtype ModuleView: View
     
