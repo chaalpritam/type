@@ -2,116 +2,243 @@ import SwiftUI
 
 // MARK: - Outline Node Detail View
 struct OutlineNodeDetailView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     let node: OutlineNode
     @ObservedObject var outlineDatabase: OutlineDatabase
-    @Environment(\.dismiss) private var dismiss
     @State private var showEditView = false
     
     var body: some View {
-        NavigationView {
+        VStack(spacing: 0) {
+            DetailModalHeader(
+                title: node.title,
+                subtitle: node.nodeType.rawValue,
+                onDone: { dismiss() },
+                onEdit: { showEditView = true }
+            )
+            
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: iconForNodeType(node.nodeType))
-                                .font(.title2)
-                                .foregroundColor(colorForNodeType(node.nodeType))
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(node.title)
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                
-                                Text(node.nodeType.rawValue)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Button("Edit") {
-                                showEditView.toggle()
-                            }
-                            .buttonStyle(.bordered)
-                        }
-                        
-                        // Status and priority badges
-                        HStack(spacing: 8) {
-                            OutlineStatusBadge(status: node.metadata.status)
-                            OutlinePriorityBadge(priority: node.metadata.priority)
-                            
+                VStack(spacing: TypeSpacing.xl) {
+                    // Status row
+                    HStack(spacing: TypeSpacing.lg) {
+                        DetailStat(label: "Status", value: node.metadata.status.rawValue, color: statusColor(for: node.metadata.status))
+                        DetailStat(label: "Priority", value: node.metadata.priority.rawValue, color: priorityColor(for: node.metadata.priority))
+                        DetailStat(label: "Words", value: "\(node.metadata.wordCount)", color: TypeColors.accent)
+                    }
+                    .padding(TypeSpacing.md)
+                    .background(
+                        RoundedRectangle(cornerRadius: TypeRadius.md)
+                            .fill(colorScheme == .dark ? TypeColors.sidebarBackgroundDark : TypeColors.sidebarBackgroundLight)
+                    )
+                    
+                    // Badges
+                    if node.metadata.isCompleted || node.metadata.isImportant {
+                        HStack(spacing: TypeSpacing.sm) {
                             if node.metadata.isCompleted {
-                                Label("Completed", systemImage: "checkmark.circle.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.green)
+                                TypeNodeBadge(icon: "checkmark.circle.fill", text: "Completed", color: TypeColors.sceneGreen)
                             }
-                            
                             if node.metadata.isImportant {
-                                Label("Important", systemImage: "star.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.yellow)
+                                TypeNodeBadge(icon: "star.fill", text: "Important", color: TypeColors.sceneYellow)
                             }
+                            Spacer()
                         }
                     }
-                    .modalSectionStyle()
                     
                     // Content
                     if !node.content.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Content")
-                                .font(.headline)
-                            
+                        DetailSection(title: "Content") {
                             Text(node.content)
-                                .font(.body)
+                                .font(TypeTypography.body)
+                                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .modalSectionStyle()
                     }
                     
                     // Metadata
-                    OutlineMetadataView(metadata: node.metadata)
-                        .modalSectionStyle()
+                    DetailSection(title: "Details") {
+                        VStack(spacing: TypeSpacing.sm) {
+                            if let sceneNumber = node.metadata.sceneNumber {
+                                DetailRow(label: "Scene Number", value: "\(sceneNumber)")
+                            }
+                            if let actNumber = node.metadata.actNumber {
+                                DetailRow(label: "Act Number", value: "\(actNumber)")
+                            }
+                            if let sequence = node.metadata.sequenceNumber {
+                                DetailRow(label: "Sequence", value: "\(sequence)")
+                            }
+                            DetailRow(label: "Level", value: "\(node.level)")
+                            DetailRow(label: "Children", value: "\(node.children.count)")
+                            DetailRow(label: "Created", value: node.createdAt.formatted(date: .abbreviated, time: .omitted))
+                            DetailRow(label: "Updated", value: node.updatedAt.formatted(date: .abbreviated, time: .omitted))
+                        }
+                    }
+                    
+                    // Characters
+                    if !node.metadata.characters.isEmpty {
+                        DetailSection(title: "Characters") {
+                            FlowLayout(spacing: TypeSpacing.xs) {
+                                ForEach(node.metadata.characters, id: \.self) { character in
+                                    Text(character)
+                                        .font(TypeTypography.caption)
+                                        .foregroundColor(TypeColors.scenePink)
+                                        .padding(.horizontal, TypeSpacing.sm)
+                                        .padding(.vertical, TypeSpacing.xxs)
+                                        .background(TypeColors.scenePink.opacity(0.1))
+                                        .cornerRadius(TypeRadius.full)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Locations
+                    if !node.metadata.locations.isEmpty {
+                        DetailSection(title: "Locations") {
+                            FlowLayout(spacing: TypeSpacing.xs) {
+                                ForEach(node.metadata.locations, id: \.self) { location in
+                                    Text(location)
+                                        .font(TypeTypography.caption)
+                                        .foregroundColor(TypeColors.sceneGreen)
+                                        .padding(.horizontal, TypeSpacing.sm)
+                                        .padding(.vertical, TypeSpacing.xxs)
+                                        .background(TypeColors.sceneGreen.opacity(0.1))
+                                        .cornerRadius(TypeRadius.full)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Tags
+                    if !node.metadata.tags.isEmpty {
+                        DetailSection(title: "Tags") {
+                            FlowLayout(spacing: TypeSpacing.xs) {
+                                ForEach(node.metadata.tags, id: \.self) { tag in
+                                    Text(tag)
+                                        .font(TypeTypography.caption)
+                                        .foregroundColor(TypeColors.accent)
+                                        .padding(.horizontal, TypeSpacing.sm)
+                                        .padding(.vertical, TypeSpacing.xxs)
+                                        .background(TypeColors.accent.opacity(0.1))
+                                        .cornerRadius(TypeRadius.full)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Notes
+                    if !node.metadata.notes.isEmpty {
+                        DetailSection(title: "Notes") {
+                            Text(node.metadata.notes)
+                                .font(TypeTypography.body)
+                                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
                     
                     // Children
                     if !node.children.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Children (\(node.children.count))")
-                                .font(.headline)
-                            
-                            ForEach(node.children) { child in
-                                OutlineChildNodeView(
-                                    child: child,
-                                    outlineDatabase: outlineDatabase
-                                )
+                        DetailSection(title: "Children (\(node.children.count))") {
+                            VStack(spacing: TypeSpacing.xs) {
+                                ForEach(node.children) { child in
+                                    TypeChildNodeRow(child: child, outlineDatabase: outlineDatabase)
+                                }
                             }
                         }
-                        .modalSectionStyle()
-                    }
-                    
-                    // Statistics
-                    OutlineNodeStatisticsView(node: node)
-                        .modalSectionStyle()
-                }
-                .modalContainer()
-            }
-            .navigationTitle("Node Details")
-            
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        dismiss()
                     }
                 }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 480, minHeight: 500)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
         .sheet(isPresented: $showEditView) {
-            OutlineNodeEditView(
-                node: node,
-                outlineDatabase: outlineDatabase,
-                isNewNode: false
+            OutlineNodeEditView(node: node, outlineDatabase: outlineDatabase, isNewNode: false)
+        }
+    }
+    
+    private func statusColor(for status: OutlineStatus) -> Color {
+        switch status {
+        case .draft: return TypeColors.tertiaryTextLight
+        case .outline: return TypeColors.sceneBlue
+        case .inProgress: return TypeColors.sceneOrange
+        case .completed: return TypeColors.sceneGreen
+        case .revised: return TypeColors.scenePurple
+        case .final: return TypeColors.sceneRed
+        case .archived: return TypeColors.sceneOrange
+        }
+    }
+    
+    private func priorityColor(for priority: OutlinePriority) -> Color {
+        switch priority {
+        case .low: return TypeColors.sceneGreen
+        case .medium: return TypeColors.sceneOrange
+        case .high: return TypeColors.sceneRed
+        case .critical: return TypeColors.scenePurple
+        }
+    }
+}
+
+// MARK: - Type Node Badge
+struct TypeNodeBadge: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: TypeSpacing.xs) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+            Text(text)
+                .font(TypeTypography.caption)
+        }
+        .foregroundColor(color)
+        .padding(.horizontal, TypeSpacing.sm)
+        .padding(.vertical, TypeSpacing.xxs)
+        .background(color.opacity(0.1))
+        .cornerRadius(TypeRadius.full)
+    }
+}
+
+// MARK: - Type Child Node Row
+struct TypeChildNodeRow: View {
+    @Environment(\.colorScheme) var colorScheme
+    let child: OutlineNode
+    @ObservedObject var outlineDatabase: OutlineDatabase
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: { outlineDatabase.selectNode(child.id) }) {
+            HStack(spacing: TypeSpacing.sm) {
+                Image(systemName: iconForNodeType(child.nodeType))
+                    .font(.system(size: 11))
+                    .foregroundColor(colorForNodeType(child.nodeType))
+                    .frame(width: 16)
+                
+                Text(child.title)
+                    .font(TypeTypography.body)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                    .lineLimit(1)
+                
+                Spacer()
+                
+                if child.metadata.isCompleted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundColor(TypeColors.sceneGreen)
+                }
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10))
+                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+            }
+            .padding(.horizontal, TypeSpacing.sm)
+            .padding(.vertical, TypeSpacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: TypeRadius.sm)
+                    .fill(isHovered ? (colorScheme == .dark ? Color.white.opacity(0.04) : Color.black.opacity(0.03)) : .clear)
             )
         }
+        .buttonStyle(.plain)
+        .onHover { hovering in isHovered = hovering }
     }
     
     private func iconForNodeType(_ type: NodeType) -> String {
@@ -136,31 +263,32 @@ struct OutlineNodeDetailView: View {
     
     private func colorForNodeType(_ type: NodeType) -> Color {
         switch type {
-        case .title: return .blue
-        case .act: return .purple
-        case .sequence: return .orange
-        case .scene: return .green
-        case .beat: return .red
-        case .character: return .pink
-        case .location: return .brown
-        case .theme: return .yellow
-        case .subplot: return .cyan
-        case .note: return .gray
-        case .section: return .indigo
-        case .chapter: return .mint
-        case .part: return .teal
-        case .episode: return .red
-        case .custom: return .secondary
+        case .title: return TypeColors.sceneBlue
+        case .act: return TypeColors.scenePurple
+        case .sequence: return TypeColors.sceneOrange
+        case .scene: return TypeColors.sceneGreen
+        case .beat: return TypeColors.sceneRed
+        case .character: return TypeColors.scenePink
+        case .location: return TypeColors.sceneOrange
+        case .theme: return TypeColors.sceneYellow
+        case .subplot: return TypeColors.sceneCyan
+        case .note: return TypeColors.tertiaryTextLight
+        case .section: return TypeColors.sceneBlue
+        case .chapter: return TypeColors.sceneCyan
+        case .part: return TypeColors.sceneCyan
+        case .episode: return TypeColors.sceneRed
+        case .custom: return TypeColors.secondaryTextLight
         }
     }
 }
 
 // MARK: - Outline Node Edit View
 struct OutlineNodeEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @State var node: OutlineNode
     @ObservedObject var outlineDatabase: OutlineDatabase
     let isNewNode: Bool
-    @Environment(\.dismiss) private var dismiss
     
     @State private var title: String
     @State private var content: String
@@ -192,113 +320,72 @@ struct OutlineNodeEditView: View {
     }
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section("Basic Information") {
-                    TextField("Title", text: $title)
-                    
-                    Picker("Type", selection: $nodeType) {
-                        ForEach(NodeType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
-                        }
-                    }
-                    
-                    TextEditor(text: $content)
-                        .frame(minHeight: 100)
-                }
-                
-                Section("Status & Priority") {
-                    Picker("Status", selection: $status) {
-                        ForEach(OutlineStatus.allCases, id: \.self) { status in
-                            Text(status.rawValue).tag(status)
-                        }
-                    }
-                    
-                    Picker("Priority", selection: $priority) {
-                        ForEach(OutlinePriority.allCases, id: \.self) { priority in
-                            Text(priority.rawValue).tag(priority)
-                        }
-                    }
-                    
-                    Toggle("Completed", isOn: $isCompleted)
-                    Toggle("Important", isOn: $isImportant)
-                }
-                
-                Section("Tags") {
-                    HStack {
-                        TextField("Add tag", text: $newTag)
-                        Button("Add") {
-                            if !newTag.isEmpty && !tags.contains(newTag) {
-                                tags.append(newTag)
-                                newTag = ""
-                            }
-                        }
-                        .disabled(newTag.isEmpty)
-                    }
-                    
-                    if !tags.isEmpty {
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
-                            ForEach(tags, id: \.self) { tag in
-                                HStack {
-                                    Text(tag)
-                                        .font(.caption)
-                                    Button(action: {
-                                        tags.removeAll { $0 == tag }
-                                    }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.caption2)
-                                    }
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.accentColor.opacity(0.1))
-                                .foregroundColor(.accentColor)
-                                .cornerRadius(8)
-                            }
-                        }
-                    }
-                }
-                
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 80)
-                }
-                
-                Section("Color") {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 8) {
-                        ForEach(SceneColor.allCases, id: \.self) { sceneColor in
-                            Circle()
-                                .fill(sceneColor.color)
-                                .frame(width: 30, height: 30)
-                                .overlay(
-                                    Circle()
-                                        .stroke(color == sceneColor ? Color.primary : Color.clear, lineWidth: 2)
-                                )
-                                .onTapGesture {
-                                    color = sceneColor
-                                }
-                        }
-                    }
-                }
-            }
-            .navigationTitle(isNewNode ? "New Node" : "Edit Node")
+        VStack(spacing: 0) {
+            ModalHeader(
+                title: isNewNode ? "New Node" : "Edit Node",
+                onCancel: { dismiss() },
+                onSave: saveNode,
+                canSave: !title.isEmpty
+            )
             
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+            ScrollView {
+                VStack(spacing: TypeSpacing.xl) {
+                    // Basic Info
+                    ModalSection(title: "Basic Information") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Title", placeholder: "Node title", text: $title)
+                            ModalEnumDropdown(label: "Type", selection: $nodeType)
+                            ModalTextArea(label: "Content", placeholder: "Node content", text: $content)
+                        }
+                    }
+                    
+                    // Status
+                    ModalSection(title: "Status & Priority") {
+                        VStack(spacing: TypeSpacing.md) {
+                            HStack(spacing: TypeSpacing.md) {
+                                ModalEnumDropdown(label: "Status", selection: $status)
+                                ModalEnumDropdown(label: "Priority", selection: $priority)
+                            }
+                            
+                            HStack(spacing: TypeSpacing.lg) {
+                                TypeEditToggle(title: "Completed", isOn: $isCompleted, color: TypeColors.sceneGreen)
+                                TypeEditToggle(title: "Important", isOn: $isImportant, color: TypeColors.sceneYellow)
+                                Spacer()
+                            }
+                        }
+                    }
+                    
+                    // Tags
+                    ModalSection(title: "Tags") {
+                        ModalTagList(items: $tags, newItem: $newTag, placeholder: "Add a tag", color: TypeColors.accent)
+                    }
+                    
+                    // Notes
+                    ModalSection(title: "Notes") {
+                        ModalTextArea(label: "", placeholder: "Additional notes", text: $notes)
+                    }
+                    
+                    // Color
+                    ModalSection(title: "Color") {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: TypeSpacing.sm) {
+                            ForEach(SceneColor.allCases, id: \.self) { sceneColor in
+                                Circle()
+                                    .fill(sceneColor.color)
+                                    .frame(width: 28, height: 28)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(color == sceneColor ? (colorScheme == .dark ? Color.white : Color.black) : Color.clear, lineWidth: 2)
+                                    )
+                                    .onTapGesture { color = sceneColor }
+                            }
+                        }
                     }
                 }
-                
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        saveNode()
-                        dismiss()
-                    }
-                    .disabled(title.isEmpty)
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 500, minHeight: 600)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
     
     private func saveNode() {
@@ -320,221 +407,31 @@ struct OutlineNodeEditView: View {
         } else {
             outlineDatabase.updateNode(updatedNode)
         }
+        
+        dismiss()
     }
 }
 
-// MARK: - Outline Metadata View
-struct OutlineMetadataView: View {
-    let metadata: OutlineMetadata
+// MARK: - Type Edit Toggle
+struct TypeEditToggle: View {
+    @Environment(\.colorScheme) var colorScheme
+    let title: String
+    @Binding var isOn: Bool
+    let color: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Metadata")
-                .font(.headline)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                MetadataItem(title: "Word Count", value: "\(metadata.wordCount)")
-                MetadataItem(title: "Scene Number", value: metadata.sceneNumber?.description ?? "N/A")
-                MetadataItem(title: "Act Number", value: metadata.actNumber?.description ?? "N/A")
-                MetadataItem(title: "Sequence", value: metadata.sequenceNumber?.description ?? "N/A")
+        Button(action: { isOn.toggle() }) {
+            HStack(spacing: TypeSpacing.xs) {
+                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .foregroundColor(isOn ? color : (colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight))
                 
-                if let estimatedDuration = metadata.estimatedDuration {
-                    MetadataItem(title: "Est. Duration", value: formatDuration(estimatedDuration))
-                }
-                
-                if let actualDuration = metadata.actualDuration {
-                    MetadataItem(title: "Actual Duration", value: formatDuration(actualDuration))
-                }
-            }
-            
-            if !metadata.characters.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Characters")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    FlowLayout(spacing: 4) {
-                        ForEach(metadata.characters, id: \.self) { character in
-                            Text(character)
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
-                                .cornerRadius(4)
-                        }
-                    }
-                }
-            }
-            
-            if !metadata.locations.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Locations")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    FlowLayout(spacing: 4) {
-                        ForEach(metadata.locations, id: \.self) { location in
-                            Text(location)
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.green.opacity(0.1))
-                                .foregroundColor(.green)
-                                .cornerRadius(4)
-                        }
-                    }
-                }
-            }
-            
-            if !metadata.tags.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Tags")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    FlowLayout(spacing: 4) {
-                        ForEach(metadata.tags, id: \.self) { tag in
-                            Text(tag)
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.orange.opacity(0.1))
-                                .foregroundColor(.orange)
-                                .cornerRadius(4)
-                        }
-                    }
-                }
+                Text(title)
+                    .font(TypeTypography.body)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration / 60)
-        let seconds = Int(duration.truncatingRemainder(dividingBy: 60))
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-}
-
-// MARK: - Outline Child Node View
-struct OutlineChildNodeView: View {
-    let child: OutlineNode
-    @ObservedObject var outlineDatabase: OutlineDatabase
-    
-    var body: some View {
-        HStack {
-            Image(systemName: iconForNodeType(child.nodeType))
-                .font(.caption)
-                .foregroundColor(colorForNodeType(child.nodeType))
-                .frame(width: 16, height: 16)
-            
-            Text(child.title)
-                .font(.body)
-                .lineLimit(1)
-            
-            Spacer()
-            
-            if child.metadata.isCompleted {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.caption)
-            }
-        }
-        .padding(.vertical, 4)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            outlineDatabase.selectNode(child.id)
-        }
-    }
-    
-    private func iconForNodeType(_ type: NodeType) -> String {
-        switch type {
-        case .title: return "textformat"
-        case .act: return "rectangle.split.3x1"
-        case .sequence: return "list.number"
-        case .scene: return "film"
-        case .beat: return "waveform.path.ecg"
-        case .character: return "person"
-        case .location: return "mappin.and.ellipse"
-        case .theme: return "lightbulb"
-        case .subplot: return "arrow.branch"
-        case .note: return "note.text"
-        case .section: return "folder"
-        case .chapter: return "book"
-        case .part: return "doc.text"
-        case .episode: return "tv"
-        case .custom: return "circle"
-        }
-    }
-    
-    private func colorForNodeType(_ type: NodeType) -> Color {
-        switch type {
-        case .title: return .blue
-        case .act: return .purple
-        case .sequence: return .orange
-        case .scene: return .green
-        case .beat: return .red
-        case .character: return .pink
-        case .location: return .brown
-        case .theme: return .yellow
-        case .subplot: return .cyan
-        case .note: return .gray
-        case .section: return .indigo
-        case .chapter: return .mint
-        case .part: return .teal
-        case .episode: return .red
-        case .custom: return .secondary
-        }
-    }
-}
-
-// MARK: - Outline Node Statistics View
-struct OutlineNodeStatisticsView: View {
-    let node: OutlineNode
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Statistics")
-                .font(.headline)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                EnhancedStatCard(
-                    title: "Children",
-                    value: "\(node.children.count)",
-                    icon: "list.bullet",
-                    color: .blue
-                )
-                
-                EnhancedStatCard(
-                    title: "Level",
-                    value: "\(node.level)",
-                    icon: "arrow.down.right",
-                    color: .green
-                )
-                
-                EnhancedStatCard(
-                    title: "Order",
-                    value: "\(node.order)",
-                    icon: "number",
-                    color: .orange
-                )
-                
-                EnhancedStatCard(
-                    title: "Created",
-                    value: formatDate(node.createdAt),
-                    icon: "calendar",
-                    color: .purple
-                )
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: date)
+        .buttonStyle(.plain)
     }
 }
 
@@ -542,39 +439,41 @@ struct OutlineNodeStatisticsView: View {
 struct OutlinePriorityBadge: View {
     let priority: OutlinePriority
     
-    var priorityColor: Color {
-        switch priority {
-        case .low: return .green
-        case .medium: return .orange
-        case .high: return .red
-        case .critical: return .purple
-        }
-    }
-    
     var body: some View {
         Text(priority.rawValue)
-            .font(.caption2)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 2)
-            .background(priorityColor.opacity(0.2))
+            .font(TypeTypography.caption2)
             .foregroundColor(priorityColor)
-            .cornerRadius(4)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 2)
+            .background(priorityColor.opacity(0.12))
+            .cornerRadius(TypeRadius.xs)
+    }
+    
+    private var priorityColor: Color {
+        switch priority {
+        case .low: return TypeColors.sceneGreen
+        case .medium: return TypeColors.sceneOrange
+        case .high: return TypeColors.sceneRed
+        case .critical: return TypeColors.scenePurple
+        }
     }
 }
 
 // MARK: - Metadata Item
 struct MetadataItem: View {
+    @Environment(\.colorScheme) var colorScheme
     let title: String
     let value: String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(TypeTypography.caption)
+                .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
             Text(value)
-                .font(.body)
+                .font(TypeTypography.body)
                 .fontWeight(.medium)
+                .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -636,4 +535,4 @@ struct FlowLayout: Layout {
             self.size = CGSize(width: maxWidth, height: currentPosition.y + lineHeight)
         }
     }
-} 
+}

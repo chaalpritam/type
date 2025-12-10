@@ -210,137 +210,24 @@ class OutlineCoordinator: BaseModuleCoordinator, ModuleCoordinator {
 
 // MARK: - Outline Main View
 struct OutlineMainView: View {
+    @Environment(\.colorScheme) var colorScheme
     @ObservedObject var coordinator: OutlineCoordinator
     
     var body: some View {
-        HStack(spacing: 0) {
-            // Main outline view
-            VStack(spacing: 0) {
-                // Outline toolbar
-                OutlineToolbarView(coordinator: coordinator)
-                
-                // Outline content
-                OutlineView(
-                    outlineDatabase: coordinator.outlineDatabase,
-                    isVisible: .constant(true)
-                )
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Detail panel
-            if coordinator.showOutlineDetail, let outline = coordinator.selectedOutline {
-                OutlineDetailPanel(outline: outline, coordinator: coordinator)
-                    .frame(width: 350)
-                    .transition(.move(edge: .trailing))
-            }
-        }
-        .sheet(isPresented: $coordinator.showOutlineEdit) {
-            if let outline = coordinator.selectedOutline {
-                OutlineEditView(outline: outline, coordinator: coordinator)
-            }
-        }
-    }
-}
-
-// MARK: - Outline Toolbar View
-struct OutlineToolbarView: View {
-    @ObservedObject var coordinator: OutlineCoordinator
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            // Outline operations
-            HStack(spacing: 8) {
-                Button("New Outline") {
-                    coordinator.createNewOutline()
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Generate from Document") {
-                    coordinator.generateOutlineFromDocument()
-                }
-                .buttonStyle(.bordered)
-                
-                Button("Import") {
-                    Task {
-                        try? await coordinator.importOutline()
-                    }
-                }
-                .buttonStyle(.bordered)
-            }
-            
-            Divider()
-            
-            // Filter controls
-            HStack(spacing: 8) {
-                Picker("Filter", selection: $coordinator.selectedFilter) {
-                    ForEach(OutlineFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            
-            Spacer()
-            
-            // Statistics
-            HStack(spacing: 16) {
-                Text("Total Nodes: \(coordinator.statistics.totalNodes)")
-                    .font(.caption)
-                Text("Total Sections: \(coordinator.statistics.totalSections)")
-                    .font(.caption)
-                Text("Total Words: \(coordinator.statistics.totalWords)")
-                    .font(.caption)
-            }
-            .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(Color(nsColor: .windowBackgroundColor))
-        .border(Color(nsColor: .separatorColor), width: 0.5)
-    }
-}
-
-// MARK: - Outline Detail Panel
-struct OutlineDetailPanel: View {
-    let outline: Outline
-    @ObservedObject var coordinator: OutlineCoordinator
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Outline Details")
-                .font(.headline)
-                .padding(.horizontal)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Title: \(outline.title)")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text("Description: \(outline.description)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                // Status removed as Outline doesn't have this property
-                
-                Text("Nodes: \(outline.rootNodes.count)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            
-            Spacer()
-        }
-        .padding(.vertical)
-        .background(Color(nsColor: .systemGray))
-        .border(Color(nsColor: .separatorColor), width: 0.5)
+        OutlineView(
+            outlineDatabase: coordinator.outlineDatabase,
+            isVisible: .constant(true)
+        )
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
 }
 
 // MARK: - Outline Edit View
 struct OutlineEditView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) private var dismiss
     let outline: Outline
     @ObservedObject var coordinator: OutlineCoordinator
-    @Environment(\.dismiss) private var dismiss
     @State private var title: String
     @State private var description: String
     
@@ -352,32 +239,34 @@ struct OutlineEditView: View {
     }
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section("Basic Information") {
-                    TextField("Title", text: $title)
-                    TextField("Description", text: $description, axis: .vertical)
-                        .lineLimit(3...6)
-                }
-            }
-            .navigationTitle("Edit Outline")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+        VStack(spacing: 0) {
+            ModalHeader(
+                title: "Edit Outline",
+                onCancel: { dismiss() },
+                onSave: {
+                    var updatedOutline = outline
+                    updatedOutline.title = title
+                    updatedOutline.description = description
+                    coordinator.updateOutline(updatedOutline)
+                    dismiss()
+                },
+                canSave: !title.isEmpty
+            )
+            
+            ScrollView {
+                VStack(spacing: TypeSpacing.xl) {
+                    ModalSection(title: "Basic Information") {
+                        VStack(spacing: TypeSpacing.md) {
+                            ModalTextField(label: "Title", placeholder: "Outline title", text: $title)
+                            ModalTextArea(label: "Description", placeholder: "Outline description", text: $description)
+                        }
                     }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Save") {
-                        var updatedOutline = outline
-                        updatedOutline.title = title
-                        updatedOutline.description = description
-                        coordinator.updateOutline(updatedOutline)
-                        dismiss()
-                    }
-                }
+                .padding(TypeSpacing.xl)
             }
         }
+        .frame(minWidth: 400, minHeight: 300)
+        .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
     }
 }
 
