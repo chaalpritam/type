@@ -292,6 +292,13 @@ struct TypeStyleAppView: View {
         let content = FountainTemplate.getTemplate(for: template)
         appCoordinator.editorCoordinator.text = content
         appCoordinator.editorCoordinator.updateText(content)
+        
+        // Ensure the document model exists and is updated
+        if appCoordinator.documentService.currentDocument == nil {
+            appCoordinator.documentService.currentDocument = ScreenplayDocument(content: content)
+        } else {
+            appCoordinator.documentService.updateDocumentContent(content)
+        }
     }
 }
 
