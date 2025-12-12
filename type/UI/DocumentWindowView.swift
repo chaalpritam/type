@@ -8,7 +8,6 @@ struct DocumentWindowView: View {
     // MARK: - Properties
     let windowId: UUID
     let documentURL: URL?
-    let showWelcome: Bool
     
     // AppCoordinator is owned by this view - use StateObject
     @StateObject private var appCoordinator: AppCoordinator
@@ -23,10 +22,9 @@ struct DocumentWindowView: View {
     @State private var hasPerformedCleanup = false
     
     // MARK: - Initialization
-    init(windowId: UUID, documentURL: URL? = nil, showWelcome: Bool = false) {
+    init(windowId: UUID, documentURL: URL? = nil) {
         self.windowId = windowId
         self.documentURL = documentURL
-        self.showWelcome = showWelcome
         
         // Create a new coordinator for this window
         let coordinator = AppCoordinator()
@@ -35,7 +33,7 @@ struct DocumentWindowView: View {
     
     // MARK: - Body
     var body: some View {
-        TypeStyleAppView(appCoordinator: appCoordinator, shouldShowWelcome: showWelcome)
+        TypeStyleAppView(appCoordinator: appCoordinator)
             .preferredColorScheme(isDarkMode ? .dark : .light)
             .onAppear {
                 guard !isWindowSetUp else { return }

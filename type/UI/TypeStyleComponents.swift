@@ -233,6 +233,11 @@ struct TypeSidebar: View {
     @Binding var selectedView: AppView
     @Binding var isCollapsed: Bool
     
+    // Quick actions
+    let onOpenDocument: (() -> Void)?
+    let onShowWelcome: (() -> Void)?
+    let onShowTemplates: (() -> Void)?
+    
     // Statistics
     let wordCount: Int
     let pageCount: Int
@@ -257,6 +262,44 @@ struct TypeSidebar: View {
             }
             .padding(.top, TypeSpacing.md)
             .padding(.horizontal, TypeSpacing.sm)
+            
+            // Welcome quick actions (only when expanded)
+            if !isCollapsed, hasQuickActions {
+                VStack(alignment: .leading, spacing: TypeSpacing.xs) {
+                    Divider()
+                        .padding(.horizontal, TypeSpacing.md)
+                    
+                    Text("Welcome")
+                        .font(TypeTypography.caption)
+                        .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                        .padding(.horizontal, TypeSpacing.md)
+                    
+                    if let onOpenDocument {
+                        SidebarActionButton(
+                            icon: "folder",
+                            title: "Open Document",
+                            action: onOpenDocument
+                        )
+                    }
+                    
+                    if let onShowWelcome {
+                        SidebarActionButton(
+                            icon: "sparkles",
+                            title: "Show Welcome",
+                            action: onShowWelcome
+                        )
+                    }
+                    
+                    if let onShowTemplates {
+                        SidebarActionButton(
+                            icon: "doc.text",
+                            title: "Templates",
+                            action: onShowTemplates
+                        )
+                    }
+                }
+                .padding(.vertical, TypeSpacing.sm)
+            }
             
             Spacer()
             
@@ -305,6 +348,10 @@ struct TypeSidebar: View {
     
     private var dividerColor: Color {
         colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight
+    }
+    
+    private var hasQuickActions: Bool {
+        onOpenDocument != nil || onShowWelcome != nil || onShowTemplates != nil
     }
 }
 
@@ -383,6 +430,48 @@ struct TypeSidebarStats: View {
             TypeStatRow(label: "Scenes", value: "\(sceneCount)")
         }
         .padding(.horizontal, TypeSpacing.md)
+    }
+}
+
+// MARK: - Sidebar Action Button
+struct SidebarActionButton: View {
+    @Environment(\.colorScheme) var colorScheme
+    let icon: String
+    let title: String
+    let action: () -> Void
+    
+    @State private var isHovered = false
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: TypeSpacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 18)
+                Text(title)
+                    .font(TypeTypography.caption)
+                Spacer()
+            }
+            .padding(.horizontal, TypeSpacing.md)
+            .padding(.vertical, TypeSpacing.xs)
+            .background(
+                RoundedRectangle(cornerRadius: TypeRadius.sm)
+                    .fill(isHovered ? hoverColor : Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
+        .foregroundColor(foregroundColor)
+        .onHover { hovering in
+            isHovered = hovering
+        }
+    }
+    
+    private var foregroundColor: Color {
+        colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight
+    }
+    
+    private var hoverColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04)
     }
 }
 
@@ -693,6 +782,9 @@ struct TypeProgressIndicator: View {
         TypeSidebar(
             selectedView: .constant(.editor),
             isCollapsed: .constant(false),
+            onOpenDocument: nil,
+            onShowWelcome: nil,
+            onShowTemplates: nil,
             wordCount: 1234,
             pageCount: 12,
             sceneCount: 8

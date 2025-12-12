@@ -14,12 +14,9 @@ struct TypeStyleAppView: View {
     @ObservedObject var appCoordinator: AppCoordinator
     @StateObject private var themeManager = ThemeManager.shared
     
-    private let shouldShowWelcomeOnLoad: Bool
-    
     // MARK: - Initialization
-    init(appCoordinator: AppCoordinator? = nil, shouldShowWelcome: Bool = true) {
+    init(appCoordinator: AppCoordinator? = nil) {
         self.appCoordinator = appCoordinator ?? AppCoordinator()
-        self.shouldShowWelcomeOnLoad = shouldShowWelcome
     }
     
     @State private var isSidebarCollapsed = false
@@ -30,11 +27,9 @@ struct TypeStyleAppView: View {
     @State private var showPreviewPanel = false
     @State private var showOutlinePanel = false
     @State private var showCharactersPanel = false
-    @State private var showWelcomeScreen = false
     @State private var showTemplateSelector = false
     @State private var selectedTemplate: TemplateType = .default
     @AppStorage("isDarkMode") private var isDarkMode = false
-    @AppStorage("showWelcomeOnLaunch") private var showWelcomeOnLaunch = true
     
     var body: some View {
         GeometryReader { geometry in
@@ -93,6 +88,13 @@ struct TypeStyleAppView: View {
                             TypeSidebar(
                                 selectedView: $appCoordinator.currentView,
                                 isCollapsed: $isSidebarCollapsed,
+                            onOpenDocument: { appCoordinator.fileManagementService.openDocumentSync() },
+                            onShowWelcome: nil,
+                            onShowTemplates: {
+                                withAnimation(TypeAnimation.standard) {
+                                    showTemplateSelector = true
+                                }
+                            },
                                 wordCount: appCoordinator.editorCoordinator.wordCount,
                                 pageCount: appCoordinator.editorCoordinator.pageCount,
                                 sceneCount: appCoordinator.outlineCoordinator.outlines.count
@@ -201,30 +203,6 @@ struct TypeStyleAppView: View {
                     }
                 }
                 
-                // Welcome screen overlay
-                if showWelcomeScreen {
-                    Color.black.opacity(0.4)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation(TypeAnimation.standard) {
-                                showWelcomeScreen = false
-                            }
-                        }
-                    
-                    WelcomeView(
-                        isVisible: $showWelcomeScreen,
-                        onOpenDocument: {
-                            showWelcomeScreen = false
-                            appCoordinator.fileManagementService.openDocumentSync()
-                        },
-                        onSelectTemplate: { template in
-                            showWelcomeScreen = false
-                            applyTemplate(template)
-                        }
-                    )
-                    .transition(.scale(scale: 0.95).combined(with: .opacity))
-                }
-                
                 // Template selector overlay
                 if showTemplateSelector {
                     Color.black.opacity(0.4)
@@ -251,19 +229,10 @@ struct TypeStyleAppView: View {
             .animation(TypeAnimation.standard, value: showPreviewPanel)
             .animation(TypeAnimation.standard, value: showOutlinePanel)
             .animation(TypeAnimation.standard, value: showCharactersPanel)
-            .animation(TypeAnimation.standard, value: showWelcomeScreen)
             .animation(TypeAnimation.standard, value: showTemplateSelector)
         }
         .preferredColorScheme(isDarkMode ? .dark : .light)
         .onAppear {
-            // Show welcome screen on first launch
-            if showWelcomeOnLaunch && shouldShowWelcomeOnLoad {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(TypeAnimation.standard) {
-                        showWelcomeScreen = true
-                    }
-                }
-            }
             // Setup keyboard shortcuts
             setupKeyboardShortcuts()
         }
@@ -278,11 +247,6 @@ struct TypeStyleAppView: View {
             }
         }
         // Handle notification center messages
-        .onReceive(NotificationCenter.default.publisher(for: .showWelcome)) { _ in
-            withAnimation(TypeAnimation.standard) {
-                showWelcomeScreen = true
-            }
-        }
         .onReceive(NotificationCenter.default.publisher(for: .showTemplates)) { _ in
             withAnimation(TypeAnimation.standard) {
                 showTemplateSelector = true
@@ -302,15 +266,6 @@ struct TypeStyleAppView: View {
         keyboardMonitor.startMonitoring { event in
             // Handle Escape key
             if event.keyCode == 53 { // Escape key
-                if showWelcomeScreen {
-                    Task { @MainActor in
-                        withAnimation(TypeAnimation.smooth) {
-                            showWelcomeScreen = false
-                        }
-                    }
-                    return nil
-                }
-                
                 if showTemplateSelector {
                     Task { @MainActor in
                         withAnimation(TypeAnimation.smooth) {

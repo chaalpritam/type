@@ -19,7 +19,7 @@ struct typeApp: App {
     var body: some SwiftUI.Scene {
         // Main document window group - supports multiple windows and tabs
         WindowGroup(id: "document") {
-            DocumentWindowView(windowId: UUID(), showWelcome: true)
+            DocumentWindowView(windowId: UUID())
                 .frame(minWidth: 1000, minHeight: 700)
                 .handlesExternalEvents(preferring: Set(arrayLiteral: "document"), allowing: Set(arrayLiteral: "*"))
                 .onAppear {
@@ -112,12 +112,6 @@ struct typeApp: App {
             }
             
             CommandGroup(replacing: .help) {
-                Button("Welcome to Type") {
-                    NotificationCenter.default.post(name: .showWelcome, object: nil)
-                }
-                
-                Divider()
-                
                 Button("Templates...") {
                     NotificationCenter.default.post(name: .showTemplates, object: nil)
                 }
@@ -126,12 +120,6 @@ struct typeApp: App {
                 Divider()
                 
                 Menu("Tutorials") {
-                    Button("Getting Started") {
-                        NotificationCenter.default.post(name: .showWelcome, object: nil)
-                    }
-                    
-                    Divider()
-                    
                     Menu("Fountain Syntax") {
                         Button("Scene Headings") {}
                         Button("Characters & Dialogue") {}
@@ -246,21 +234,12 @@ class TypeAppDelegate: NSObject, NSApplicationDelegate {
         // Don't terminate - show welcome screen instead (like Beat)
         Logger.app.info("Last window closed, but keeping app running")
         
-        // Show welcome screen when all windows are closed
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if WindowManager.shared.windowCount == 0 {
-                NotificationCenter.default.post(name: .showWelcome, object: nil)
-            }
-        }
-        
         return false
     }
     
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag {
-            // No visible windows - show welcome or create new document
             Logger.app.info("App reopened with no visible windows")
-            NotificationCenter.default.post(name: .showWelcome, object: nil)
         }
         return true
     }
@@ -313,7 +292,6 @@ class TypeAppDelegate: NSObject, NSApplicationDelegate {
     
     private func handleAllDocumentsClosed() {
         Logger.app.info("All documents closed - showing welcome screen")
-        NotificationCenter.default.post(name: .showWelcome, object: nil)
     }
     
     private func openDocumentFile(url: URL) {

@@ -12,7 +12,7 @@ class WindowManager: ObservableObject {
     // MARK: - Published Properties
     @Published var openWindows: [WindowInfo] = []
     @Published var activeWindowId: UUID?
-    @Published private(set) var shouldShowWelcome: Bool = true
+    @Published private(set) var shouldShowWelcome: Bool = false
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -41,9 +41,6 @@ class WindowManager: ObservableObject {
         openWindows.append(windowInfo)
         activeWindowId = id
         
-        // Hide welcome screen when a document window is opened
-        shouldShowWelcome = false
-        
         Logger.window.info("Window registered: \(id.uuidString), title: \(title), total: \(self.openWindows.count)")
         
         // Post notification
@@ -65,15 +62,10 @@ class WindowManager: ObservableObject {
         
         Logger.window.info("Window unregistered: \(id.uuidString), total: \(self.openWindows.count)")
         
-        // Show welcome screen when all documents are closed (like Beat)
+        // If all windows are closed, just publish close notification
         if openWindows.isEmpty && previousCount > 0 {
-            shouldShowWelcome = true
-            Logger.window.info("All windows closed, showing welcome screen")
-            
-            // Post notification for welcome screen
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .allDocumentsClosed, object: nil)
-                NotificationCenter.default.post(name: .showWelcome, object: nil)
             }
         }
         
@@ -144,8 +136,7 @@ class WindowManager: ObservableObject {
     
     /// Force show welcome screen
     func showWelcomeScreen() {
-        shouldShowWelcome = true
-        NotificationCenter.default.post(name: .showWelcome, object: nil)
+        shouldShowWelcome = false
     }
     
     /// Hide welcome screen
