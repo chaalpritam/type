@@ -47,7 +47,6 @@ struct TypeStyleAppView: View {
                     // Toolbar
                     if !isFocusMode {
                         TypeToolbar(
-                            onNewDocument: { appCoordinator.fileManagementService.newDocument() },
                             onOpenDocument: { appCoordinator.fileManagementService.openDocumentSync() },
                             onSaveDocument: { appCoordinator.fileManagementService.saveDocumentSync() },
                             canSave: appCoordinator.fileManagementService.canSave,
@@ -208,10 +207,6 @@ struct TypeStyleAppView: View {
                     
                     WelcomeView(
                         isVisible: $showWelcomeScreen,
-                        onNewDocument: {
-                            showWelcomeScreen = false
-                            appCoordinator.fileManagementService.newDocument()
-                        },
                         onOpenDocument: {
                             showWelcomeScreen = false
                             appCoordinator.fileManagementService.openDocumentSync()
@@ -255,9 +250,6 @@ struct TypeStyleAppView: View {
         }
         .preferredColorScheme(isDarkMode ? .dark : .light)
         .onAppear {
-            if appCoordinator.documentService.currentDocument == nil {
-                appCoordinator.documentService.newDocument()
-            }
             // Show welcome screen on first launch
             if showWelcomeOnLaunch && shouldShowWelcomeOnLoad {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

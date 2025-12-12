@@ -25,12 +25,6 @@ class FileManager: ObservableObject {
     
     // MARK: - Document Management
     
-    func newDocument() {
-        Logger.file.info("Creating new document")
-        currentDocument = ScreenplayDocument(content: "")
-        isDocumentModified = false
-    }
-    
     func loadDocument(from url: URL) async throws {
         Logger.file.info("Loading document from URL: \(url.path)")
         let content = try String(contentsOf: url, encoding: .utf8)

@@ -74,7 +74,6 @@ struct EnhancedAppleToolbar: View {
     @Binding var isFullScreen: Bool
     @Binding var showCustomizationPanel: Bool
     @Binding var animationSpeed: AnimationSpeed
-    let onNewDocument: () -> Void
     let onOpenDocument: () -> Void
     let onSaveDocument: () -> Void
     let onSaveDocumentAs: () -> Void
@@ -187,13 +186,6 @@ struct EnhancedAppleToolbar: View {
     
     private var fileOperationsGroup: some View {
         HStack(spacing: ToolbarMetrics.itemSpacing) {
-                EnhancedAppleToolbarButton(
-                    icon: "doc.badge.plus",
-                    label: "New",
-                    isActive: false,
-                    action: onNewDocument
-                )
-                
                 EnhancedAppleToolbarButton(
                     icon: "folder",
                     label: "Open",

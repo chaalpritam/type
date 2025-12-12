@@ -28,16 +28,6 @@ class FileManagementService: ObservableObject {
     }
     
     // MARK: - File Management Functions
-    
-    func newDocument() {
-        if fileManager.hasUnsavedChanges() {
-            // This would trigger the unsaved changes alert in the UI
-            // The actual implementation would be handled by the coordinator
-        } else {
-            fileManager.newDocument()
-        }
-    }
-    
     func openDocument() async throws {
         do {
             _ = try await fileManager.openDocument()

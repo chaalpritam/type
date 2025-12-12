@@ -45,13 +45,6 @@ class DocumentService: ObservableObject {
     
     // MARK: - Document Management
     
-    /// Create a new document
-    func newDocument() {
-        Logger.document.info("Creating new document")
-        currentDocument = ScreenplayDocument(content: "")
-        isDocumentModified = false
-    }
-    
     /// Load document from URL
     func loadDocument(from url: URL) async throws {
         Logger.document.info("Loading document from URL: \(url.path)")

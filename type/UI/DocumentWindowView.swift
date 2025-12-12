@@ -43,6 +43,10 @@ struct DocumentWindowView: View {
                 Logger.window.info("Window appeared: \(windowId.uuidString)")
                 setupWindow()
             }
+            .onDisappear {
+                // Safety net in case window delegate never attached
+                performCleanupIfNeeded(reason: "onDisappear")
+            }
             .onReceive(NotificationCenter.default.publisher(for: .loadDocumentInActiveWindow)) { notification in
                 if let userInfo = notification.userInfo,
                    let url = userInfo["url"] as? URL {
@@ -61,15 +65,26 @@ struct DocumentWindowView: View {
         
         // Find and configure the NSWindow
         DispatchQueue.main.async {
-            if let nsWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == windowId.uuidString }) {
+            // SwiftUI WindowGroup windows may not have an identifier; set it if missing
+            if let nsWindow = NSApp.windows.first(where: { $0.identifier?.rawValue == windowId.uuidString }) ?? NSApp.keyWindow {
+                if nsWindow.identifier == nil {
+                    nsWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
+                }
                 // Set up window delegate for proper close handling
                 let delegate = SafeWindowDelegate(
                     windowId: windowId,
-                    coordinator: appCoordinator
+                    coordinator: appCoordinator,
+                    cleanupHandler: {
+                        performCleanupIfNeeded(reason: "windowWillClose")
+                    }
                 )
                 // Store delegate to prevent deallocation
                 objc_setAssociatedObject(nsWindow, &SafeWindowDelegate.associatedKey, delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
                 nsWindow.delegate = delegate
+            } else {
+                // If we still cannot find the window, perform cleanup to avoid leaks
+                Logger.window.error("Unable to locate NSWindow for id: \(windowId.uuidString)")
+                performCleanupIfNeeded(reason: "missingWindowDuringSetup")
             }
         }
         
@@ -86,9 +101,6 @@ struct DocumentWindowView: View {
                     Logger.document.logError("Failed to load document", error: error)
                 }
             }
-        } else {
-            // Create new document if no URL
-            appCoordinator.documentService.newDocument()
         }
     }
     
@@ -100,6 +112,20 @@ struct DocumentWindowView: View {
                 Logger.document.logError("Failed to load document", error: error)
             }
         }
+    }
+    
+    /// Shared cleanup to avoid leaking observers/timers even if delegate isn't attached
+    private func performCleanupIfNeeded(reason: String) {
+        guard !hasPerformedCleanup else {
+            Logger.window.info("Cleanup already performed for \(windowId.uuidString) via \(reason)")
+            return
+        }
+        hasPerformedCleanup = true
+        
+        Logger.window.info("=== cleanup starting for: \(windowId.uuidString) (\(reason)) ===")
+        appCoordinator.cleanup()
+        WindowManager.shared.unregisterWindow(id: windowId)
+        Logger.window.info("=== cleanup completed for: \(windowId.uuidString) (\(reason)) ===")
     }
 }
 
@@ -113,10 +139,12 @@ private class SafeWindowDelegate: NSObject, NSWindowDelegate {
     private weak var coordinator: AppCoordinator?
     private var hasHandledClose = false
     private let closeLock = NSLock()
+    private let cleanupHandler: () -> Void
     
-    init(windowId: UUID, coordinator: AppCoordinator) {
+    init(windowId: UUID, coordinator: AppCoordinator, cleanupHandler: @escaping () -> Void) {
         self.windowId = windowId
         self.coordinator = coordinator
+        self.cleanupHandler = cleanupHandler
         super.init()
         let id = windowId
         Logger.window.info("SafeWindowDelegate created for: \(id.uuidString)")
@@ -151,15 +179,9 @@ private class SafeWindowDelegate: NSObject, NSWindowDelegate {
         
         Logger.window.info("=== windowWillClose cleanup starting for: \(id.uuidString) ===")
         
-        // CRITICAL: Cleanup coordinator BEFORE SwiftUI tears down the view
-        // This prevents crashes from accessing deallocated objects
-        coordinator?.cleanup()
-        Logger.window.debug("Coordinator cleanup done")
-        
-        // Unregister from window manager
-        WindowManager.shared.unregisterWindow(id: id)
-        Logger.window.debug("Window unregistered from WindowManager")
-        
+        // Delegate to shared cleanup handler to avoid leaks or double work
+        cleanupHandler()
+
         Logger.window.info("=== windowWillClose cleanup completed for: \(id.uuidString) ===")
     }
     

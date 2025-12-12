@@ -4,7 +4,6 @@ import SwiftUI
 struct WelcomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @Binding var isVisible: Bool
-    let onNewDocument: () -> Void
     let onOpenDocument: () -> Void
     let onSelectTemplate: (TemplateType) -> Void
     
@@ -21,7 +20,6 @@ struct WelcomeView: View {
                 switch selectedTab {
                 case .start:
                     WelcomeStartView(
-                        onNewDocument: onNewDocument,
                         onOpenDocument: onOpenDocument,
                         recentFiles: recentFiles
                     )
@@ -166,7 +164,6 @@ struct RecentFile: Identifiable {
 // MARK: - Welcome Start View
 struct WelcomeStartView: View {
     @Environment(\.colorScheme) var colorScheme
-    let onNewDocument: () -> Void
     let onOpenDocument: () -> Void
     let recentFiles: [RecentFile]
     
@@ -188,27 +185,11 @@ struct WelcomeStartView: View {
                 // Quick Actions
                 HStack(spacing: TypeSpacing.lg) {
                     WelcomeActionCard(
-                        icon: "doc.badge.plus",
-                        title: "New Screenplay",
-                        description: "Start with a blank document",
-                        color: TypeColors.accent,
-                        action: onNewDocument
-                    )
-                    
-                    WelcomeActionCard(
                         icon: "folder",
                         title: "Open Document",
                         description: "Open an existing file",
                         color: TypeColors.sceneGreen,
                         action: onOpenDocument
-                    )
-                    
-                    WelcomeActionCard(
-                        icon: "doc.text",
-                        title: "From Template",
-                        description: "Start from a template",
-                        color: TypeColors.scenePurple,
-                        action: {}
                     )
                 }
                 .padding(.horizontal, TypeSpacing.xxl)

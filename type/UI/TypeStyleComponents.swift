@@ -14,7 +14,6 @@ struct TypeToolbar: View {
     @Environment(\.colorScheme) var colorScheme
     
     // File operations
-    let onNewDocument: () -> Void
     let onOpenDocument: () -> Void
     let onSaveDocument: () -> Void
     let canSave: Bool
@@ -41,10 +40,6 @@ struct TypeToolbar: View {
         HStack(spacing: TypeSpacing.toolbarGroupSpacing) {
             // Leading: File operations
             HStack(spacing: TypeSpacing.toolbarItemSpacing) {
-                TypeToolbarButton(icon: "doc.badge.plus", tooltip: "New Document") {
-                    onNewDocument()
-                }
-                
                 TypeToolbarButton(icon: "folder", tooltip: "Open Document") {
                     onOpenDocument()
                 }
@@ -671,7 +666,6 @@ struct TypeProgressIndicator: View {
 #Preview("Type Toolbar") {
     VStack(spacing: 0) {
         TypeToolbar(
-            onNewDocument: {},
             onOpenDocument: {},
             onSaveDocument: {},
             canSave: true,

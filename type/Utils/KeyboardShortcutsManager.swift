@@ -47,13 +47,6 @@ class KeyboardShortcutsManager: ObservableObject {
         }
         
         switch event.charactersIgnoringModifiers {
-        case "n":
-            // Cmd+N: New Document
-            Task {
-                await self.newDocument()
-            }
-            return nil
-            
         case "o":
             // Cmd+O: Open Document
             Task {
@@ -269,10 +262,6 @@ class KeyboardShortcutsManager: ObservableObject {
     
     // MARK: - File Operations
     
-    private func newDocument() async {
-        fileManager.newDocument()
-    }
-    
     private func openDocument() async {
         do {
             _ = try await fileManager.openDocument()
@@ -319,14 +308,16 @@ class KeyboardShortcutsManager: ObservableObject {
             case .alertFirstButtonReturn: // Save
                 await saveDocument()
             case .alertSecondButtonReturn: // Don't Save
-                fileManager.newDocument()
+                fileManager.currentDocument = nil
+                fileManager.isDocumentModified = false
             case .alertThirdButtonReturn: // Cancel
                 return
             default:
                 break
             }
         } else {
-            fileManager.newDocument()
+            fileManager.currentDocument = nil
+            fileManager.isDocumentModified = false
         }
     }
     

@@ -33,30 +33,6 @@ struct typeApp: App {
         .commands {
             // File Menu
             CommandGroup(replacing: .newItem) {
-                Button("New Tab") {
-                    openNewTab()
-                }
-                .keyboardShortcut("t", modifiers: .command)
-                
-                Button("New Document") {
-                    openNewTab()
-                }
-                .keyboardShortcut("n", modifiers: .command)
-                
-                Button("New Window") {
-                    openNewWindowSeparate()
-                }
-                .keyboardShortcut("n", modifiers: [.command, .shift])
-                
-                Divider()
-                
-                Button("New from Template...") {
-                    NotificationCenter.default.post(name: .showTemplates, object: nil)
-                }
-                .keyboardShortcut("t", modifiers: [.command, .shift])
-                
-                Divider()
-                
                 Button("Open Document...") {
                     openDocument()
                 }
@@ -187,61 +163,7 @@ struct typeApp: App {
     }
     
     // MARK: - Helper Functions
-    
-    /// Open a new tab in the current window (⌘N or ⌘T)
-    private func openNewTab() {
-        DispatchQueue.main.async {
-            // Get the current key window
-            if let currentWindow = NSApp.keyWindow {
-                // Create a new tab in the existing window
-                let newWindow = NSWindow(
-                    contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-                    styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                    backing: .buffered,
-                    defer: false
-                )
-                
-                let windowId = UUID()
-                newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-                newWindow.contentView = NSHostingView(
-                    rootView: DocumentWindowView(windowId: windowId)
-                        .frame(minWidth: 1000, minHeight: 700)
-                )
-                newWindow.title = "Untitled"
-                
-                // Add as tab to current window
-                currentWindow.addTabbedWindow(newWindow, ordered: .above)
-                newWindow.makeKeyAndOrderFront(nil)
-            } else {
-                // No window exists, create a new one
-                self.openNewWindowSeparate()
-            }
-        }
-    }
-    
-    /// Open a new separate window (⌘⇧N)
-    private func openNewWindowSeparate() {
-        DispatchQueue.main.async {
-            let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            
-            let windowId = UUID()
-            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-            newWindow.contentView = NSHostingView(
-                rootView: DocumentWindowView(windowId: windowId)
-                    .frame(minWidth: 1000, minHeight: 700)
-            )
-            newWindow.title = "Untitled"
-            newWindow.center()
-            newWindow.makeKeyAndOrderFront(nil)
-        }
-    }
 
-    
     /// Open a document in a tab (or new window if none exists)
     private func openDocument() {
         let panel = NSOpenPanel()
@@ -253,65 +175,12 @@ struct typeApp: App {
         
         panel.begin { response in
             if response == .OK, let url = panel.url {
-                // Check if there's a current window to add tab to
-                if NSApp.keyWindow != nil {
-                    self.openDocumentInTab(url: url)
-                } else {
-                    self.openDocumentInNewWindow(url: url)
-                }
+                NotificationCenter.default.post(
+                    name: .loadDocumentInActiveWindow,
+                    object: nil,
+                    userInfo: ["url": url]
+                )
             }
-        }
-    }
-    
-    /// Open a document in a new tab of the current window
-    private func openDocumentInTab(url: URL) {
-        DispatchQueue.main.async {
-            guard let currentWindow = NSApp.keyWindow else {
-                self.openDocumentInNewWindow(url: url)
-                return
-            }
-            
-            let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            
-            let windowId = UUID()
-            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-            newWindow.contentView = NSHostingView(
-                rootView: DocumentWindowView(windowId: windowId, documentURL: url)
-                    .frame(minWidth: 1000, minHeight: 700)
-            )
-            newWindow.title = url.lastPathComponent
-            
-            // Add as tab to current window
-            currentWindow.addTabbedWindow(newWindow, ordered: .above)
-            newWindow.makeKeyAndOrderFront(nil)
-        }
-    }
-
-    
-    /// Open a specific document URL in a new window
-    private func openDocumentInNewWindow(url: URL) {
-        DispatchQueue.main.async {
-            let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            
-            let windowId = UUID()
-            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-            newWindow.contentView = NSHostingView(
-                rootView: DocumentWindowView(windowId: windowId, documentURL: url)
-                    .frame(minWidth: 1000, minHeight: 700)
-            )
-            newWindow.title = url.lastPathComponent
-            newWindow.center()
-            newWindow.makeKeyAndOrderFront(nil)
         }
     }
     
@@ -336,7 +205,6 @@ struct typeApp: App {
 
 // MARK: - Notification Names
 extension Notification.Name {
-    static let newDocument = Notification.Name("newDocument")
     static let openDocument = Notification.Name("openDocument")
     static let saveDocument = Notification.Name("saveDocument")
     static let saveDocumentAs = Notification.Name("saveDocumentAs")
@@ -445,77 +313,15 @@ class TypeAppDelegate: NSObject, NSApplicationDelegate {
     
     private func handleAllDocumentsClosed() {
         Logger.app.info("All documents closed - showing welcome screen")
-        
-        // Create a new window with welcome screen if needed
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            if NSApp.windows.filter({ $0.isVisible }).isEmpty {
-                self.createWelcomeWindow()
-            }
-        }
+        NotificationCenter.default.post(name: .showWelcome, object: nil)
     }
     
     private func openDocumentFile(url: URL) {
         // Check if there's a current window to use as tab
-        if let currentWindow = NSApp.keyWindow {
-            // Open as new tab
-            let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
-                backing: .buffered,
-                defer: false
-            )
-            
-            let windowId = UUID()
-            newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-            newWindow.contentView = NSHostingView(
-                rootView: DocumentWindowView(windowId: windowId, documentURL: url)
-                    .frame(minWidth: 1000, minHeight: 700)
-            )
-            newWindow.title = url.lastPathComponent
-            
-            currentWindow.addTabbedWindow(newWindow, ordered: .above)
-            newWindow.makeKeyAndOrderFront(nil)
-        } else {
-            // Open as new window
-            createDocumentWindow(url: url)
-        }
-    }
-    
-    private func createDocumentWindow(url: URL? = nil) {
-        let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
-            backing: .buffered,
-            defer: false
+        NotificationCenter.default.post(
+            name: .loadDocumentInActiveWindow,
+            object: nil,
+            userInfo: ["url": url]
         )
-        
-        let windowId = UUID()
-        newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-        newWindow.contentView = NSHostingView(
-            rootView: DocumentWindowView(windowId: windowId, documentURL: url)
-                .frame(minWidth: 1000, minHeight: 700)
-        )
-        newWindow.title = url?.lastPathComponent ?? "Untitled"
-        newWindow.center()
-        newWindow.makeKeyAndOrderFront(nil)
-    }
-    
-    private func createWelcomeWindow() {
-        let windowId = UUID()
-        let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 700),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        
-        newWindow.identifier = NSUserInterfaceItemIdentifier(windowId.uuidString)
-        newWindow.contentView = NSHostingView(
-            rootView: DocumentWindowView(windowId: windowId, showWelcome: true)
-                .frame(minWidth: 1000, minHeight: 700)
-        )
-        newWindow.title = "Type"
-        newWindow.center()
-        newWindow.makeKeyAndOrderFront(nil)
     }
 }

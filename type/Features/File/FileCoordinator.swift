@@ -52,10 +52,6 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         // It just provides file operations
     }
     
-    func newDocument() {
-        documentService.newDocument()
-    }
-    
     func openDocument() async {
         do {
             let panel = NSOpenPanel()
@@ -263,11 +259,6 @@ struct FileToolbarView: View {
         HStack(spacing: 12) {
             // File operations
             HStack(spacing: 8) {
-                Button("New") {
-                    coordinator.newDocument()
-                }
-                .buttonStyle(.borderedProminent)
-                
                 Button("Open") {
                     Task {
                         await coordinator.openDocument()
@@ -415,11 +406,6 @@ struct QuickActionsCard: View {
                 .font(.headline)
             
             VStack(spacing: 8) {
-                Button("Create New Document") {
-                    coordinator.newDocument()
-                }
-                .buttonStyle(.borderedProminent)
-                
                 Button("Open Recent File") {
                     coordinator.toggleRecentFiles()
                 }

@@ -35,7 +35,6 @@ struct ModularAppView: View {
                         isFullScreen: $appCoordinator.isFullScreen,
                         showCustomizationPanel: .constant(false),
                         animationSpeed: .constant(.normal),
-                        onNewDocument: { appCoordinator.fileManagementService.newDocument() },
                         onOpenDocument: { appCoordinator.fileManagementService.openDocumentSync() },
                         onSaveDocument: { appCoordinator.fileManagementService.saveDocumentSync() },
                         onSaveDocumentAs: { appCoordinator.fileManagementService.saveDocumentAsSync() },
