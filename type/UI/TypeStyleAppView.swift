@@ -196,8 +196,14 @@ struct TypeStyleAppView: View {
                             isModified: appCoordinator.fileManagementService.isDocumentModified,
                             wordCount: appCoordinator.editorCoordinator.wordCount,
                             pageCount: appCoordinator.editorCoordinator.pageCount,
+                            sceneCount: appCoordinator.outlineCoordinator.outlines.count,
                             cursorPosition: "Line 1, Col 1",
-                            isAutoSaveEnabled: appCoordinator.fileManagementService.autoSaveEnabled
+                            isAutoSaveEnabled: appCoordinator.fileManagementService.autoSaveEnabled,
+                            onToggleSidebar: {
+                                withAnimation(TypeAnimation.spring) {
+                                    isSidebarCollapsed.toggle()
+                                }
+                            }
                         )
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }

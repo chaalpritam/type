@@ -302,35 +302,6 @@ struct TypeSidebar: View {
             }
             
             Spacer()
-            
-            // Stats section (only when expanded)
-            if !isCollapsed {
-                VStack(spacing: TypeSpacing.sm) {
-                    Divider()
-                        .padding(.horizontal, TypeSpacing.md)
-                    
-                    TypeSidebarStats(
-                        wordCount: wordCount,
-                        pageCount: pageCount,
-                        sceneCount: sceneCount
-                    )
-                }
-                .padding(.bottom, TypeSpacing.md)
-            }
-            
-            // Collapse toggle
-            Button(action: {
-                withAnimation(TypeAnimation.spring) {
-                    isCollapsed.toggle()
-                }
-            }) {
-                Image(systemName: isCollapsed ? "sidebar.right" : "sidebar.left")
-                    .font(.system(size: 12))
-                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(.plain)
-            .padding(.bottom, TypeSpacing.sm)
         }
         .frame(width: isCollapsed ? 48 : TypeSpacing.sidebarWidth)
         .background(backgroundColor)
@@ -504,13 +475,22 @@ struct TypeStatusBar: View {
     let isModified: Bool
     let wordCount: Int
     let pageCount: Int
+    let sceneCount: Int
     let cursorPosition: String
     let isAutoSaveEnabled: Bool
+    let onToggleSidebar: () -> Void
     
     var body: some View {
         HStack(spacing: TypeSpacing.lg) {
-            // Left: Document info
+            // Left: sidebar toggle + document info
             HStack(spacing: TypeSpacing.sm) {
+                Button(action: onToggleSidebar) {
+                    Image(systemName: "sidebar.leading")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                
                 // Modified indicator
                 if isModified {
                     Circle()
@@ -528,6 +508,10 @@ struct TypeStatusBar: View {
             
             // Right: Stats
             HStack(spacing: TypeSpacing.md) {
+                Text("\(sceneCount) scenes")
+                    .font(TypeTypography.caption2)
+                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                
                 Text("\(wordCount) words")
                     .font(TypeTypography.caption2)
                     .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
@@ -803,8 +787,10 @@ struct TypeProgressIndicator: View {
             isModified: true,
             wordCount: 12543,
             pageCount: 98,
+            sceneCount: 54,
             cursorPosition: "Line 234, Col 12",
-            isAutoSaveEnabled: true
+            isAutoSaveEnabled: true,
+            onToggleSidebar: {}
         )
     }
     .frame(width: 800, height: 100)
