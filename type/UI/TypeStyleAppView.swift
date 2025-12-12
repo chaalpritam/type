@@ -103,10 +103,16 @@ struct TypeStyleAppView: View {
                         // Main editor area
                         ZStack {
                             if showPreviewPanel {
-                                TypePreviewPanel(
-                                    elements: appCoordinator.editorCoordinator.fountainParser.elements,
-                                    titlePage: appCoordinator.editorCoordinator.fountainParser.titlePage
-                                )
+                            TypePreviewPanel(
+                                elements: appCoordinator.editorCoordinator.fountainParser.elements,
+                                titlePage: appCoordinator.editorCoordinator.fountainParser.titlePage,
+                                onExitPreview: {
+                                    withAnimation(TypeAnimation.standard) {
+                                        showPreviewPanel = false
+                                        isFocusMode = false
+                                    }
+                                }
+                            )
                                 .transition(.opacity)
                                 .zIndex(1)
                             } else {
@@ -263,6 +269,13 @@ struct TypeStyleAppView: View {
         }
         .onDisappear {
             keyboardMonitor.stopMonitoring()
+        }
+        .onChange(of: showPreviewPanel) { _, isShowing in
+            if isShowing {
+                withAnimation(TypeAnimation.standard) {
+                    isFocusMode = true
+                }
+            }
         }
         // Handle notification center messages
         .onReceive(NotificationCenter.default.publisher(for: .showWelcome)) { _ in
@@ -431,45 +444,77 @@ struct TypePreviewPanel: View {
     @Environment(\.colorScheme) var colorScheme
     let elements: [FountainElement]
     let titlePage: [String: String]
+    let onExitPreview: () -> Void
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                Text("Preview")
-                    .font(TypeTypography.subheadline)
-                    .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
-                
-                Spacer()
-                
-                Text("\(elements.count) elements")
-                    .font(TypeTypography.caption)
-                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
-            }
-            .padding(.horizontal, TypeSpacing.md)
-            .padding(.vertical, TypeSpacing.sm)
-            .background(colorScheme == .dark ? TypeColors.sidebarBackgroundDark : TypeColors.sidebarBackgroundLight)
+        ZStack {
+            // Soft backdrop to mimic focus mode
+            LinearGradient(
+                colors: [
+                    (colorScheme == .dark ? Color.black : Color.white).opacity(0.02),
+                    (colorScheme == .dark ? Color.black : Color.white).opacity(0.06)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
-            Divider()
-            
-            // Preview content
+            // Preview content rendered as a centered A4-style page with shadow
             ScrollView {
-                VStack(alignment: .leading, spacing: TypeSpacing.sm) {
-                    ForEach(Array(elements.enumerated()), id: \.offset) { index, element in
-                        TypePreviewElement(element: element)
+                VStack {
+                    VStack(alignment: .leading, spacing: TypeSpacing.sm) {
+                        ForEach(Array(elements.enumerated()), id: \.offset) { _, element in
+                            TypePreviewElement(element: element)
+                        }
                     }
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 40)
+                    .frame(width: pageWidth, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white)
+                            .shadow(color: Color.black.opacity(0.16), radius: 18, x: 0, y: 12)
+                            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.black.opacity(0.08), lineWidth: 0.5)
+                    )
+                    .padding(.vertical, TypeSpacing.xl)
+                    .environment(\.colorScheme, .light) // keep the page paper-like
                 }
-                .padding(TypeSpacing.md)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, TypeSpacing.xl)
+            }
+            .scrollIndicators(.hidden)
+            .padding(.vertical, TypeSpacing.md)
+            .overlay(alignment: .topTrailing) {
+                Button(action: onExitPreview) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.down.left.and.arrow.up.right")
+                            .font(.system(size: 10))
+                        Text("Exit Preview")
+                            .font(TypeTypography.caption2)
+                    }
+                    .foregroundColor(colorScheme == .dark ? TypeColors.tertiaryTextDark : TypeColors.tertiaryTextLight)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.06))
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, TypeSpacing.md)
+                .padding(.top, TypeSpacing.sm)
+                .opacity(0.8)
             }
         }
         .background(colorScheme == .dark ? TypeColors.editorBackgroundDark : TypeColors.editorBackgroundLight)
-        .overlay(
-            Rectangle()
-                .frame(width: 0.5)
-                .foregroundColor(colorScheme == .dark ? TypeColors.dividerDark : TypeColors.dividerLight),
-            alignment: .leading
-        )
     }
+    
+    /// Approximate A4 width in points; height grows with content
+    private var pageWidth: CGFloat { 620 }
 }
 
 // MARK: - Type Preview Element
