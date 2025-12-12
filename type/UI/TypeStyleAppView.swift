@@ -421,29 +421,21 @@ struct TypePreviewPanel: View {
             )
             .ignoresSafeArea()
             
-            // Preview content rendered as a centered A4-style page with shadow
+            // Preview content rendered as centered A4-style pages with shadow
             ScrollView {
                 VStack {
-                    VStack(alignment: .leading, spacing: TypeSpacing.sm) {
-                        ForEach(Array(elements.enumerated()), id: \.offset) { _, element in
-                            TypePreviewElement(element: element)
-                        }
+                    pageContainer {
+                        TitlePagePreview(titlePage: titlePage)
                     }
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 40)
-                    .frame(width: pageWidth, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.white)
-                            .shadow(color: Color.black.opacity(0.16), radius: 18, x: 0, y: 12)
-                            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.black.opacity(0.08), lineWidth: 0.5)
-                    )
-                    .padding(.vertical, TypeSpacing.xl)
-                    .environment(\.colorScheme, .light) // keep the page paper-like
+                    
+                    pageContainer {
+                        VStack(alignment: .leading, spacing: TypeSpacing.sm) {
+                            ForEach(Array(elements.enumerated()), id: \.offset) { _, element in
+                                TypePreviewElement(element: element)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, TypeSpacing.xl)
@@ -477,6 +469,99 @@ struct TypePreviewPanel: View {
     
     /// Approximate A4 width in points; height grows with content
     private var pageWidth: CGFloat { 620 }
+    private var pageHeight: CGFloat { 877 } // Approx A4 height in points (11.69in * 75)
+    
+    @ViewBuilder
+    private func pageContainer<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 32)
+            .padding(.vertical, 40)
+            .frame(width: pageWidth, alignment: .topLeading)
+            .frame(minHeight: pageHeight, alignment: .topLeading)
+            .background(
+                Rectangle()
+                    .fill(Color.white)
+                    .shadow(color: Color.black.opacity(0.16), radius: 18, x: 0, y: 12)
+                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+            )
+            .overlay(
+                Rectangle()
+                    .stroke(Color.black.opacity(0.08), lineWidth: 0.5)
+            )
+            .padding(.vertical, TypeSpacing.xl)
+            .environment(\.colorScheme, .light) // keep the page paper-like
+    }
+}
+
+// MARK: - Title Page Preview
+private struct TitlePagePreview: View {
+    @Environment(\.colorScheme) var colorScheme
+    let titlePage: [String: String]
+    
+    private var titleText: String {
+        titlePage["title"] ?? "Screenplay"
+    }
+    
+    private var creditText: String? {
+        titlePage["credit"]
+    }
+    
+    private var authorText: String? {
+        titlePage["author"]
+    }
+    
+    private var contactLines: [String] {
+        let reserved = Set(["title", "credit", "author"])
+        return titlePage
+            .filter { !reserved.contains($0.key.lowercased()) }
+            .sorted { $0.key < $1.key }
+            .map { $0.value }
+    }
+    
+    var body: some View {
+        ZStack {
+            VStack {
+                Spacer()
+                
+                VStack(spacing: TypeSpacing.sm) {
+                    Text(titleText)
+                        .font(.system(size: 28, weight: .bold))
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    if let creditText {
+                        Text(creditText)
+                            .font(TypeTypography.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(TypeColors.scenePurple)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    
+                    if let authorText {
+                        Text(authorText)
+                            .font(TypeTypography.body)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                }
+                .padding(.horizontal, TypeSpacing.lg)
+                
+                Spacer()
+                
+                if !contactLines.isEmpty {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        ForEach(contactLines, id: \.self) { line in
+                            Text(line)
+                                .font(TypeTypography.caption)
+                                .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Type Preview Element
