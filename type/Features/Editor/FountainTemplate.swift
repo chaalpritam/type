@@ -577,57 +577,337 @@ struct FountainTemplate {
     // MARK: - Genre-Specific Templates
     
     static let horrorFeature = """
-    Title: "THE SHADOW HOUSE"
-    Credit: Written by
-    Author: Your Name
-    Genre: Horror/Thriller
+    Title: THE MONKEY'S PAW
+    Credit: Adapted from the short story by W.W. Jacobs
+    Author: Original Adaptation
+    Genre: Horror/Supernatural
+    License: Creative Commons Attribution 4.0 International (CC BY 4.0)
     Draft date: \(DateFormatter.templateDateFormatter.string(from: Date()))
-    
+
     ===
-    
+
     FADE IN:
-    
-    EXT. OLD HOUSE - NIGHT
-    
-    A decrepit Victorian house stands in the moonlight. Windows are dark, paint is peeling. Something feels wrong about this place.
-    
+
+    EXT. COUNTRY COTTAGE - NIGHT
+
+    A remote cottage sits isolated on a dark country road. Rain beats against the windows. Wind howls through bare trees.
+
     ===
-    
-    INT. HOUSE - FOYER - NIGHT
-    
-    SARAH, 25, enters cautiously, flashlight in hand. The floorboards creak under her feet.
-    
-    SARAH
-    (calling out)
-    Hello? Anyone here?
-    
-    Silence. Then a distant sound from upstairs.
-    
+
+    INT. COTTAGE - PARLOR - NIGHT
+
+    A cozy room. Fire crackles in the hearth. HERBERT WHITE, 21, handsome and cheerful, plays chess with his father, MR. WHITE, 60s, gray-haired and stubborn. MRS. WHITE, 50s, wise and gentle, knits by the fire.
+
+    MR. WHITE
+    (moving a piece)
+    Check.
+
+    HERBERT
+    (grinning)
+    I don't think so, Father.
+
+    Herbert makes a counter-move. Mr. White frowns, studying the board.
+
+    MRS. WHITE
+    (looking up)
+    Did you hear that? Someone's coming up the path.
+
+    A heavy KNOCK at the door. Mr. White rises.
+
     ===
-    
-    INT. HOUSE - UPSTAIRS HALLWAY - NIGHT
-    
-    Sarah climbs the stairs slowly. The sound grows louder. It's coming from behind a closed door.
-    
-    SARAH
-    (nervous)
-    This is not a good idea.
-    
-    She reaches for the doorknob. It's cold to the touch.
-    
+
+    INT. COTTAGE - FRONT DOOR - NIGHT
+
+    Mr. White opens the door. SERGEANT-MAJOR MORRIS, 50s, weather-beaten face, dripping wet from rain, stands in the doorway.
+
+    MR. WHITE
+    (delighted)
+    Morris! Come in, come in!
+
     ===
-    
-    INT. HOUSE - BEDROOM - NIGHT
-    
-    Sarah opens the door. The room is empty, but the sound continues. It's coming from the walls.
-    
-    SARAH
-    (terrified)
-    What is that?
-    
-    A shadow moves in the corner. Sarah's flashlight flickers.
-    
+
+    INT. COTTAGE - PARLOR - NIGHT - LATER
+
+    Morris sits by the fire, glass of whiskey in hand. The family listens intently.
+
+    MORRIS
+    (distant)
+    India. Twenty-one years I spent there. Saw things that would turn a man's hair white.
+
+    HERBERT
+    (eager)
+    Tell us about the magic. You said you'd seen real magic.
+
+    Morris hesitates, takes a long drink.
+
+    MORRIS
+    Magic's not what you think, boy. Some things are better left alone.
+
+    He reaches into his pocket, pulls out a small, dried MONKEY'S PAW. Mummified, grotesque.
+
+    MRS. WHITE
+    (recoiling)
+    What is that horrible thing?
+
+    MORRIS
+    An old fakir put a spell on it. Wanted to show that fate ruled people's lives. That those who interfered with it did so to their sorrow.
+
+    MR. WHITE
+    (fascinated)
+    What kind of spell?
+
+    MORRIS
+    (reluctant)
+    It grants three wishes to three separate men.
+
+    MR. WHITE
+    Well, why don't you have three more wishes then?
+
+    MORRIS
+    (haunted)
+    I have. And so has another man before me.
+
+    MRS. WHITE
+    What did you wish for?
+
+    MORRIS
+    (dark)
+    I can't tell you. But the first man's third wish was for death. That's how I got the paw.
+
+    Heavy silence. The fire crackles.
+
+    MORRIS
+    (suddenly)
+    I'm going to burn it.
+
+    He throws the paw into the fire. Mr. White lunges forward, snatches it from the flames.
+
+    MR. WHITE
+    If you don't want it, give it to me.
+
+    MORRIS
+    (urgent)
+    I won't. I threw it on the fire to save you from it. If you must keep it, don't blame me for what happens.
+
+    MR. WHITE
+    How do you wish on it?
+
+    MORRIS
+    (resigned)
+    Hold it in your right hand and wish aloud. But I warn you of the consequences.
+
+    ===
+
+    INT. COTTAGE - PARLOR - NIGHT - LATER
+
+    Morris has left. The family examines the paw by candlelight.
+
+    HERBERT
+    (teasing)
+    Come on, Father. Wish for something. Make us rich!
+
+    MR. WHITE
+    (nervous laugh)
+    I don't know what to wish for. I have everything I want.
+
+    MRS. WHITE
+    (practical)
+    Then wish for two hundred pounds to pay off the house.
+
+    MR. WHITE
+    (holding the paw)
+    This is foolish.
+
+    He closes his eyes, holds the paw up.
+
+    MR. WHITE
+    I wish for two hundred pounds.
+
+    A CRASH from the piano. They all jump. The paw TWISTS in Mr. White's hand like a living thing. He drops it with a cry.
+
+    MR. WHITE
+    (shaken)
+    It moved! The paw moved in my hand!
+
+    HERBERT
+    (forcing a laugh)
+    Must have been the draft from the door.
+
+    But his face is pale. Mrs. White bends down, picks up the paw carefully, sets it on the mantelpiece.
+
+    ===
+
+    INT. COTTAGE - KITCHEN - DAY
+
+    Morning. Bright sunshine. The horror of last night seems absurd. Mr. and Mrs. White eat breakfast. The paw sits on the mantelpiece, ordinary and harmless.
+
+    MRS. WHITE
+    (smiling)
+    I suppose we should expect a lawyer to arrive with two hundred pounds in gold coins.
+
+    They laugh. A KNOCK at the door. They freeze, then laugh harder at their own nervousness.
+
+    ===
+
+    INT. COTTAGE - FRONT DOOR - DAY
+
+    Mrs. White opens the door. A well-dressed MAN, 40s, uncomfortable, stands there.
+
+    MAN
+    I'm from Maw and Meggins. I've come about your son Herbert.
+
+    ===
+
+    INT. COTTAGE - PARLOR - DAY
+
+    The man sits. Mr. and Mrs. White stand, frightened.
+
+    MAN
+    (carefully)
+    I'm sorry to be the bearer of bad news. There was an accident at the factory this morning.
+
+    MRS. WHITE
+    (barely breathing)
+    Herbert?
+
+    MAN
+    I'm deeply sorry. Your son was caught in the machinery. His death was instantaneous and painless.
+
+    Mrs. White doesn't scream. She sits down very slowly, very straight.
+
+    MAN
+    (continuing)
+    The company wishes to express its sympathy. And to offer compensation for your loss.
+
+    He places an envelope on the table.
+
+    MAN
+    Two hundred pounds.
+
+    ===
+
+    INT. COTTAGE - PARLOR - NIGHT - ONE WEEK LATER
+
+    Dark. Cold. No fire. Mr. White sits motionless in his chair. Mrs. White sits bolt upright, staring at nothing.
+
+    The CLOCK strikes two.
+
+    MRS. WHITE
+    (suddenly)
+    The paw! Where's the paw?
+
+    MR. WHITE
+    (dull)
+    What?
+
+    MRS. WHITE
+    (wild)
+    The monkey's paw! We have two more wishes!
+
+    MR. WHITE
+    (realizing)
+    No. No, we can't.
+
+    MRS. WHITE
+    (frantic)
+    Wish Herbert alive again! Wish our boy back!
+
+    MR. WHITE
+    (horrified)
+    He's been dead a week. The machinery - you don't know what he looks like now.
+
+    MRS. WHITE
+    (desperate)
+    I don't care! Bring him back!
+
+    She tears the paw from the mantelpiece, thrusts it at him.
+
+    MRS. WHITE
+    Wish!
+
+    MR. WHITE
+    (trembling)
+    I wish my son alive again.
+
+    Silence. Nothing happens.
+
+    MRS. WHITE
+    (whispering)
+    Nothing. It was just a coincidence before. Just a horrible coincidence.
+
+    She goes upstairs. Mr. White sits in the dark.
+
+    Long silence.
+
+    Then - a single KNOCK at the door. Distant. Soft.
+
+    Mr. White freezes.
+
+    Another KNOCK. Louder.
+
+    From upstairs, Mrs. White's voice.
+
+    MRS. WHITE (O.S.)
+    (excited)
+    What was that? Did you hear that?
+
+    She rushes downstairs in her nightgown.
+
+    MRS. WHITE
+    It's Herbert! It's our boy!
+
+    KNOCK. KNOCK. KNOCK. Slow. Heavy. Wrong.
+
+    MRS. WHITE
+    (rushing to door)
+    I'm coming, Herbert! Mother's coming!
+
+    She struggles with the bolt. Her hands shake.
+
+    The KNOCKING continues. Persistent. Mechanical.
+
+    Mr. White scrambles on his hands and knees, searching for the paw in the darkness.
+
+    MRS. WHITE
+    The bolt's stuck! Herbert, wait!
+
+    The KNOCKING grows LOUDER. More insistent.
+
+    MR. WHITE
+    (frantic)
+    Where is it? Where is it?
+
+    Mrs. White slides the bolt. Reaches for the door handle.
+
+    Mr. White's hand closes on the paw.
+
+    MR. WHITE
+    (screaming)
+    I wish him dead! I wish him back in his grave!
+
+    The KNOCKING STOPS.
+
+    Mrs. White throws the door open.
+
+    INT./EXT. COTTAGE - DOORWAY - NIGHT
+
+    The doorway frames an empty country road. Rain falls. Wind howls.
+
+    Nothing.
+
+    Mrs. White stands in the doorway, looking out at the empty night.
+
+    A long, WAILING CRY tears from her throat.
+
+    Mr. White sits on the floor, the monkey's paw clutched in his hand, tears streaming down his face.
+
     FADE OUT.
+
+    THE END
+
+    ---
+
+    This screenplay is an adaptation of the public domain short story "The Monkey's Paw" by W.W. Jacobs (1902). This adaptation is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
     """
     
     static let mysteryFeature = """
