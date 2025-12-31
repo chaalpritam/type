@@ -168,6 +168,8 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
                 return try await exportToFinalDraft(document: document, to: url)
             case .fountain:
                 return try await exportToFountain(document: document, to: url)
+            case .html:
+                return try await exportToHTML(document: document, to: url)
             case .plainText:
                 return try await exportToPlainText(document: document, to: url)
             }
@@ -192,7 +194,13 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
         try document.content.write(to: url, atomically: true, encoding: .utf8)
         return url
     }
-    
+
+    private func exportToHTML(document: ScreenplayDocument, to url: URL) async throws -> URL {
+        let htmlContent = generateHTML(from: document.content)
+        try htmlContent.write(to: url, atomically: true, encoding: .utf8)
+        return url
+    }
+
     private func exportToPlainText(document: ScreenplayDocument, to url: URL) async throws -> URL {
         try document.content.write(to: url, atomically: true, encoding: .utf8)
         return url
@@ -218,8 +226,37 @@ class FileCoordinator: BaseModuleCoordinator, ModuleCoordinator {
             </Content>
         </FinalDraft>
         """
-        
+
         return xmlString.data(using: .utf8) ?? Data()
+    }
+
+    private func generateHTML(from content: String) -> String {
+        // Simple HTML generation with basic styling
+        // In a real app, you'd want to implement proper Fountain to HTML conversion
+        let htmlContent = content
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\n", with: "<br>\n")
+
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Screenplay</title>
+            <style>
+                body { font-family: 'Courier New', monospace; margin: 40px; line-height: 1.6; }
+                pre { white-space: pre-wrap; word-wrap: break-word; }
+            </style>
+        </head>
+        <body>
+            <pre>\(htmlContent)</pre>
+        </body>
+        </html>
+        """
+
+        return html
     }
 }
 
@@ -503,30 +540,45 @@ struct RecentFilesView: View {
 }
 
 // MARK: - Export Format
-enum ExportFormat: String, CaseIterable {
+enum ExportFormat: String, CaseIterable, Identifiable {
     case pdf = "PDF"
     case finalDraft = "Final Draft"
     case fountain = "Fountain"
+    case html = "HTML"
     case plainText = "Plain Text"
-    
+
+    var id: String { rawValue }
+
     var displayName: String {
         return rawValue
     }
-    
+
+    var icon: String {
+        switch self {
+        case .pdf: return "doc.richtext.fill"
+        case .finalDraft: return "doc.text.fill"
+        case .fountain: return "doc.plaintext.fill"
+        case .html: return "globe"
+        case .plainText: return "doc.plaintext"
+        }
+    }
+
     var fileExtension: String {
         switch self {
         case .pdf: return "pdf"
         case .finalDraft: return "fdx"
         case .fountain: return "fountain"
+        case .html: return "html"
         case .plainText: return "txt"
         }
     }
-    
+
     var contentType: UTType {
         switch self {
         case .pdf: return .pdf
         case .finalDraft: return UTType(filenameExtension: "fdx") ?? .xml
         case .fountain: return .plainText
+        case .html: return UTType(filenameExtension: "html") ?? .html
         case .plainText: return .plainText
         }
     }

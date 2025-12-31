@@ -244,6 +244,24 @@ open type.xcodeproj
 ./build_and_install.sh
 ```
 
+### Creating a DMG Installer
+```bash
+# Create a distributable DMG installer
+./create_dmg.sh
+
+# Create DMG with clean build
+./create_dmg.sh -c
+
+# Create DMG and keep build artifacts
+./create_dmg.sh -k
+```
+
+The DMG installer allows users to easily download and install Type by dragging it to their Applications folder. The script automatically:
+- Builds the app in Release configuration
+- Creates a professional DMG with custom layout
+- Includes an Applications folder symlink for easy installation
+- Compresses the DMG for optimal file size
+
 See [`docs/BUILD_INSTALL.md`](docs/BUILD_INSTALL.md) for detailed build instructions.
 
 ## 🧪 Testing

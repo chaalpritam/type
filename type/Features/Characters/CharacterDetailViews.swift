@@ -666,11 +666,11 @@ struct SectionHeader: View {
     }
 }
 
-struct InfoRow: View {
+struct CharacterInfoRow: View {
     @Environment(\.colorScheme) var colorScheme
     let title: String
     let value: String
-    
+
     var body: some View {
         TypeInfoRow(title: title, value: value)
     }

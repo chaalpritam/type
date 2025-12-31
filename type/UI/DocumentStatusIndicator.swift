@@ -142,10 +142,10 @@ struct DocumentStatusIndicator: View {
                 rotationAngle = 360
             }
         }
-        .onChange(of: fileService.isDocumentModified) { _ in
+        .onChange(of: fileService.fileManager.isDocumentModified) { _ in
             updateDocumentState()
         }
-        .onChange(of: fileService.isSaving) { _ in
+        .onChange(of: fileService.fileManager.isSaving) { _ in
             updateDocumentState()
             if documentState.isAnimated {
                 rotationAngle = 360
@@ -185,11 +185,11 @@ struct DocumentStatusIndicator: View {
     }
 
     private func updateDocumentState() {
-        if fileService.isSaving {
+        if fileService.fileManager.isSaving {
             documentState = .saving
-        } else if fileService.isDocumentModified {
+        } else if fileService.fileManager.isDocumentModified {
             documentState = .modified
-        } else if fileService.currentFileURL != nil {
+        } else if fileService.fileManager.currentFileURL != nil {
             documentState = .saved
         } else {
             documentState = .unsaved
@@ -287,8 +287,8 @@ struct DetailedStatusPopover: View {
 
             // Document Info
             VStack(alignment: .leading, spacing: 8) {
-                InfoRow(label: "File", value: fileService.currentFileURL?.lastPathComponent ?? "Untitled")
-                InfoRow(label: "Location", value: fileService.currentFileURL?.deletingLastPathComponent().path ?? "Not saved")
+                InfoRow(label: "File", value: fileService.fileManager.currentFileURL?.lastPathComponent ?? "Untitled")
+                InfoRow(label: "Location", value: fileService.fileManager.currentFileURL?.deletingLastPathComponent().path ?? "Not saved")
                 InfoRow(label: "Word count", value: "\(statisticsService.wordCount)")
                 InfoRow(label: "Page count", value: "\(statisticsService.pageCount)")
                 InfoRow(label: "Characters", value: "\(statisticsService.characterCount)")
@@ -327,7 +327,7 @@ struct DetailedStatusPopover: View {
 
             // Actions
             HStack(spacing: 8) {
-                if fileService.currentFileURL != nil && fileService.isDocumentModified {
+                if fileService.fileManager.currentFileURL != nil && fileService.fileManager.isDocumentModified {
                     Button("Save Now") {
                         fileService.saveDocumentSync()
                     }
@@ -335,12 +335,12 @@ struct DetailedStatusPopover: View {
                 }
 
                 Button("Open Location") {
-                    if let url = fileService.currentFileURL {
+                    if let url = fileService.fileManager.currentFileURL {
                         NSWorkspace.shared.activateFileViewerSelecting([url])
                     }
                 }
                 .buttonStyle(.bordered)
-                .disabled(fileService.currentFileURL == nil)
+                .disabled(fileService.fileManager.currentFileURL == nil)
             }
         }
         .padding()
@@ -396,7 +396,7 @@ struct AutosaveProgressIndicator: View {
     private let autosaveInterval: TimeInterval = 30 // 30 seconds
 
     var body: some View {
-        if fileService.isDocumentModified && fileService.currentFileURL != nil {
+        if fileService.fileManager.isDocumentModified && fileService.fileManager.currentFileURL != nil {
             VStack(spacing: 4) {
                 HStack(spacing: 6) {
                     Image(systemName: "clock.arrow.circlepath")

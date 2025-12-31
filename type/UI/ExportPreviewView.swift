@@ -8,34 +8,6 @@
 import SwiftUI
 import AppKit
 
-// MARK: - Export Format
-enum ExportFormat: String, CaseIterable, Identifiable {
-    case pdf = "PDF"
-    case fdx = "Final Draft"
-    case html = "HTML"
-    case plainText = "Plain Text"
-
-    var id: String { rawValue }
-
-    var icon: String {
-        switch self {
-        case .pdf: return "doc.richtext.fill"
-        case .fdx: return "doc.text.fill"
-        case .html: return "globe"
-        case .plainText: return "doc.plaintext"
-        }
-    }
-
-    var fileExtension: String {
-        switch self {
-        case .pdf: return "pdf"
-        case .fdx: return "fdx"
-        case .html: return "html"
-        case .plainText: return "txt"
-        }
-    }
-}
-
 // MARK: - Export Options
 struct ExportOptions {
     // PDF options
@@ -138,8 +110,10 @@ struct ExportPreviewView: View {
                                 PDFOptionsView(options: $exportOptions)
                             case .html:
                                 HTMLOptionsView(options: $exportOptions)
-                            case .fdx:
+                            case .finalDraft:
                                 FDXOptionsView(options: $exportOptions)
+                            case .fountain:
+                                EmptyView()
                             case .plainText:
                                 PlainTextOptionsView(options: $exportOptions)
                             }
@@ -240,7 +214,7 @@ struct ExportPreviewView: View {
     }
 
     private var estimatedPages: Int {
-        max(1, documentController.statisticsService.wordCount / 250)
+        max(1, documentController.wordCount / 250)
     }
 
     private func performExport() async {
@@ -253,8 +227,10 @@ struct ExportPreviewView: View {
             switch selectedFormat {
             case .pdf:
                 url = try await documentController.exportToPDF()
-            case .fdx:
+            case .finalDraft:
                 url = try await documentController.exportToFDX()
+            case .fountain:
+                url = nil  // Fountain export to be implemented
             case .html:
                 url = try await documentController.exportToHTML()
             case .plainText:
@@ -439,8 +415,9 @@ struct PreviewContentView: View {
                     // Content preview (first page)
                     ScrollView {
                         VStack(alignment: .leading, spacing: 4) {
-                            ForEach(Array(documentController.parser.elements.prefix(30).enumerated()), id: \.offset) { index, element in
-                                PreviewElement(element: element, format: format)
+                            let elements = Array(documentController.parser.elements.prefix(30))
+                            ForEach(0..<elements.count, id: \.self) { index in
+                                PreviewElement(element: elements[index], format: format)
                             }
 
                             if documentController.parser.elements.count > 30 {

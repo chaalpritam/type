@@ -57,6 +57,135 @@ find ~/Library/Developer/Xcode/DerivedData -name "type.app" -type d
 cp -R "/Users/username/Library/Developer/Xcode/DerivedData/type-*/Build/Products/Release/type.app" /Applications/
 ```
 
+## Method 3: Using Automated Build Script
+
+### Quick Build and Install
+The repository includes a convenient script that automates the entire build and installation process:
+
+```bash
+# Basic build and install
+./build_and_install.sh
+
+# Clean build and install
+./build_and_install.sh -c
+
+# Build, install, and launch
+./build_and_install.sh -l
+```
+
+This script will:
+1. Check for required prerequisites (Xcode)
+2. Build the app in Release configuration
+3. Locate the built app in DerivedData
+4. Install it to /Applications
+5. Verify the installation
+6. Optionally launch the app
+
+## Method 4: Creating a DMG Installer
+
+### Why Create a DMG?
+A DMG (Disk Image) installer provides a professional, user-friendly way to distribute your app. Users can simply:
+1. Download the DMG file
+2. Open it
+3. Drag the app to the Applications folder
+
+### Creating the DMG
+The repository includes a script that creates a distributable DMG installer:
+
+```bash
+# Create DMG with default settings
+./create_dmg.sh
+
+# Create DMG with clean build
+./create_dmg.sh -c
+
+# Create DMG and keep build artifacts for inspection
+./create_dmg.sh -k
+
+# Skip building and use existing build
+./create_dmg.sh -s
+```
+
+### What the Script Does
+
+The `create_dmg.sh` script performs the following steps:
+
+1. **Builds the App**
+   - Compiles in Release configuration
+   - Creates an archive (.xcarchive)
+   - Exports the app bundle
+
+2. **Creates DMG Layout**
+   - Copies the app to a staging area
+   - Creates an Applications folder symlink
+   - Customizes the window appearance (icon size, positioning)
+
+3. **Generates Final DMG**
+   - Creates a temporary writable DMG
+   - Sets custom window properties using AppleScript
+   - Converts to compressed read-only format
+   - Verifies DMG integrity
+
+### DMG Output
+
+The script creates a DMG file named: `Type-Installer-{version}.dmg`
+
+For example: `Type-Installer-1.0.0.dmg`
+
+The DMG includes:
+- **Type.app** - The application bundle at 150,200 position
+- **Applications** - Symlink to /Applications at 450,200 position
+- Custom window size (600x400)
+- Icon view with 100pt icons
+
+### Testing the DMG
+
+After creation, test the DMG:
+
+```bash
+# Open the DMG
+open Type-Installer-1.0.0.dmg
+
+# Mount it and test drag-to-Applications
+# Then eject and try reinstalling
+```
+
+### Distribution
+
+Once you have the DMG, you can:
+1. Upload to GitHub Releases
+2. Host on your website
+3. Share via direct download link
+4. Submit to third-party distribution platforms
+
+### DMG Script Options
+
+```bash
+-h, --help          Show help message
+-c, --clean         Clean all previous builds and DMGs
+-k, --keep-build    Keep build directory after DMG creation
+-s, --skip-build    Skip building, use existing build
+```
+
+### Troubleshooting DMG Creation
+
+**AppleScript Permission Error**
+If you get an AppleScript error when running the script:
+1. Go to **System Preferences** → **Privacy & Security** → **Automation**
+2. Allow Terminal (or your terminal app) to control Finder
+
+**Code Signing Issues**
+If the export fails:
+- The script will fall back to copying the app directly from the archive
+- The app may show security warnings for users
+- For distribution, configure proper code signing in Xcode
+
+**DMG Not Mounting**
+If the created DMG won't mount:
+- Run `./create_dmg.sh -c` to clean and rebuild
+- Check the console output for hdiutil errors
+- Ensure you have enough disk space
+
 ## Verification
 
 ### Check Installation

@@ -422,10 +422,10 @@ struct CharacterStatisticsView: View {
                 VStack(spacing: TypeSpacing.xl) {
                     // Overview stats
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: TypeSpacing.md) {
-                        StatCard(label: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3", color: TypeColors.accent)
-                        StatCard(label: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "text.bubble", color: TypeColors.sceneGreen)
-                        StatCard(label: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis", color: TypeColors.scenePurple)
-                        StatCard(label: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "number", color: TypeColors.sceneOrange)
+                        CharacterStatCard(label: "Total Characters", value: "\(statistics.totalCharacters)", icon: "person.3", color: TypeColors.accent)
+                        CharacterStatCard(label: "With Dialogue", value: "\(statistics.charactersWithDialogue)", icon: "text.bubble", color: TypeColors.sceneGreen)
+                        CharacterStatCard(label: "With Arcs", value: "\(statistics.charactersWithArcs)", icon: "chart.line.uptrend.xyaxis", color: TypeColors.scenePurple)
+                        CharacterStatCard(label: "Avg Dialogue", value: String(format: "%.1f", statistics.averageDialogueCount), icon: "number", color: TypeColors.sceneOrange)
                     }
                     
                     // Gender breakdown
@@ -479,23 +479,23 @@ struct CharacterStatisticsView: View {
 }
 
 // MARK: - Stat Card
-struct StatCard: View {
+struct CharacterStatCard: View {
     @Environment(\.colorScheme) var colorScheme
     let label: String
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: TypeSpacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: 16))
                 .foregroundColor(color)
-            
+
             Text(value)
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(colorScheme == .dark ? TypeColors.primaryTextDark : TypeColors.primaryTextLight)
-            
+
             Text(label)
                 .font(TypeTypography.caption)
                 .foregroundColor(colorScheme == .dark ? TypeColors.secondaryTextDark : TypeColors.secondaryTextLight)

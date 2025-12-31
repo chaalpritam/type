@@ -714,10 +714,10 @@ struct OutlineStatisticsView: View {
                     // Overview
                     DetailSection(title: "Overview") {
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: TypeSpacing.md) {
-                            StatCard(label: "Total Nodes", value: "\(statistics.totalNodes)", icon: "list.bullet", color: TypeColors.accent)
-                            StatCard(label: "Completed", value: "\(statistics.completedNodes)", icon: "checkmark.circle", color: TypeColors.sceneGreen)
-                            StatCard(label: "Total Words", value: "\(statistics.totalWords)", icon: "text.word.spacing", color: TypeColors.scenePurple)
-                            StatCard(label: "Avg Words", value: String(format: "%.1f", statistics.averageWordsPerNode), icon: "number", color: TypeColors.sceneOrange)
+                            StatCard(title: "Total Nodes", value: "\(statistics.totalNodes)", icon: "list.bullet", color: TypeColors.accent)
+                            StatCard(title: "Completed", value: "\(statistics.completedNodes)", icon: "checkmark.circle", color: TypeColors.sceneGreen)
+                            StatCard(title: "Total Words", value: "\(statistics.totalWords)", icon: "text.word.spacing", color: TypeColors.scenePurple)
+                            StatCard(title: "Avg Words", value: String(format: "%.1f", statistics.averageWordsPerNode), icon: "number", color: TypeColors.sceneOrange)
                         }
                     }
                     

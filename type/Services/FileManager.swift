@@ -6,9 +6,14 @@ import UniformTypeIdentifiers
 class FileManager: ObservableObject {
     @Published var currentDocument: ScreenplayDocument?
     @Published var isDocumentModified = false
+    @Published var isSaving = false
     @Published var autoSaveEnabled = true
     @Published var recentFiles: [URL] = []
-    
+
+    var currentFileURL: URL? {
+        return currentDocument?.url
+    }
+
     private let autoSaveInterval: TimeInterval = 30.0 // 30 seconds
     private var autoSaveTimer: Timer?
     private let maxRecentFiles = 10
@@ -76,7 +81,10 @@ class FileManager: ObservableObject {
         guard let document = currentDocument else {
             throw FileError.noDocument
         }
-        
+
+        isSaving = true
+        defer { isSaving = false }
+
         try document.content.write(to: url, atomically: true, encoding: .utf8)
         currentDocument?.url = url
         isDocumentModified = false
