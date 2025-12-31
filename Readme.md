@@ -57,7 +57,8 @@ A modern, professional screenplay writing application for macOS with real-time F
 - **Activity tracking** for team awareness
 
 ### 💾 File Management
-- **Multi-window support** - Open multiple documents simultaneously in separate windows
+- **Multi-window & tab support** - Open multiple documents simultaneously in separate windows or tabs
+- **Smart tab management** - New documents open as tabs when a window exists, or create new windows
 - **Native macOS file operations** with proper permissions
 - **Auto-save** every 30 seconds with recovery
 - **Recent files** quick access
@@ -65,7 +66,8 @@ A modern, professional screenplay writing application for macOS with real-time F
 - **Template system** for TV pilots, features, and shorts
 
 ### ⌨️ Professional Workflow
-- **Comprehensive keyboard shortcuts** (Cmd+S, Cmd+O, Cmd+N, Cmd+F, etc.)
+- **Comprehensive keyboard shortcuts** (Cmd+S, Cmd+O, Cmd+N, Cmd+T for tabs, Cmd+F, etc.)
+- **Tab navigation** - Cmd+T for new tab, Cmd+Shift+N for new window, Cmd+W to close tab
 - **Customizable animations** with speed controls
 - **Writing goals** with daily word count targets and progress tracking
 - **Statistics dashboard** with word count, page count, and analytics
@@ -81,7 +83,10 @@ Comprehensive documentation is available in the `docs/` directory:
 - [`docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md`](docs/ADVANCED_EDITOR_FEATURES_SUMMARY.md) – Editor feature documentation
 - [`docs/CHARACTER_DATABASE_README.md`](docs/CHARACTER_DATABASE_README.md) – Character system guide
 - [`docs/MULTI_WINDOW_SUPPORT.md`](docs/MULTI_WINDOW_SUPPORT.md) – Multi-window functionality guide
+- [`docs/TAB_SUPPORT_IMPLEMENTATION_SUMMARY.md`](docs/TAB_SUPPORT_IMPLEMENTATION_SUMMARY.md) – Tab support implementation details
 - [`docs/STORY_PROTOCOL_INTEGRATION.md`](docs/STORY_PROTOCOL_INTEGRATION.md) – Blockchain integration details
+- [`docs/BEAT_ANALYSIS_AND_IMPROVEMENTS.md`](docs/BEAT_ANALYSIS_AND_IMPROVEMENTS.md) – Competitive analysis and roadmap
+- [`docs/BUILD_SCRIPTS_README.md`](docs/BUILD_SCRIPTS_README.md) – Build scripts and development workflow
 - [`docs/IMPROVEMENT_TODO.md`](docs/IMPROVEMENT_TODO.md) – Development roadmap
 - [`STORY_PROTOCOL_README.md`](STORY_PROTOCOL_README.md) – Quick start guide for IP protection
 
@@ -111,12 +116,14 @@ See [`docs/MODULAR_ARCHITECTURE.md`](docs/MODULAR_ARCHITECTURE.md) for detailed 
 ## 🚀 Getting Started
 
 ### Quick Start
-1. **Launch Type** and create a new document
-2. **Choose a template** (Feature Film, TV Pilot, or Short) or start blank
-3. **Write in Fountain** format - see syntax guide below
-4. **Watch live preview** update in real-time as you type
-5. **Save your work** (Cmd+S) - auto-save runs every 30 seconds
-6. **Export** to PDF or Final Draft format when ready
+1. **Launch Type** - Welcome screen appears on first launch
+2. **Create a new document** - Press Cmd+N or Cmd+T for a new tab
+3. **Choose a template** (Feature Film, TV Pilot, or Short) or start blank
+4. **Write in Fountain** format - see syntax guide below
+5. **Watch live preview** update in real-time as you type
+6. **Use tabs** - Press Cmd+T to open multiple documents in tabs, or Cmd+Shift+N for a new window
+7. **Save your work** (Cmd+S) - auto-save runs every 30 seconds
+8. **Export** to PDF or Final Draft format when ready
 
 ### Protecting Your IP (Story Protocol)
 1. **Select Network** in the toolbar (Testnet for testing, Mainnet for production)
@@ -126,6 +133,33 @@ See [`docs/MODULAR_ARCHITECTURE.md`](docs/MODULAR_ARCHITECTURE.md) for detailed 
 5. **Confirm protection** - your screenplay is now registered on blockchain!
 
 See [`STORY_PROTOCOL_README.md`](STORY_PROTOCOL_README.md) for detailed IP protection guide.
+
+## ⌨️ Keyboard Shortcuts
+
+Type supports comprehensive keyboard shortcuts for efficient workflow:
+
+### File Operations
+- **Cmd+N** / **Cmd+T** - New document (opens as tab if window exists)
+- **Cmd+Shift+N** - New window
+- **Cmd+O** - Open document
+- **Cmd+S** - Save
+- **Cmd+Shift+S** - Save As
+- **Cmd+W** - Close tab/window
+
+### Editing
+- **Cmd+F** - Find & Replace
+- **Cmd+Shift+F** - Toggle Focus Mode
+- **Cmd+Z** - Undo
+- **Cmd+Shift+Z** - Redo
+
+### View & Navigation
+- **Cmd+Control+S** - Toggle Sidebar
+- **Cmd+Shift+P** - Toggle Preview
+- **Cmd+Shift+O** - Toggle Outline
+
+### Settings
+- **Cmd+Shift+D** - Toggle Dark Mode
+- **Cmd+Shift+T** - Show Templates
 
 ## Example Fountain Script
 
@@ -199,11 +233,13 @@ Type supports the complete Fountain screenplay format:
 - ✅ **Advanced Editor**: Auto-completion, multiple cursors, code folding, find/replace
 - ✅ **Modern TypeStyle UI**: Premium design with gradients, glassmorphism, smooth animations
 - ✅ **File Management**: Save/load, auto-save, export (PDF/FDX), templates
+- ✅ **Multi-Window & Tabs**: Native macOS tab support with smart window management
 - ✅ **Character System**: Database, profiles, arcs, relationships, dialogue analysis
 - ✅ **Outline & Scenes**: Hierarchical organization, scene tracking, timeline view
 - ✅ **Collaboration**: Real-time editing, comments, version control, sharing
 - ✅ **Story Protocol**: Blockchain IP protection UI and flow (simulated)
 - ✅ **Productivity**: Writing goals, statistics, keyboard shortcuts
+- ✅ **Build System**: Automated build and installation scripts with testing
 
 ### 🚧 In Development
 - Enhanced FDX export with advanced features
@@ -240,9 +276,30 @@ open type.xcodeproj
 
 ### Automated Build Script
 ```bash
-# Run the build and install script
+# Basic build and install
 ./build_and_install.sh
+
+# Build, install, and launch the app
+./build_and_install.sh -l
+
+# Clean build (removes previous builds)
+./build_and_install.sh -c
+
+# Clean build and launch
+./build_and_install.sh -c -l
+
+# Show app information
+./build_and_install.sh -i
 ```
+
+The build script automatically:
+- Verifies Xcode installation and project structure
+- Builds the app in Release configuration
+- Installs to `/Applications/type.app`
+- Verifies successful installation
+- Optionally launches the app after installation
+
+See [`docs/BUILD_SCRIPTS_README.md`](docs/BUILD_SCRIPTS_README.md) for detailed build script documentation.
 
 ### Creating a DMG Installer
 ```bash
@@ -268,10 +325,28 @@ See [`docs/BUILD_INSTALL.md`](docs/BUILD_INSTALL.md) for detailed build instruct
 
 Run the included test scripts to verify functionality:
 ```bash
-./test_app.sh                      # Test main application
-./test_character_database.sh       # Test character system
-./test_modular_architecture.sh     # Test architecture
-./test_outline_mode.sh             # Test outline features
+# Test main application (installation, bundle, launch)
+./test_app.sh
+
+# Test character system
+./test_character_database.sh
+
+# Test architecture
+./test_modular_architecture.sh
+
+# Test outline features
+./test_outline_mode.sh
+```
+
+The `test_app.sh` script verifies:
+- ✅ App installation location (`/Applications/type.app`)
+- ✅ Executable permissions and bundle structure
+- ✅ App information (Bundle ID, Version)
+- ✅ Launch capability
+
+For comprehensive testing, run:
+```bash
+./build_and_install.sh -l && ./test_app.sh
 ```
 
 ## 🤝 Contributing
@@ -282,7 +357,13 @@ Contributions are welcome! This project follows:
 - **Apple design guidelines** for UI/UX
 - **Comprehensive documentation** for all changes
 
-See [`docs/COMPREHENSIVE_DOCUMENTATION.md`](docs/COMPREHENSIVE_DOCUMENTATION.md) for architecture details.
+### Development Workflow
+1. Make your changes to the code
+2. Build and test: `./build_and_install.sh -l`
+3. Verify with test script: `./test_app.sh`
+4. For major changes, use clean build: `./build_and_install.sh -c -l`
+
+See [`docs/COMPREHENSIVE_DOCUMENTATION.md`](docs/COMPREHENSIVE_DOCUMENTATION.md) for architecture details and [`docs/BUILD_SCRIPTS_README.md`](docs/BUILD_SCRIPTS_README.md) for development workflow.
 
 ## 📝 License
 
