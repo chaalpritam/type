@@ -49,6 +49,13 @@ A modern, professional screenplay writing application for macOS with real-time F
 - **Drag-and-drop reordering** for scenes and sections
 - **Scene statistics** and analysis tools
 
+### 🔐 Authentication & Sync
+- **OAuth integration** with Google and Apple Sign In
+- **Secure authentication** with JWT token management
+- **User profiles** with email and profile management
+- **Cloud sync** (in development) for cross-device access
+- **Secure keychain storage** for credentials and tokens
+
 ### 🤝 Collaboration Features
 - **Real-time collaboration** with user management
 - **Comments & replies** with resolution tracking
@@ -117,13 +124,14 @@ See [`docs/MODULAR_ARCHITECTURE.md`](docs/MODULAR_ARCHITECTURE.md) for detailed 
 
 ### Quick Start
 1. **Launch Type** - Welcome screen appears on first launch
-2. **Create a new document** - Press Cmd+N or Cmd+T for a new tab
-3. **Choose a template** (Feature Film, TV Pilot, or Short) or start blank
-4. **Write in Fountain** format - see syntax guide below
-5. **Watch live preview** update in real-time as you type
-6. **Use tabs** - Press Cmd+T to open multiple documents in tabs, or Cmd+Shift+N for a new window
-7. **Save your work** (Cmd+S) - auto-save runs every 30 seconds
-8. **Export** to PDF or Final Draft format when ready
+2. **Sign in** (optional) - Use Google or Apple Sign In for cloud sync and collaboration
+3. **Create a new document** - Press Cmd+N or Cmd+T for a new tab
+4. **Choose a template** (Feature Film, TV Pilot, or Short) or start blank
+5. **Write in Fountain** format - see syntax guide below
+6. **Watch live preview** update in real-time as you type
+7. **Use tabs** - Press Cmd+T to open multiple documents in tabs, or Cmd+Shift+N for a new window
+8. **Save your work** (Cmd+S) - auto-save runs every 30 seconds
+9. **Export** to PDF or Final Draft format when ready
 
 ### Protecting Your IP (Story Protocol)
 1. **Select Network** in the toolbar (Testnet for testing, Mainnet for production)
@@ -225,6 +233,8 @@ Type supports the complete Fountain screenplay format:
 - **Combine** - Reactive state management
 - **Fountain Format** - Industry-standard screenplay markup
 - **Story Protocol** - Blockchain IP protection (simulated, Web3 integration pending)
+- **OAuth 2.0** - Google and Apple Sign In authentication
+- **Keychain Services** - Secure credential storage
 
 ## 📊 Project Status
 
@@ -236,9 +246,11 @@ Type supports the complete Fountain screenplay format:
 - ✅ **Multi-Window & Tabs**: Native macOS tab support with smart window management
 - ✅ **Character System**: Database, profiles, arcs, relationships, dialogue analysis
 - ✅ **Outline & Scenes**: Hierarchical organization, scene tracking, timeline view
+- ✅ **Authentication**: OAuth integration with Google and Apple Sign In
 - ✅ **Collaboration**: Real-time editing, comments, version control, sharing
 - ✅ **Story Protocol**: Blockchain IP protection UI and flow (simulated)
 - ✅ **Productivity**: Writing goals, statistics, keyboard shortcuts
+- ✅ **Welcome Screen**: Beautiful onboarding experience for new users
 - ✅ **Build System**: Automated build and installation scripts with testing
 
 ### 🚧 In Development
@@ -247,6 +259,7 @@ Type supports the complete Fountain screenplay format:
 - Performance optimization for large documents
 - Revision marking system
 - Advanced statistics and analytics
+- OAuth backend integration (token exchange)
 
 ### 📋 Roadmap
 See [`docs/IMPROVEMENT_TODO.md`](docs/IMPROVEMENT_TODO.md) for the complete development roadmap including:
@@ -387,6 +400,22 @@ MIT License - feel free to use and modify as needed.
 - **Story Protocol**: https://docs.story.foundation
 - **Fountain Format**: https://fountain.io
 - **Issues**: Report bugs or request features via GitHub Issues
+
+## 🎯 System Requirements
+
+- **macOS**: 12.0 (Monterey) or later
+- **Xcode**: 14.0 or later (for development)
+- **Swift**: 5.7 or later
+- **Memory**: 4GB RAM minimum (8GB recommended)
+- **Storage**: 100MB for app installation
+
+## 🔒 Privacy & Security
+
+- **Local-first**: Documents are stored locally by default
+- **Secure authentication**: OAuth 2.0 with secure token storage
+- **Keychain integration**: Credentials stored securely in macOS Keychain
+- **No telemetry**: Your writing stays private
+- **Optional cloud sync**: Enable only when needed
 
 **Built with ❤️ for screenwriters by screenwriters.**
 
