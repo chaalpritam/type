@@ -23,6 +23,11 @@ enum Logger {
     static let outline   = makeLogger(category: "outline")
     static let character = makeLogger(category: "character")
 
+    // Sync categories
+    static let sync      = makeLogger(category: "sync")
+    static let network   = makeLogger(category: "network")
+    static let auth      = makeLogger(category: "auth")
+
     // Generic logger when you don't care about category
     static let general   = makeLogger(category: "general")
 

@@ -11,7 +11,13 @@ struct ScreenplayDocument: Identifiable, Codable, Equatable {
     var createdAt: Date
     var updatedAt: Date
     var metadata: DocumentMetadata
-    
+
+    // Sync metadata
+    var syncedAt: Date?
+    var modifiedSinceSync: Bool = false
+    var remoteVersion: String?
+    var syncSource: String? // "macos" or "web"
+
     init(content: String = "", url: URL? = nil, title: String = "Untitled", author: String = "") {
         self.id = UUID()
         self.content = content
@@ -21,16 +27,27 @@ struct ScreenplayDocument: Identifiable, Codable, Equatable {
         self.createdAt = Date()
         self.updatedAt = Date()
         self.metadata = DocumentMetadata()
+        self.syncedAt = nil
+        self.modifiedSinceSync = false
+        self.remoteVersion = nil
+        self.syncSource = "macos"
     }
-    
+
     mutating func updateContent(_ newContent: String) {
         content = newContent
         updatedAt = Date()
+        modifiedSinceSync = true
     }
-    
+
     mutating func updateMetadata(_ newMetadata: DocumentMetadata) {
         metadata = newMetadata
         updatedAt = Date()
+        modifiedSinceSync = true
+    }
+
+    mutating func markAsSynced() {
+        syncedAt = Date()
+        modifiedSinceSync = false
     }
 }
 

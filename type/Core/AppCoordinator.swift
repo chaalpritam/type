@@ -36,7 +36,14 @@ class AppCoordinator: ObservableObject {
     let fileManagementService: FileManagementService
     let statisticsService: StatisticsService
     let storyProtocolService: StoryProtocolService
-    
+
+    // MARK: - Sync Services
+    let networkService: NetworkService
+    let authService: AuthService
+    let syncService: SyncService
+    let syncCoordinator: SyncCoordinator
+    let oauthCoordinator: OAuthCoordinator
+
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     private var hasBeenCleanedUp = false
@@ -45,17 +52,28 @@ class AppCoordinator: ObservableObject {
     // MARK: - Initialization
     init() {
         Logger.app.info("AppCoordinator init - Document-Based MVC Architecture")
-        
+
         // Initialize the central document controller (like Beat)
         self.documentController = DocumentViewController()
-        
+
         // Initialize shared services
         self.documentService = DocumentService()
         self.settingsService = SettingsService()
         self.fileManagementService = FileManagementService()
         self.statisticsService = StatisticsService()
         self.storyProtocolService = StoryProtocolService()
-        
+
+        // Initialize sync services
+        self.networkService = NetworkService()
+        self.authService = AuthService(networkService: networkService)
+        self.syncService = SyncService(networkService: networkService, authService: authService)
+        self.syncCoordinator = SyncCoordinator(
+            syncService: syncService,
+            documentService: documentService,
+            authService: authService
+        )
+        self.oauthCoordinator = OAuthCoordinator(authService: authService)
+
         // Initialize module coordinators - they work with the document controller
         self.editorCoordinator = EditorCoordinator(documentService: documentService)
         self.characterCoordinator = CharacterCoordinator(documentService: documentService)
@@ -63,9 +81,10 @@ class AppCoordinator: ObservableObject {
         self.collaborationCoordinator = CollaborationCoordinator(documentService: documentService)
         self.fileCoordinator = FileCoordinator(documentService: documentService)
         self.storyProtocolCoordinator = StoryProtocolCoordinator(storyProtocolService: storyProtocolService, documentService: documentService)
-        
+
         setupBindings()
         setupDocumentControllerBindings()
+        setupSyncBindings()
     }
     
     deinit {
@@ -133,7 +152,27 @@ class AppCoordinator: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
+    /// Setup sync bindings for auto-sync on document save
+    private func setupSyncBindings() {
+        // Auto-sync when document is saved (isDocumentModified changes from true to false)
+        documentService.$isDocumentModified
+            .debounce(for: .seconds(2), scheduler: DispatchQueue.main)
+            .sink { [weak self] isModified in
+                guard let self = self, !self.isCleaningUp else { return }
+
+                // When isDocumentModified becomes false, the document was saved
+                if !isModified {
+                    Task {
+                        await self.syncCoordinator.handleAutoSync()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        Logger.app.debug("Sync bindings setup complete")
+    }
+
     private func handleDocumentChange(_ document: ScreenplayDocument?) {
         // Don't process during cleanup
         guard !isCleaningUp else { return }
@@ -253,11 +292,18 @@ class AppCoordinator: ObservableObject {
         statisticsService.cleanup()
         storyProtocolService.cleanup()
         Logger.app.debug("All services cleaned up")
-        
-        // 7. Remove any remaining notification observers
+
+        // 7. Cleanup sync services
+        syncCoordinator.cleanup()
+        syncService.cleanup()
+        authService.cleanup()
+        networkService.cleanup()
+        Logger.app.debug("Sync services cleaned up")
+
+        // 8. Remove any remaining notification observers
         NotificationCenter.default.removeObserver(self)
         Logger.app.debug("Removed notification observers")
-        
+
         isCleaningUp = false
         Logger.app.info("AppCoordinator cleanup completed")
     }

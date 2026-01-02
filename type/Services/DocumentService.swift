@@ -100,6 +100,7 @@ class DocumentService: ObservableObject {
     /// Update document content
     func updateDocumentContent(_ content: String) {
         currentDocument?.content = content
+        currentDocument?.modifiedSinceSync = true
         isDocumentModified = true
     }
     
@@ -276,13 +277,36 @@ class DocumentService: ObservableObject {
     /// Update content and cache it
     func updateDocumentContentWithCache(_ content: String) {
         guard !isCleaningUp else { return }
-        
+
         currentDocument?.content = content
         isDocumentModified = true
-        
+
         // Cache the content data
         if let data = content.data(using: .utf8) {
             dataCache = data
+        }
+    }
+
+    // MARK: - Sync Methods
+
+    /// Mark document as synced
+    func markDocumentAsSynced() {
+        currentDocument?.markAsSynced()
+        Logger.document.debug("Document marked as synced")
+    }
+
+    /// Check if document has pending changes
+    func hasPendingChanges() -> Bool {
+        return currentDocument?.modifiedSinceSync ?? false
+    }
+
+    /// Update sync metadata
+    func updateSyncMetadata(remoteVersion: String?, syncSource: String?) {
+        if let version = remoteVersion {
+            currentDocument?.remoteVersion = version
+        }
+        if let source = syncSource {
+            currentDocument?.syncSource = source
         }
     }
 }
