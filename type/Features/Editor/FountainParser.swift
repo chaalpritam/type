@@ -130,23 +130,23 @@ class FountainParser: ObservableObject {
         let lines = text.components(separatedBy: .newlines)
         var newElements: [FountainElement] = []
         var newTitlePage: [String: String] = [:]
-        
+
         var isInTitlePage = true
         var lineNumber = 0
         var previousCharacter: String? = nil
         var currentPosition = 0  // Track position in the document
-        
+
         for line in lines {
             lineNumber += 1
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
             let lineLength = line.count + 1  // +1 for newline
-            
+
             // Skip empty lines but track position
             if trimmedLine.isEmpty {
                 currentPosition += lineLength
                 continue
             }
-            
+
             // Check for title page
             if isInTitlePage {
                 if let titlePageElement = parseTitlePageLine(trimmedLine) {
@@ -159,21 +159,77 @@ class FountainParser: ObservableObject {
                     continue
                 }
             }
-            
+
             // Parse screenplay elements with range information
             if var element = parseScreenplayLine(trimmedLine, lineNumber: lineNumber, previousCharacter: &previousCharacter) {
                 // Add range information
                 element.range = NSRange(location: currentPosition, length: line.count)
                 newElements.append(element)
             }
-            
+
             currentPosition += lineLength
         }
-        
+
         DispatchQueue.main.async {
             self.elements = newElements
             self.titlePage = newTitlePage
         }
+    }
+
+    /// Asynchronous version of parse that runs on a background thread
+    @MainActor
+    func parseAsync(_ text: String) async {
+        // Perform the heavy parsing work off the main thread
+        let result = await Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self = self else { return (elements: [FountainElement](), titlePage: [String: String]()) }
+
+            let lines = text.components(separatedBy: .newlines)
+            var newElements: [FountainElement] = []
+            var newTitlePage: [String: String] = [:]
+
+            var isInTitlePage = true
+            var lineNumber = 0
+            var previousCharacter: String? = nil
+            var currentPosition = 0
+
+            for line in lines {
+                lineNumber += 1
+                let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+                let lineLength = line.count + 1
+
+                if trimmedLine.isEmpty {
+                    currentPosition += lineLength
+                    continue
+                }
+
+                // Check for title page
+                if isInTitlePage {
+                    if let titlePageElement = self.parseTitlePageLine(trimmedLine) {
+                        newTitlePage[titlePageElement.key] = titlePageElement.value
+                        currentPosition += lineLength
+                        continue
+                    } else if trimmedLine.hasPrefix(":") {
+                        isInTitlePage = false
+                        currentPosition += lineLength
+                        continue
+                    }
+                }
+
+                // Parse screenplay elements with range information
+                if var element = self.parseScreenplayLine(trimmedLine, lineNumber: lineNumber, previousCharacter: &previousCharacter) {
+                    element.range = NSRange(location: currentPosition, length: line.count)
+                    newElements.append(element)
+                }
+
+                currentPosition += lineLength
+            }
+
+            return (elements: newElements, titlePage: newTitlePage)
+        }.value
+
+        // Update published properties on main thread
+        self.elements = result.elements
+        self.titlePage = result.titlePage
     }
     
     private func parseTitlePageLine(_ line: String) -> (key: String, value: String)? {

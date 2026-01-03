@@ -47,6 +47,11 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     let advancedFeatures = AdvancedEditorFeatures()
     let multipleCursorsManager = MultipleCursorsManager()
     let codeFoldingManager = CodeFoldingManager()
+
+    // MARK: - Performance Optimization
+    private var parseDebounceTask: Task<Void, Never>?
+    private var statisticsDebounceTask: Task<Void, Never>?
+    private let parseDebounceDelay: UInt64 = 50_000_000 // 50ms in nanoseconds
     
     // MARK: - Initialization
     override init(documentService: DocumentService) {
@@ -82,25 +87,58 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     
     func updateText(_ newText: String) {
         text = newText
-        updateStatistics(text: newText)
+
+        // Update history immediately for responsive undo/redo
         historyManager.addToHistory(newText)
         canUndo = historyManager.canUndo
         canRedo = historyManager.canRedo
-        
-        // Update auto-completion
-        autoCompletionManager.updateSuggestions(for: newText, at: 0)
-        
-        // Apply smart formatting
-        let formattedText = smartFormattingManager.formatText(newText)
-        if formattedText != newText {
-            text = formattedText
-        }
-        
-        // Update document service
+
+        // Update document service immediately
         documentService.updateDocumentContent(newText)
-        
-        // Parse Fountain syntax in real-time
-        fountainParser.parse(newText)
+
+        // Cancel previous debounce tasks
+        parseDebounceTask?.cancel()
+        statisticsDebounceTask?.cancel()
+
+        // Debounce parsing - only parse after user stops typing
+        parseDebounceTask = Task { @MainActor in
+            do {
+                try await Task.sleep(nanoseconds: parseDebounceDelay)
+
+                // Parse in background to avoid blocking UI
+                await parseTextAsync(newText)
+
+                // Apply smart formatting after parse completes
+                let formattedText = smartFormattingManager.formatText(newText)
+                if formattedText != newText {
+                    text = formattedText
+                }
+            } catch {
+                // Task was cancelled, which is expected during rapid typing
+            }
+        }
+
+        // Debounce statistics calculation
+        statisticsDebounceTask = Task { @MainActor in
+            do {
+                try await Task.sleep(nanoseconds: parseDebounceDelay)
+                updateStatistics(text: newText)
+            } catch {
+                // Task was cancelled
+            }
+        }
+
+        // Update auto-completion suggestions (lightweight operation)
+        autoCompletionManager.updateSuggestions(for: newText, at: 0)
+    }
+
+    /// Parse text asynchronously on a background thread
+    private func parseTextAsync(_ text: String) async {
+        await Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self = self else { return }
+            // Perform parsing off the main thread
+            await self.fountainParser.parseAsync(text)
+        }.value
     }
     
     func performUndo() {

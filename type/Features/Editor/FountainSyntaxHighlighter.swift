@@ -3,23 +3,46 @@ import AppKit
 
 // MARK: - Fountain Syntax Highlighter View
 /// SwiftUI view for displaying syntax-highlighted Fountain text
+/// Optimized with caching to reduce redundant highlighting operations
 struct FountainSyntaxHighlighter: View {
     let text: String
     let font: Font
     let baseColor: Color
-    
+
+    // Cache for attributed string to avoid redundant highlighting
+    @State private var cachedText: String = ""
+    @State private var cachedAttributedString: AttributedString = AttributedString("")
+
     var body: some View {
-        Text(attributedString)
+        Text(currentAttributedString)
             .font(font)
             .lineLimit(nil)
     }
-    
-    private var attributedString: AttributedString {
+
+    private var currentAttributedString: AttributedString {
+        // Return cached version if text hasn't changed
+        if text == cachedText {
+            return cachedAttributedString
+        }
+
+        // Otherwise, compute new attributed string
+        let attributed = computeAttributedString()
+
+        // Update cache (using Task to avoid state update during body evaluation)
+        Task { @MainActor in
+            cachedText = text
+            cachedAttributedString = attributed
+        }
+
+        return attributed
+    }
+
+    private func computeAttributedString() -> AttributedString {
         var attributed = AttributedString(text)
-        
+
         // Apply base styling
         attributed.foregroundColor = baseColor
-        
+
         // Highlight force scene headings
         highlightPattern(
             in: &attributed,
@@ -27,7 +50,7 @@ struct FountainSyntaxHighlighter: View {
             color: .blue,
             weight: .bold
         )
-        
+
         // Highlight force action
         highlightPattern(
             in: &attributed,
@@ -35,14 +58,14 @@ struct FountainSyntaxHighlighter: View {
             color: .purple,
             weight: .semibold
         )
-        
+
         // Highlight scene headings
         highlightPattern(
             in: &attributed,
             pattern: #"^(?:INT|EXT|INT/EXT|I/E)\.?\s+.*$"#,
             color: .blue
         )
-        
+
         // Highlight dual dialogue characters
         highlightPattern(
             in: &attributed,
@@ -50,56 +73,56 @@ struct FountainSyntaxHighlighter: View {
             color: .orange,
             weight: .bold
         )
-        
+
         // Highlight character names
         highlightPattern(
             in: &attributed,
             pattern: #"^[A-Z][A-Z\s]+$"#,
             color: .purple
         )
-        
+
         // Highlight parentheticals
         highlightPattern(
             in: &attributed,
             pattern: #"^\(.*\)$"#,
             color: .orange
         )
-        
+
         // Highlight enhanced transitions
         highlightPattern(
             in: &attributed,
             pattern: #"^(?:FADE OUT|FADE TO BLACK|CUT TO|DISSOLVE TO|SMASH CUT TO|JUMP CUT TO|MATCH CUT TO|FADE IN|FADE OUT|CUT TO BLACK|END|THE END|IRIS IN|IRIS OUT|WIPE TO|DISSOLVE|FADE|CUT|SMASH CUT|JUMP CUT|MATCH CUT|IRIS|WIPE).*$"#,
             color: .red
         )
-        
+
         // Highlight sections
         highlightPattern(
             in: &attributed,
             pattern: #"^#+\s+.*$"#,
             color: .green
         )
-        
+
         // Highlight synopsis
         highlightPattern(
             in: &attributed,
             pattern: #"^=\s+.*$"#,
             color: .gray
         )
-        
+
         // Highlight notes
         highlightPattern(
             in: &attributed,
             pattern: #"^\[\[.*\]\]$"#,
             color: .gray
         )
-        
+
         // Highlight centered text
         highlightPattern(
             in: &attributed,
             pattern: #"^>\s+.*\s+<$"#,
             color: .blue
         )
-        
+
         // Highlight lyrics
         highlightPattern(
             in: &attributed,
@@ -107,17 +130,17 @@ struct FountainSyntaxHighlighter: View {
             color: .pink,
             italic: true
         )
-        
+
         // Highlight title page elements
         highlightPattern(
             in: &attributed,
             pattern: #"^[A-Za-z\s]+:\s+.*$"#,
             color: .brown
         )
-        
+
         // Highlight emphasis within dialogue
         highlightEmphasis(in: &attributed)
-        
+
         return attributed
     }
     
