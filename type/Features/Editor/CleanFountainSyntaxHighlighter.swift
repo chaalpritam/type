@@ -16,6 +16,7 @@ struct CleanFountainSyntaxHighlighter: View {
     var body: some View {
         Text(currentAttributedString)
             .font(font)
+            .lineSpacing(ScreenplayTypography.standardLineSpacing)
             .lineLimit(nil)
     }
 

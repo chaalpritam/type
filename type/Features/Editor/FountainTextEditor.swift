@@ -8,20 +8,24 @@ struct FountainTextEditor: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // Background TextEditor for input
+            // Paper texture background
+            ScreenplayPaperBackground()
+
+            // Background TextEditor for input with line spacing
             TextEditor(text: $text)
-                .font(.system(size: 18, weight: .regular, design: .serif))
+                .font(ScreenplayTypography.editorFont())
                 .foregroundColor(.clear) // Make text invisible
                 .background(Color.clear)
                 .focused($isFocused)
                 .scrollContentBackground(.hidden)
+                .lineSpacing(ScreenplayTypography.standardLineSpacing)
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
 
             // Syntax highlighted overlay - choose between normal and clean mode
             if hideMarkup {
                 CleanFountainSyntaxHighlighter(
                     text: text.isEmpty ? placeholder : text,
-                    font: .system(size: 18, weight: .regular, design: .serif),
+                    font: ScreenplayTypography.editorFont(),
                     baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
                 )
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
@@ -29,7 +33,7 @@ struct FountainTextEditor: View {
             } else {
                 FountainSyntaxHighlighter(
                     text: text.isEmpty ? placeholder : text,
-                    font: .system(size: 18, weight: .regular, design: .serif),
+                    font: ScreenplayTypography.editorFont(),
                     baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
                 )
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
