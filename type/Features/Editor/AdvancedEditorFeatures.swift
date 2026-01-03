@@ -13,7 +13,6 @@ class AdvancedEditorFeatures: ObservableObject {
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
-    private var autoScrollTimer: Timer?
     private var lastCursorPosition: Int = 0
     
     // MARK: - Focus Mode
@@ -31,27 +30,17 @@ class AdvancedEditorFeatures: ObservableObject {
     // MARK: - Typewriter Mode
     func toggleTypewriterMode() {
         isTypewriterMode.toggle()
-        if isTypewriterMode {
-            startAutoScroll()
-        } else {
-            stopAutoScroll()
-        }
+        // No need for auto-scroll timer - scrolling happens on text changes
     }
-    
-    private func startAutoScroll() {
-        autoScrollTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            self?.performAutoScroll()
-        }
-    }
-    
-    private func stopAutoScroll() {
-        autoScrollTimer?.invalidate()
-        autoScrollTimer = nil
-    }
-    
-    private func performAutoScroll() {
-        // Auto-scroll logic will be implemented in the editor view
-        NotificationCenter.default.post(name: .typewriterModeScroll, object: nil)
+
+    /// Trigger scroll update when text changes
+    func updateTypewriterScroll(cursorPosition: Int) {
+        lastCursorPosition = cursorPosition
+        NotificationCenter.default.post(
+            name: .typewriterModeScroll,
+            object: nil,
+            userInfo: ["cursorPosition": cursorPosition]
+        )
     }
     
     // MARK: - Multiple Cursors
@@ -85,7 +74,8 @@ class AdvancedEditorFeatures: ObservableObject {
     
     // MARK: - Cleanup
     deinit {
-        autoScrollTimer?.invalidate()
+        // Cleanup subscriptions
+        cancellables.removeAll()
     }
 }
 
@@ -235,49 +225,57 @@ struct FocusModeEditor: View {
     @ObservedObject var coordinator: EditorCoordinator
     @ObservedObject var advancedFeatures: AdvancedEditorFeatures
     @FocusState private var isFocused: Bool
-    @State private var scrollProxy: ScrollViewProxy?
-    
+    @State private var lastTextLength: Int = 0
+
     var body: some View {
-        ScrollViewReader { proxy in
+        // Typewriter mode with automatic centering
+        if advancedFeatures.isTypewriterMode {
+            TypewriterModeText(
+                text: $text,
+                coordinator: coordinator,
+                advancedFeatures: advancedFeatures
+            )
+        } else {
+            // Normal scrollable editor
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    // Typewriter mode centered text
-                    if advancedFeatures.isTypewriterMode {
-                        TypewriterModeText(
-                            text: $text,
-                            coordinator: coordinator,
-                            advancedFeatures: advancedFeatures
-                        )
-                    } else {
-                        // Normal editor
-                        EnhancedFountainTextEditor(
-                            text: $text,
-                            placeholder: "Just write...",
-                            showLineNumbers: false,
-                            onTextChange: { newText in
+                    // Normal editor with syntax highlighting
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $text)
+                            .font(.system(size: 18, weight: .regular, design: .serif))
+                            .foregroundColor(.clear)
+                            .background(Color.clear)
+                            .focused($isFocused)
+                            .scrollContentBackground(.hidden)
+                            .padding(40)
+                            .onChange(of: text) { _, newText in
                                 coordinator.updateText(newText)
                             }
-                        )
+
+                        // Syntax highlighting overlay
+                        if coordinator.hideMarkup {
+                            CleanFountainSyntaxHighlighter(
+                                text: text.isEmpty ? "Start writing..." : text,
+                                font: .system(size: 18, weight: .regular, design: .serif),
+                                baseColor: text.isEmpty ? Color.white.opacity(0.5) : .white
+                            )
+                            .padding(40)
+                            .allowsHitTesting(false)
+                        } else {
+                            FountainSyntaxHighlighter(
+                                text: text.isEmpty ? "Start writing..." : text,
+                                font: .system(size: 18, weight: .regular, design: .serif),
+                                baseColor: text.isEmpty ? Color.white.opacity(0.5) : .white
+                            )
+                            .padding(40)
+                            .allowsHitTesting(false)
+                        }
                     }
                 }
             }
             .onAppear {
-                scrollProxy = proxy
                 isFocused = true
             }
-            .onReceive(NotificationCenter.default.publisher(for: .typewriterModeScroll)) { _ in
-                if advancedFeatures.isTypewriterMode {
-                    performTypewriterScroll(proxy: proxy)
-                }
-            }
-        }
-    }
-    
-    private func performTypewriterScroll(proxy: ScrollViewProxy) {
-        // Calculate cursor position and scroll to center it
-        // This is a simplified implementation
-        withAnimation(.easeInOut(duration: 0.3)) {
-            // Scroll to keep cursor centered
         }
     }
 }
@@ -288,33 +286,78 @@ struct TypewriterModeText: View {
     @ObservedObject var coordinator: EditorCoordinator
     @ObservedObject var advancedFeatures: AdvancedEditorFeatures
     @FocusState private var isFocused: Bool
-    
+    @State private var scrollOffset: CGFloat = 0
+    @State private var currentLineNumber: Int = 1
+
     var body: some View {
-        VStack(spacing: 0) {
-            // Top spacing for centering
-            Spacer()
-                .frame(height: 200)
-            
-            // Centered text editor
-            TextEditor(text: $text)
-                .font(.system(size: 20, weight: .regular, design: .serif))
-                .foregroundColor(.white)
-                .background(Color.clear)
-                .focused($isFocused)
-                .scrollContentBackground(.hidden)
-                .frame(maxWidth: 600)
-                .onChange(of: text) { _, newText in
-                    coordinator.updateText(newText)
+        GeometryReader { geometry in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    // Top spacer to center the typing area
+                    Spacer()
+                        .frame(height: geometry.size.height / 2 - 30)
+                        .id("top-spacer")
+
+                    // Centered text editor with syntax highlighting
+                    ZStack(alignment: .topLeading) {
+                        // Invisible TextEditor for input
+                        TextEditor(text: $text)
+                            .font(.system(size: 20, weight: .regular, design: .serif))
+                            .foregroundColor(.clear)
+                            .background(Color.clear)
+                            .focused($isFocused)
+                            .scrollContentBackground(.hidden)
+                            .frame(maxWidth: 650, alignment: .leading)
+                            .onChange(of: text) { oldValue, newText in
+                                coordinator.updateText(newText)
+                                updateScrollPosition(in: geometry)
+                            }
+
+                        // Syntax highlighted overlay
+                        if coordinator.hideMarkup {
+                            CleanFountainSyntaxHighlighter(
+                                text: text.isEmpty ? "Start typing..." : text,
+                                font: .system(size: 20, weight: .regular, design: .serif),
+                                baseColor: text.isEmpty ? Color.white.opacity(0.5) : .white
+                            )
+                            .frame(maxWidth: 650, alignment: .leading)
+                            .allowsHitTesting(false)
+                        } else {
+                            FountainSyntaxHighlighter(
+                                text: text.isEmpty ? "Start typing..." : text,
+                                font: .system(size: 20, weight: .regular, design: .serif),
+                                baseColor: text.isEmpty ? Color.white.opacity(0.5) : .white
+                            )
+                            .frame(maxWidth: 650, alignment: .leading)
+                            .allowsHitTesting(false)
+                        }
+                    }
+                    .id("editor")
+
+                    // Bottom spacer for continuous scrolling
+                    Spacer()
+                        .frame(height: geometry.size.height / 2 + 100)
+                        .id("bottom-spacer")
                 }
-                .onAppear {
-                    isFocused = true
-                }
-            
-            // Bottom spacing for centering
-            Spacer()
-                .frame(height: 200)
+                .frame(maxWidth: .infinity)
+            }
+            .onAppear {
+                isFocused = true
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func updateScrollPosition(in geometry: GeometryProxy) {
+        // Calculate current line number
+        let lines = text.components(separatedBy: .newlines)
+        let newLineNumber = lines.count
+
+        // Smooth scroll animation when typing
+        if newLineNumber != currentLineNumber {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                currentLineNumber = newLineNumber
+            }
+        }
     }
 }
 
