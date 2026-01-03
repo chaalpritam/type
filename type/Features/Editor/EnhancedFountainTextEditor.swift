@@ -11,56 +11,57 @@ struct EnhancedFountainTextEditor: View {
     @State private var lineCount: Int = 1
 
     var body: some View {
-        ZStack {
-            // Paper texture background
-            ScreenplayPaperBackground()
+        HStack(alignment: .top, spacing: 0) {
+            // Line numbers
+            if showLineNumbers {
+                LineNumbersView(lineCount: lineCount)
+                    .frame(width: 50)
+            }
 
-            HStack(alignment: .top, spacing: 0) {
-                // Line numbers
-                if showLineNumbers {
-                    LineNumbersView(lineCount: lineCount)
-                        .frame(width: 50)
-                }
-
-                // Main editor
-                ZStack(alignment: .topLeading) {
-                    // Background TextEditor for input with line spacing
-                    TextEditor(text: $text)
-                        .font(ScreenplayTypography.editorFont())
-                        .foregroundColor(.clear) // Make text invisible
-                        .background(Color.clear)
-                        .focused($isFocused)
-                        .scrollContentBackground(.hidden)
-                        .lineSpacing(ScreenplayTypography.standardLineSpacing)
-                        .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
-                        .onChange(of: text) { _, newText in
-                            updateLineCount(text: newText)
-                            onTextChange(newText)
-                        }
-
-                    // Syntax highlighted overlay - choose between normal and clean mode
-                    if hideMarkup {
-                        CleanFountainSyntaxHighlighter(
-                            text: text.isEmpty ? placeholder : text,
-                            font: ScreenplayTypography.editorFont(),
-                            baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
-                        )
-                        .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
-                        .allowsHitTesting(false) // Don't interfere with text input
-                    } else {
-                        FountainSyntaxHighlighter(
-                            text: text.isEmpty ? placeholder : text,
-                            font: ScreenplayTypography.editorFont(),
-                            baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
-                        )
-                        .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
-                        .allowsHitTesting(false) // Don't interfere with text input
+            // Main editor
+            ZStack(alignment: .topLeading) {
+                // Background TextEditor for input - NO line spacing to keep cursor aligned
+                TextEditor(text: $text)
+                    .font(.system(size: 18, weight: .regular, design: .serif))
+                    .foregroundColor(.clear) // Make text invisible
+                    .background(Color.clear)
+                    .focused($isFocused)
+                    .scrollContentBackground(.hidden)
+                    .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
+                    .onChange(of: text) { _, newText in
+                        updateLineCount(text: newText)
+                        onTextChange(newText)
                     }
+                    .onAppear {
+                        // Auto-focus the editor when it appears
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isFocused = true
+                        }
+                    }
+
+                // Syntax highlighted overlay - choose between normal and clean mode
+                if hideMarkup {
+                    CleanFountainSyntaxHighlighter(
+                        text: text.isEmpty ? placeholder : text,
+                        font: .system(size: 18, weight: .regular, design: .serif),
+                        baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
+                    )
+                    .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
+                    .allowsHitTesting(false) // Don't interfere with text input
+                } else {
+                    FountainSyntaxHighlighter(
+                        text: text.isEmpty ? placeholder : text,
+                        font: .system(size: 18, weight: .regular, design: .serif),
+                        baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
+                    )
+                    .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
+                    .allowsHitTesting(false) // Don't interfere with text input
                 }
             }
-            .onAppear {
-                updateLineCount(text: text)
-            }
+        }
+        .background(ScreenplayPaperBackground()) // Background behind everything
+        .onAppear {
+            updateLineCount(text: text)
         }
     }
     

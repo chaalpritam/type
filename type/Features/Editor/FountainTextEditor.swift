@@ -8,24 +8,26 @@ struct FountainTextEditor: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            // Paper texture background
-            ScreenplayPaperBackground()
-
-            // Background TextEditor for input with line spacing
+            // Background TextEditor for input - NO line spacing to keep cursor aligned
             TextEditor(text: $text)
-                .font(ScreenplayTypography.editorFont())
+                .font(.system(size: 18, weight: .regular, design: .serif))
                 .foregroundColor(.clear) // Make text invisible
                 .background(Color.clear)
                 .focused($isFocused)
                 .scrollContentBackground(.hidden)
-                .lineSpacing(ScreenplayTypography.standardLineSpacing)
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
+                .onAppear {
+                    // Auto-focus the editor when it appears
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isFocused = true
+                    }
+                }
 
             // Syntax highlighted overlay - choose between normal and clean mode
             if hideMarkup {
                 CleanFountainSyntaxHighlighter(
                     text: text.isEmpty ? placeholder : text,
-                    font: ScreenplayTypography.editorFont(),
+                    font: .system(size: 18, weight: .regular, design: .serif),
                     baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
                 )
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
@@ -33,13 +35,14 @@ struct FountainTextEditor: View {
             } else {
                 FountainSyntaxHighlighter(
                     text: text.isEmpty ? placeholder : text,
-                    font: ScreenplayTypography.editorFont(),
+                    font: .system(size: 18, weight: .regular, design: .serif),
                     baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
                 )
                 .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: 40, bottom: 40, trailing: 40))
                 .allowsHitTesting(false) // Don't interfere with text input
             }
         }
+        .background(ScreenplayPaperBackground()) // Background behind everything
     }
 }
 

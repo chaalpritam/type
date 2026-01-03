@@ -114,6 +114,7 @@ struct ScreenplayPaperBackground: View {
                     .ignoresSafeArea()
             }
         }
+        .allowsHitTesting(false) // CRITICAL: Don't block clicks/typing!
     }
 }
 
