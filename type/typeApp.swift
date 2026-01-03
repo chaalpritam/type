@@ -75,22 +75,29 @@ struct typeApp: App {
             
             CommandGroup(after: .windowArrangement) {
                 Divider()
-                
+
                 Button("Toggle Sidebar") {
                     NotificationCenter.default.post(name: .toggleSidebar, object: nil)
                 }
                 .keyboardShortcut("s", modifiers: [.control, .command])
-                
+
                 Button("Toggle Preview") {
                     NotificationCenter.default.post(name: .togglePreview, object: nil)
                 }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
-                
+
                 Button("Toggle Outline") {
                     NotificationCenter.default.post(name: .toggleOutline, object: nil)
                 }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
-                
+
+                Divider()
+
+                Button("Hide Markup (Clean View)") {
+                    NotificationCenter.default.post(name: .toggleHideMarkup, object: nil)
+                }
+                .keyboardShortcut("m", modifiers: [.command, .shift])
+
                 Divider()
                 
                 // Show list of open windows
@@ -201,6 +208,7 @@ extension Notification.Name {
     static let toggleSidebar = Notification.Name("toggleSidebar")
     static let togglePreview = Notification.Name("togglePreview")
     static let toggleOutline = Notification.Name("toggleOutline")
+    static let toggleHideMarkup = Notification.Name("toggleHideMarkup")
     static let showWelcome = Notification.Name("showWelcome")
     static let showTemplates = Notification.Name("showTemplates")
     static let showTutorials = Notification.Name("showTutorials")

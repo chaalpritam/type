@@ -36,6 +36,7 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     @Published var isTypewriterModeActive: Bool = false
     @Published var hasMultipleCursorsActive: Bool = false
     @Published var activeModal: EditorModal?
+    @Published var hideMarkup: Bool = false  // Clean view mode - hide Fountain markup
     
     // MARK: - Services
     let fountainParser = FountainParser()
@@ -212,6 +213,10 @@ class EditorCoordinator: BaseModuleCoordinator, ModuleCoordinator {
     func toggleMinimap() {
         setModal(.minimap, isPresented: activeModal != .minimap)
     }
+
+    func toggleHideMarkup() {
+        hideMarkup.toggle()
+    }
     
     func setModal(_ modal: EditorModal, isPresented: Bool) {
         if isPresented {
@@ -344,6 +349,7 @@ struct EditorMainView: View {
                                     text: $coordinator.text,
                                     placeholder: "Start writing your screenplay...",
                                     showLineNumbers: coordinator.showLineNumbers,
+                                    hideMarkup: coordinator.hideMarkup,
                                     onTextChange: { newText in
                                         coordinator.updateText(newText)
                                     }

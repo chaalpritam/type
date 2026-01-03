@@ -4,11 +4,12 @@ struct EnhancedFountainTextEditor: View {
     @Binding var text: String
     let placeholder: String
     let showLineNumbers: Bool
+    var hideMarkup: Bool = false  // Use clean view mode
     let onTextChange: (String) -> Void
-    
+
     @FocusState private var isFocused: Bool
     @State private var lineCount: Int = 1
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             // Line numbers
@@ -16,7 +17,7 @@ struct EnhancedFountainTextEditor: View {
                 LineNumbersView(lineCount: lineCount)
                     .frame(width: 50)
             }
-            
+
             // Main editor
             ZStack(alignment: .topLeading) {
                 // Background TextEditor for input
@@ -31,15 +32,25 @@ struct EnhancedFountainTextEditor: View {
                         updateLineCount(text: newText)
                         onTextChange(newText)
                     }
-                
-                // Syntax highlighted overlay
-                FountainSyntaxHighlighter(
-                    text: text.isEmpty ? placeholder : text,
-                    font: .system(size: 18, weight: .regular, design: .serif),
-                    baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
-                )
-                .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
-                .allowsHitTesting(false) // Don't interfere with text input
+
+                // Syntax highlighted overlay - choose between normal and clean mode
+                if hideMarkup {
+                    CleanFountainSyntaxHighlighter(
+                        text: text.isEmpty ? placeholder : text,
+                        font: .system(size: 18, weight: .regular, design: .serif),
+                        baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
+                    )
+                    .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
+                    .allowsHitTesting(false) // Don't interfere with text input
+                } else {
+                    FountainSyntaxHighlighter(
+                        text: text.isEmpty ? placeholder : text,
+                        font: .system(size: 18, weight: .regular, design: .serif),
+                        baseColor: text.isEmpty ? Color(red: 0.5, green: 0.5, blue: 0.5) : .black
+                    )
+                    .padding(EdgeInsets(top: text.isEmpty ? 10 : 40, leading: showLineNumbers ? 10 : 40, bottom: 40, trailing: 40))
+                    .allowsHitTesting(false) // Don't interfere with text input
+                }
             }
         }
         .onAppear {

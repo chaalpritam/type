@@ -99,6 +99,25 @@ class AppCoordinator: ObservableObject {
                 self?.handleDocumentChange(document)
             }
             .store(in: &cancellables)
+
+        // Listen for notification-based commands
+        NotificationCenter.default.publisher(for: .togglePreview)
+            .sink { [weak self] _ in
+                self?.editorCoordinator.togglePreview()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .toggleFocusMode)
+            .sink { [weak self] _ in
+                self?.editorCoordinator.toggleFocusMode()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .toggleHideMarkup)
+            .sink { [weak self] _ in
+                self?.editorCoordinator.toggleHideMarkup()
+            }
+            .store(in: &cancellables)
     }
     
     /// Setup bindings between DocumentController and coordinators

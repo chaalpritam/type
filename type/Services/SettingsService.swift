@@ -117,6 +117,7 @@ struct EditorSettings: Codable {
     var autoSaveInterval: TimeInterval = 30.0
     var enableSpellCheck: Bool = true
     var enableSmartFormatting: Bool = true
+    var hideMarkup: Bool = false  // Hide Fountain markup symbols for cleaner view
 }
 
 // MARK: - Appearance Settings
